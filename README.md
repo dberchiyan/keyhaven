@@ -17,7 +17,7 @@ landlords and agents list and manage; admins keep the site clean.
 **Live demo: [keyhaven.osdb.io](https://keyhaven.osdb.io)** · fictional people and homes only
 
 [Quick start](#quick-start) · [Demo accounts](#demo-accounts) · [What it does](#what-it-does) ·
-[Architecture](#architecture) · [Development](#development) · [Roadmap](#roadmap)
+[Architecture](#architecture) · [Development](#development)
 
 </div>
 
@@ -111,14 +111,3 @@ cd landing  && npm run dev         # :4321 · npm run build (astro check)
 
 Backend env (`backend/.env.example`): `DATABASE_URL`, `SHADOW_DATABASE_URL`, `TEST_DATABASE_URL`,
 `APP_URL`, `EMAIL_*`, `R2_*` (the photo store), `SESSION_*` / `COOKIE_*`, `DEMO_*`, `LOG_LEVEL`.
-
-## Roadmap
-
-| Milestone | Scope |
-|---|---|
-| M0 — Foundation ✔ | Accounts, roles, seed, dashboards by role, access tests |
-| M1 — Listings and search ✔ | Filters, typo-tolerant search, saved homes and searches, photos, views and saves |
-| Public catalogue ✔ | Browsing without an account, homes for sale, the landing page |
-| M2 — Viewing booking | Viewing slots, booking without double booking, confirmations, reminders, calendars |
-
-Not planned: applications, payments, property management, map search, mobile apps.
