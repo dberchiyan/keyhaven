@@ -12,9 +12,9 @@
   --breakpoint-md: 56.25rem;
   --breakpoint-lg: 75rem;
   --breakpoint-xl: 96rem;
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
+  --radius-sm: 0.625rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.125rem;
   --spacing-sidebar-width: 15rem;
   --spacing-rail-width: 5rem;
   --spacing-top-bar-height: 4rem;

@@ -61,7 +61,11 @@ export function ListingCard({ listing }: ListingCardProps) {
         <Typography variant="body2" color="textSecondary" className="truncate">
           {where}
         </Typography>
-        <Typography variant="caption" color="textSecondary" className="mt-auto pt-1">
+        <Typography
+          variant="caption"
+          component="span"
+          className="font-medium mt-auto self-start rounded-full bg-badge-active-background px-2.5 py-1 text-badge-active-text"
+        >
           {t('card.availableFrom', { date: formatDay(listing.availableFrom, i18n.language) })}
         </Typography>
       </div>

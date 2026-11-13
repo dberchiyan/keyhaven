@@ -48,7 +48,8 @@ const elevation = (level: number): string => {
     return 'none';
   }
   if (level === 1) {
-    return `0 1px 2px ${SOFT}`;
+    // Cards: a contact line and one soft, wide shadow that fades before it reaches the next card.
+    return `0 1px 2px ${SOFT}, 0 12px 28px -18px ${STRONG}`;
   }
   if (level <= 8) {
     return `0 1px 3px ${SOFT}, 0 8px 24px -4px ${STRONG}`;
@@ -101,10 +102,17 @@ export const theme = createTheme({
     // Rows inside a list or menu: the ring sits inside, so it is not clipped.
     MuiMenuItem: { styleOverrides: { root: focusRing(-2) } },
     MuiListItemButton: { styleOverrides: { root: focusRing(-2) } },
+    // Buttons are pills (the "Hearth" look); the ripple-free press gives a little instead.
     MuiButton: {
       defaultProps: { disableElevation: true },
-      styleOverrides: { root: { minHeight: 44, ...pressable(0.98) } },
+      styleOverrides: {
+        root: { minHeight: 44, borderRadius: 999, paddingInline: 20, ...pressable(0.98) },
+        sizeSmall: { minHeight: 36, paddingInline: 14 },
+      },
     },
+    // Fields share the control radius; the label notch keeps its room.
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: TOKENS.radius.sm } } },
+    MuiChip: { styleOverrides: { root: { borderRadius: 999 } } },
     MuiIconButton: {
       styleOverrides: { root: { minWidth: 44, minHeight: 44, ...pressable(0.94) } },
     },
@@ -136,7 +144,7 @@ export const theme = createTheme({
         root: ({ theme: t }) => ({
           gap: 2,
           padding: 3,
-          borderRadius: TOKENS.radius.md,
+          borderRadius: 999,
           backgroundColor: t.vars.palette.background.default,
           border: `1px solid ${t.vars.palette.divider}`,
           '&.MuiToggleButtonGroup-fullWidth': { display: 'flex' },
@@ -144,11 +152,11 @@ export const theme = createTheme({
         grouped: {
           margin: 0,
           border: 0,
-          borderRadius: TOKENS.radius.sm,
+          borderRadius: 999,
           '&:not(:first-of-type), &:not(:last-of-type)': {
             margin: 0,
             border: 0,
-            borderRadius: TOKENS.radius.sm,
+            borderRadius: 999,
           },
         },
       },

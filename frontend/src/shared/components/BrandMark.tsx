@@ -13,9 +13,13 @@ export function BrandMark({ className }: BrandMarkProps) {
       aria-hidden
       focusable="false"
     >
-      <rect width="48" height="48" rx="12" className="fill-secondary dark:fill-background-paper" />
-      <path d="M24 9 9 22h4v14h9V26h4v10h9V22h4z" className="fill-primary-light" />
-      <circle cx="24" cy="20" r="2.4" className="fill-secondary dark:fill-background-paper" />
+      {/* A forest tile with a cream house: the key hole is the mark's one detail. */}
+      <rect width="48" height="48" rx="12" className="fill-primary" />
+      <path
+        d="M24 9 9 22h4v14h9V26h4v10h9V22h4z"
+        className="dark:fill-background-default fill-primary-contrast-text"
+      />
+      <circle cx="24" cy="20" r="2.4" className="fill-primary" />
     </svg>
   );
 }
