@@ -33,15 +33,7 @@ export function ListingDetailView({
   const { t } = useTranslation('listing');
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
-      {/* On a phone the summary card comes first, as on the example; on a wide screen it heads the side column. */}
-      <div className="order-first flex flex-col gap-2 lg:order-none lg:col-start-2 lg:row-start-1">
-        {badge && <div className="flex">{badge}</div>}
-        <ListingSummaryCard
-          listing={listing}
-          {...(summaryActions === undefined ? {} : { actions: summaryActions })}
-        />
-      </div>
-      <div className="flex min-w-0 flex-col gap-6 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+      <div className="flex min-w-0 flex-col gap-6">
         <PhotoGallery title={listing.title} photos={listing.photos} />
         {/* The page reads as blocks: a heading, a note, a card of rows — one per subject. */}
         <ListingDetails listing={listing} />
@@ -66,7 +58,15 @@ export function ListingDetailView({
           {...(addressNote === undefined ? {} : { note: addressNote })}
         />
       </div>
-      <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2 lg:self-start">
+      {/* The side column: the summary, the actions and "Listed by" together. First on a phone (as
+          on the example); on a wide screen it follows the reader down the page, resting under the
+          sticky top bar (the arbitrary top: the bar's height plus the page's own gap). */}
+      <div className="order-first flex flex-col gap-4 lg:sticky lg:top-[calc(var(--spacing-top-bar-height)+1.5rem)] lg:order-none lg:self-start">
+        {badge && <div className="flex">{badge}</div>}
+        <ListingSummaryCard
+          listing={listing}
+          {...(summaryActions === undefined ? {} : { actions: summaryActions })}
+        />
         {aside}
         <ListedByCard listedBy={listing.listedBy} />
       </div>
