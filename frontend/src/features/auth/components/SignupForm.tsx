@@ -4,6 +4,8 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Typography from '@mui/material/Typography';
 import { useId } from 'react';
 import { Controller, type FieldError, useWatch } from 'react-hook-form';
@@ -24,6 +26,7 @@ export function SignupForm() {
   const { errors, isSubmitting } = form.formState;
   const rulesId = useId();
   const roleLabelId = useId();
+  const isPhone = useMediaQuery(useTheme().breakpoints.down('sm'));
   const password = useWatch({ control: form.control, name: 'password' });
 
   const message = (field: keyof SignupValues, error: FieldError | undefined): string =>
@@ -48,6 +51,9 @@ export function SignupForm() {
           <ToggleButtonGroup
             exclusive
             fullWidth
+            // Stacked on a phone: each option is a row with room for its hint, instead of two
+            // narrow cells that break "Looking for a home" over three lines.
+            orientation={isPhone ? 'vertical' : 'horizontal'}
             value={field.value}
             aria-labelledby={roleLabelId}
             onChange={(_event, value: unknown) => {
@@ -61,14 +67,18 @@ export function SignupForm() {
             {SIGNUP_ROLES.map((role) => {
               const Icon = ROLE_ICONS[role];
               return (
-                <ToggleButton key={role} value={role} className="min-h-16 flex-col gap-0.5 py-2">
-                  <span className="flex items-center gap-1.5">
-                    <Icon aria-hidden fontSize="small" />
-                    {t(`auth:signup.roles.${role}`)}
+                <ToggleButton
+                  key={role}
+                  value={role}
+                  className="min-h-16 justify-start gap-3 px-4 py-2 text-left"
+                >
+                  <Icon aria-hidden fontSize="small" className="shrink-0" />
+                  <span className="flex min-w-0 flex-col">
+                    <span>{t(`auth:signup.roles.${role}`)}</span>
+                    <Typography variant="caption" component="span" color="textSecondary">
+                      {t(`auth:signup.roles.${role}_hint`)}
+                    </Typography>
                   </span>
-                  <Typography variant="caption" component="span" color="textSecondary">
-                    {t(`auth:signup.roles.${role}_hint`)}
-                  </Typography>
                 </ToggleButton>
               );
             })}
