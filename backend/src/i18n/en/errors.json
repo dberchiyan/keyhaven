@@ -30,6 +30,7 @@
     "publishNeedsPhoto": "Add at least one photo before publishing",
     "cityNotFound": "Choose a city from the list",
     "tooManyPhotos": "A listing can have at most {max} photos",
+    "tooManyPendingUploads": "Too many uploads in progress — finish them or try again later (at most {max} at a time)",
     "photoTooLarge": "A photo can be at most {maxMb} MB",
     "photoNotUploaded": "The photo was not uploaded — try again",
     "photoRejected": "The file is not the photo that was announced — upload a JPEG, PNG or WebP",

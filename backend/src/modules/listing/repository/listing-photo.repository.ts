@@ -2,7 +2,7 @@ import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { Injectable } from '@nestjs/common';
 import type { PrismaService } from '../../../common/persistence/prisma.service';
-import { MAX_PHOTOS, PhotoStatus } from '../service/photo-status';
+import { MAX_PENDING_PHOTOS, MAX_PHOTOS, PhotoStatus } from '../service/photo-status';
 import {
   type ManagedPhotoRecord,
   managedPhotoSelect,
@@ -10,8 +10,6 @@ import {
   photoUploadSelect,
 } from './record/listing.record';
 
-/** Pending intents a listing may hold besides its ready photos (abandoned uploads are cleaned up). */
-const MAX_PENDING = 20;
 /** Abandoned intents removed per hourly run (platform.md → bounded jobs). */
 const MAX_EXPIRED_PER_RUN = 200;
 
@@ -27,7 +25,7 @@ export class ListingPhotoRepository {
       where: { listingId },
       select: managedPhotoSelect,
       orderBy: [{ position: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }],
-      take: MAX_PHOTOS + MAX_PENDING,
+      take: MAX_PHOTOS + MAX_PENDING_PHOTOS,
     });
   }
 
@@ -41,6 +39,12 @@ export class ListingPhotoRepository {
   countReady(listingId: string): Promise<number> {
     return this.txHost.tx.listingPhoto.count({
       where: { listingId, status: PhotoStatus.READY },
+    });
+  }
+
+  countPending(listingId: string): Promise<number> {
+    return this.txHost.tx.listingPhoto.count({
+      where: { listingId, status: PhotoStatus.PENDING },
     });
   }
 

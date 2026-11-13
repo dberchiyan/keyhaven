@@ -56,7 +56,13 @@ import type {
 } from './listing.types';
 import { isListingKind, type ListingKind } from './listing-kind';
 import { PRICE_CONTEXT_MIN_SAMPLE } from './listing.types';
-import { isPhotoStatus, MAX_PHOTOS, PHOTO_MAX_BYTES, PhotoStatus } from './photo-status';
+import {
+  isPhotoStatus,
+  MAX_PENDING_PHOTOS,
+  MAX_PHOTOS,
+  PHOTO_MAX_BYTES,
+  PhotoStatus,
+} from './photo-status';
 import { sniffImageType } from './photo-type';
 import { isPropertyType, type PropertyType } from './property-type';
 
@@ -366,20 +372,42 @@ export class ListingService {
         maxMb: PHOTO_MAX_BYTES / (1024 * 1024),
       });
     }
+    // Server-generated key: the original filename is display metadata only. Signing is local
+    // and comes first, so a signing failure leaves no orphan row.
+    const key = `listings/${listingId}/${randomUUID()}.${EXTENSION[intent.contentType]}`;
+    const upload = await this.storage.presignUpload(key, intent.contentType, intent.sizeBytes);
+    const photoId = await this.reserveIntent(listingId, key, intent, principal.userId);
+    return { photoId, uploadUrl: upload.url, headers: upload.headers, expiresAt: upload.expiresAt };
+  }
+
+  /**
+   * The PENDING row, within the listing's bounds: at most MAX_PHOTOS ready photos and
+   * MAX_PENDING_PHOTOS open intents — without the second bound an owner could open rows and
+   * presigned slots without limit. The listing is locked so the counts are not racing.
+   */
+  @Transactional()
+  private async reserveIntent(
+    listingId: string,
+    key: string,
+    intent: NewPhotoIntent,
+    createdBy: string,
+  ): Promise<string> {
+    await this.listingRepository.lock(listingId);
     if ((await this.photoRepository.countReady(listingId)) >= MAX_PHOTOS) {
       throw new BusinessRuleException('errors.listing.tooManyPhotos', { max: MAX_PHOTOS });
     }
-    // Server-generated key: the original filename is display metadata only.
-    const key = `listings/${listingId}/${randomUUID()}.${EXTENSION[intent.contentType]}`;
-    const photoId = await this.photoRepository.createIntent(
+    if ((await this.photoRepository.countPending(listingId)) >= MAX_PENDING_PHOTOS) {
+      throw new BusinessRuleException('errors.listing.tooManyPendingUploads', {
+        max: MAX_PENDING_PHOTOS,
+      });
+    }
+    return this.photoRepository.createIntent(
       listingId,
       key,
       intent.contentType,
       intent.sizeBytes,
-      principal.userId,
+      createdBy,
     );
-    const upload = await this.storage.presignUpload(key, intent.contentType, intent.sizeBytes);
-    return { photoId, uploadUrl: upload.url, headers: upload.headers, expiresAt: upload.expiresAt };
   }
 
   /**
