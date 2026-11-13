@@ -23,6 +23,7 @@ import type {
   ListingCardRecord,
   ListingDetailRecord,
   ManagedListingCardRecord,
+  ViewerDetailRecord,
   ManagedListingRecord,
   ManagedPhotoRecord,
   ViewerCardRecord,
@@ -113,7 +114,7 @@ export class ListingService {
     listingId: string,
     visitorKey: string,
   ): Promise<ListingDetail> {
-    const listing = await this.findDetail(listingId);
+    const listing = await this.findDetail(listingId, principal?.userId ?? null);
     const owns = principal ? this.ownsOrAdministers(principal, listing) : false;
     if (!owns) {
       const viewer: ListingViewer = principal
@@ -124,6 +125,7 @@ export class ListingService {
     return this.toDetail(
       listing,
       owns ? { line1: listing.addressLine1, line2: listing.addressLine2 } : null,
+      listing.savedBy.length > 0,
     );
   }
 
@@ -425,8 +427,11 @@ export class ListingService {
     }
   }
 
-  private async findDetail(listingId: string): Promise<ListingDetailRecord> {
-    const listing = await this.listingRepository.findDetailById(listingId);
+  private async findDetail(
+    listingId: string,
+    viewerUserId: string | null,
+  ): Promise<ViewerDetailRecord> {
+    const listing = await this.listingRepository.findDetailById(listingId, viewerUserId);
     if (!listing) {
       throw new ResourceNotFoundException();
     }
@@ -490,9 +495,13 @@ export class ListingService {
     };
   }
 
-  private toDetail(listing: ListingDetailRecord, address: ListingDetail['address']): ListingDetail {
+  private toDetail(
+    listing: ListingDetailRecord,
+    address: ListingDetail['address'],
+    saved = false,
+  ): ListingDetail {
     return {
-      ...this.toCard(listing, false),
+      ...this.toCard(listing, saved),
       description: listing.description,
       furnished: listing.furnished,
       petsAllowed: listing.petsAllowed,

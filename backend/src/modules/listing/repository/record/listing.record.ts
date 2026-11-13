@@ -89,6 +89,20 @@ export const listingDetailSelect = {
 } satisfies Prisma.ListingSelect;
 export type ListingDetailRecord = Prisma.ListingGetPayload<{ select: typeof listingDetailSelect }>;
 
+/** The detail plus whether one viewer saved it (as `viewerCardSelect`). */
+export const viewerDetailSelect = (viewerUserId: string | null) =>
+  ({
+    ...listingDetailSelect,
+    savedBy: {
+      where: { userId: viewerUserId ?? '00000000-0000-0000-0000-000000000000' },
+      select: { userId: true },
+      take: 1,
+    },
+  }) satisfies Prisma.ListingSelect;
+export type ViewerDetailRecord = Prisma.ListingGetPayload<{
+  select: ReturnType<typeof viewerDetailSelect>;
+}>;
+
 /** The owner's page: the detail plus the viewer-independent counts and every photo, pending ones too. */
 export const managedListingSelect = {
   ...listingDetailSelect,

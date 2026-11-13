@@ -13,8 +13,8 @@ import { managedListingWhere, publishedListingSql } from './listing-where';
 import {
   type CityRecord,
   citySelect,
-  type ListingDetailRecord,
-  listingDetailSelect,
+  type ViewerDetailRecord,
+  viewerDetailSelect,
   type ListingStatusRecord,
   listingStatusSelect,
   type ManagedListingCardRecord,
@@ -132,8 +132,11 @@ export class ListingRepository {
     return groups.map((group) => ({ status: group.status, count: group._count._all }));
   }
 
-  findDetailById(id: string): Promise<ListingDetailRecord | null> {
-    return this.txHost.tx.listing.findUnique({ where: { id }, select: listingDetailSelect });
+  findDetailById(id: string, viewerUserId: string | null): Promise<ViewerDetailRecord | null> {
+    return this.txHost.tx.listing.findUnique({
+      where: { id },
+      select: viewerDetailSelect(viewerUserId),
+    });
   }
 
   findManagedById(id: string): Promise<ManagedListingRecord | null> {
