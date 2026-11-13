@@ -66,8 +66,10 @@ Anyone can sign up as a tenant or a landlord; the verification link is in the ba
 - **Catalogue** — 1,000 homes for rent and 300 for sale across Austin, Denver, Seattle, Chicago,
   Atlanta and Phoenix. Filters: city, type, price, beds, baths, pets, furnished, parking, move-in
   date; sort by newest or price; everything in the URL. Text search tolerates typos (`pg_trgm`).
-- **Listing page** — photos, price and price per sq ft, facts, amenities, location (the street
-  only after a confirmed viewing), who lists it, how many similar homes are nearby.
+- **Listing page** — photos, price and price per sq ft, the price against the median of comparable
+  homes ("8% below typical for a house in Wallingford"), facts, amenities, location (the street
+  only after a confirmed viewing), who lists it, similar homes nearby. The catalogue remembers
+  what you opened.
 - **Tenants** — a heart on every home; a saved search emails new matches daily at 08:00 UTC.
 - **Landlords and agents** — create and edit listings, upload and reorder up to 20 photos (straight
   to object storage), publish / unpublish, see views and saves. Agents share their agency's listings.
@@ -82,7 +84,9 @@ houses for sale by price 4.7 / 5.6 ms.
 ## Architecture
 
 ```
-landing/   Astro static page at a signed-out /  (nginx picks landing vs app by the session cookie)
+landing/   Astro static site: the page at a signed-out / and prerendered city pages (/rent/austin,
+           /buy/seattle …) for search engines, built from a committed catalogue snapshot
+           (npm run snapshot)
 frontend/  React 19 · Vite · MUI 9 + Tailwind 4 · TanStack Query · React Router · RHF + Zod · i18next
 backend/   NestJS 11 · Prisma 7 · PostgreSQL 18 · Zod 4 · pino · argon2id · Jest + supertest
 ```
