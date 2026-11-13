@@ -1,4 +1,6 @@
 import Pagination from '@mui/material/Pagination';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { SaveSearchButton } from '@/features/saved-search';
@@ -15,6 +17,8 @@ import { useListings } from '../hooks/useListingQueries';
 /** Published homes: every filter, the sort and the page in the URL, so a search can be shared. */
 export default function BrowsePage() {
   const { t } = useTranslation('listing');
+  // On a phone the page numbers must fit one row with 44 px touch targets: 1 … n only.
+  const isPhone = useMediaQuery(useTheme().breakpoints.down('sm'));
   const { params, update, clear } = useBrowseParams();
   const forSale = params.kind === 'sale';
   useDocumentTitle(forSale ? t('browse.pageTitleSale') : t('browse.pageTitle'));
@@ -78,6 +82,8 @@ export default function BrowsePage() {
       </section>
       {pages > 1 && (
         <Pagination
+          siblingCount={isPhone ? 0 : 1}
+          boundaryCount={1}
           shape="rounded"
           color="primary"
           count={pages}
@@ -86,7 +92,7 @@ export default function BrowsePage() {
           onChange={(_event, value) => {
             update({ page: value });
           }}
-          className="self-center"
+          className="self-center [&_ul]:justify-center"
         />
       )}
     </div>

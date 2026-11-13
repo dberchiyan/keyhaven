@@ -1,4 +1,6 @@
 import Pagination from '@mui/material/Pagination';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { cn } from '@/shared/lib/cn';
@@ -11,6 +13,8 @@ import { ListingEmpty, ListingError, ListingGridLoading } from './ListingStates'
 /** The tenant's saved homes that are still on the site, newest save first; the page is in the URL. */
 export function SavedHomesSection() {
   const { t } = useTranslation('listing');
+  // On a phone the page numbers must fit one row with 44 px touch targets: 1 … n only.
+  const isPhone = useMediaQuery(useTheme().breakpoints.down('sm'));
   const navigate = useNavigate();
   const { params, setPage } = useSavedParams();
   const saved = useSavedListings(params);
@@ -54,6 +58,8 @@ export function SavedHomesSection() {
       </ul>
       {pages > 1 && (
         <Pagination
+          siblingCount={isPhone ? 0 : 1}
+          boundaryCount={1}
           shape="rounded"
           color="primary"
           count={pages}
@@ -62,7 +68,7 @@ export function SavedHomesSection() {
           onChange={(_event, value) => {
             setPage(value);
           }}
-          className="self-center"
+          className="self-center [&_ul]:justify-center"
         />
       )}
     </div>
