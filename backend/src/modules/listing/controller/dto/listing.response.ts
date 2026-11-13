@@ -130,6 +130,10 @@ export class CitiesResponse extends createZodDto(
   z.object({ content: z.array(CitySchema).max(100) }),
 ) {}
 export class ListingPageResponse extends createZodDto(pageResponseSchema(ListingCardSchema)) {}
+/** A short strip of cards: similar homes, recently viewed. */
+export class ListingCardsResponse extends createZodDto(
+  z.object({ content: z.array(ListingCardSchema).max(12) }),
+) {}
 export class ManagedListingPageResponse extends createZodDto(
   pageResponseSchema(ManagedListingCardSchema),
 ) {}

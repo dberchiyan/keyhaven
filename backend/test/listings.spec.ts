@@ -423,6 +423,37 @@ describe('Listings and search (M1)', () => {
     });
   });
 
+  it('similar homes, recently viewed, and cards by id', async () => {
+    // The two fixture rentals are alike (2 beds, $1,500, Testville): each is the other's similar home.
+    const visitor = new Client(testApp.app);
+    const similar = await visitor.get(`/api/v1/listings/${f.landlordPublished}/similar`);
+    expect(similar.status).toBe(200);
+    const similarIds = rows(similar).map((row) => row.id);
+    expect(similarIds).toContain(f.agencyPublished);
+    expect(similarIds).not.toContain(f.landlordPublished);
+    expect(similarIds).not.toContain(f.landlordDraft);
+    expect((await visitor.get(`/api/v1/listings/${f.landlordDraft}/similar`)).status).toBe(404);
+
+    // A visitor keeps their own list of ids; the cards come back in that order, published only.
+    const cards = await visitor.get(
+      `/api/v1/listing-cards?ids=${f.agencyPublished},${f.landlordDraft},${f.landlordPublished}`,
+    );
+    expect(cards.status).toBe(200);
+    expect(rows(cards).map((row) => row.id)).toEqual([f.agencyPublished, f.landlordPublished]);
+    expect((await visitor.get('/api/v1/listing-cards?ids=not-an-id')).status).toBe(400);
+    expect((await visitor.get('/api/v1/recent-listings')).status).toBe(401);
+
+    // A signed-in person's recent homes come from their views, latest first, each once.
+    await tenant.get(`/api/v1/listings/${f.agencyPublished}`);
+    await tenant.get(`/api/v1/listings/${f.landlordPublished}`);
+    await tenant.get(`/api/v1/listings/${f.agencyPublished}`);
+    const recent = await tenant.get('/api/v1/recent-listings');
+    expect(recent.status).toBe(200);
+    const recentIds = rows(recent).map((row) => row.id);
+    expect(recentIds.filter((id) => id === f.agencyPublished)).toHaveLength(1);
+    expect(recentIds.indexOf(f.landlordPublished)).toBeGreaterThanOrEqual(0);
+  });
+
   it('a signed-out visitor browses but has no saved homes or dashboard', async () => {
     const anonymous = new Client(testApp.app);
     expect((await anonymous.get('/api/v1/listings')).status).toBe(200);

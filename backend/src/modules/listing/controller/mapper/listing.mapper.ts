@@ -43,6 +43,10 @@ export const toListingCardResponse = (listing: ListingCard): CardItem => ({
   saved: listing.saved,
 });
 
+export const toListingCardsResponse = (cards: ListingCard[]): { content: CardItem[] } => ({
+  content: cards.map(toListingCardResponse),
+});
+
 export const toListingPageResponse = (page: {
   content: ListingCard[];
   totalElements: number;

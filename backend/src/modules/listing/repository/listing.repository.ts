@@ -10,6 +10,7 @@ import type { ListingCriteria, ManagedListingCriteria } from '../service/filter/
 import type { ListingSortField, ManagedListingSortField } from '../service/listing-sort';
 import type { ListingDraft, ListingScope, ListingViewer } from '../service/listing.types';
 import { managedListingWhere, publishedListingSql } from './listing-where';
+import { ListingStatus } from '../service/listing-status';
 import {
   type CityRecord,
   citySelect,
@@ -44,6 +45,13 @@ const managedOrderBy = (
 
 /** The id page of a search plus the total, from one statement (`count(*) over ()`). */
 const searchRowsSchema = z.array(z.object({ id: z.string(), total: z.number().int() }));
+const idRowsSchema = z.array(z.object({ id: z.string() }));
+
+/** "Similar" homes: the same kind and city, a bedroom either way, a price within this share. */
+const SIMILAR_PRICE_SPREAD = 0.25;
+/** The strips are short by design: a handful of cards, never a page. */
+export const SIMILAR_LIMIT = 6;
+export const RECENT_LIMIT = 12;
 
 @Injectable()
 export class ListingRepository {
@@ -84,19 +92,70 @@ export class ListingRepository {
       // Past the last page (or nothing matches): the total still needs a count.
       return { content: [], totalElements: await this.countPublished(criteria) };
     }
-    const ids = page.map((row) => row.id);
+    return {
+      content: await this.findCardsByIds(
+        page.map((row) => row.id),
+        viewerUserId,
+      ),
+      totalElements: page[0]?.total ?? 0,
+    };
+  }
+
+  /** Cards for known ids, in the given order (missing or unpublished ones are left out). */
+  async findCardsByIds(
+    ids: readonly string[],
+    viewerUserId: string | null,
+  ): Promise<ViewerCardRecord[]> {
+    if (ids.length === 0) {
+      return [];
+    }
     const cards = await this.txHost.tx.listing.findMany({
-      where: { id: { in: ids } },
+      where: { id: { in: [...ids] }, status: ListingStatus.PUBLISHED },
       select: viewerCardSelect(viewerUserId),
     });
     const byId = new Map(cards.map((card) => [card.id, card]));
-    return {
-      content: ids.flatMap((id) => {
-        const card = byId.get(id);
-        return card ? [card] : [];
-      }),
-      totalElements: page[0]?.total ?? 0,
-    };
+    return ids.flatMap((id) => {
+      const card = byId.get(id);
+      return card ? [card] : [];
+    });
+  }
+
+  /**
+   * Homes like this one, closest in price first: published, the same kind and city, a bedroom
+   * either way, a price within a quarter of this one's — never the home itself.
+   */
+  async findSimilarIds(listing: {
+    id: string;
+    kind: string;
+    cityId: string;
+    bedrooms: number;
+    price: Prisma.Decimal;
+  }): Promise<string[]> {
+    const price = listing.price.toFixed(4);
+    const rows = await this.txHost.tx.$queryRaw<unknown[]>`
+      SELECT l.id
+      FROM listings l
+      WHERE l.status = ${ListingStatus.PUBLISHED}
+        AND l.kind = ${listing.kind}
+        AND l.city_id = ${listing.cityId}::uuid
+        AND l.id <> ${listing.id}::uuid
+        AND l.bedrooms BETWEEN ${listing.bedrooms - 1} AND ${listing.bedrooms + 1}
+        AND l.price BETWEEN ${price}::numeric * ${1 - SIMILAR_PRICE_SPREAD} AND ${price}::numeric * ${1 + SIMILAR_PRICE_SPREAD}
+      ORDER BY abs(l.price - ${price}::numeric) ASC, l.published_at DESC NULLS LAST, l.id ASC
+      LIMIT ${SIMILAR_LIMIT}`;
+    return idRowsSchema.parse(rows).map((row) => row.id);
+  }
+
+  /** The homes a person opened, latest first (each once), from their view rows. */
+  async findRecentlyViewedIds(userId: string): Promise<string[]> {
+    const rows = await this.txHost.tx.$queryRaw<unknown[]>`
+      SELECT v.listing_id AS id
+      FROM listing_views v
+      WHERE v.user_id = ${userId}::uuid
+      GROUP BY v.listing_id
+      ORDER BY max(v.created_at) DESC
+      LIMIT ${RECENT_LIMIT}`;
+    return idRowsSchema.parse(rows).map((row) => row.id);
   }
 
   private async countPublished(criteria: ListingCriteria): Promise<number> {

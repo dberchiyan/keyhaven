@@ -6,7 +6,10 @@ import { ApiPageable, type Pageable, PageableQuery } from '../../../common/dto/p
 import { UuidParam } from '../../../common/dto/uuid-param';
 import { ApiErrors } from '../../../common/exception/api-errors.decorator';
 import { toDecimal } from '../../../common/persistence/money';
-import { OptionalPrincipal } from '../../../common/security/current-principal.decorator';
+import {
+  CurrentPrincipal,
+  OptionalPrincipal,
+} from '../../../common/security/current-principal.decorator';
 import { can } from '../../../common/security/policies';
 import type { Principal } from '../../../common/security/principal';
 import { visitorKey } from '../../../common/security/request-client';
@@ -14,10 +17,16 @@ import { Authorize } from '../../../common/security/security.decorators';
 import type { ListingCriteria } from '../service/filter/listing.criteria';
 import { LISTING_PAGEABLE, type ListingSortField } from '../service/listing-sort';
 import { ListingService, toSearchTerms } from '../service/listing.service';
-import { ListingFilterQuery } from './dto/listing-filter.query';
-import { CitiesResponse, ListingDetailResponse, ListingPageResponse } from './dto/listing.response';
+import { ListingFilterQuery, ListingIdsQuery } from './dto/listing-filter.query';
+import {
+  CitiesResponse,
+  ListingCardsResponse,
+  ListingDetailResponse,
+  ListingPageResponse,
+} from './dto/listing.response';
 import {
   toCityResponse,
+  toListingCardsResponse,
   toListingDetailResponse,
   toListingPageResponse,
 } from './mapper/listing.mapper';
@@ -75,6 +84,47 @@ export class ListingController {
         pageable,
         principal?.userId ?? null,
       ),
+    );
+  }
+
+  @Get('listing-cards')
+  @Authorize(can.browseListings)
+  @ApiOperation({
+    summary: 'Cards for up to 12 listing ids, in the order given — published ones only',
+  })
+  @ZodResponse({ status: HttpStatus.OK, type: ListingCardsResponse })
+  @ApiErrors('VALIDATION_FAILED', 'SESSION_EXPIRED')
+  async cards(
+    @OptionalPrincipal() principal: Principal | null,
+    @Query() query: ListingIdsQuery,
+  ): Promise<ListingCardsResponse> {
+    return toListingCardsResponse(
+      await this.listingService.findCards(query.ids, principal?.userId ?? null),
+    );
+  }
+
+  @Get('recent-listings')
+  @Authorize(can.viewRecentListings)
+  @ApiOperation({ summary: 'The homes the caller opened lately, latest first, still on the site' })
+  @ZodResponse({ status: HttpStatus.OK, type: ListingCardsResponse })
+  @ApiErrors('UNAUTHORIZED', 'SESSION_EXPIRED')
+  async recent(@CurrentPrincipal() principal: Principal): Promise<ListingCardsResponse> {
+    return toListingCardsResponse(await this.listingService.findRecentlyViewed(principal.userId));
+  }
+
+  @Get('listings/:listingId/similar')
+  @Authorize(can.viewListing)
+  @ApiOperation({
+    summary: 'Homes like this one: the same kind and city, a bedroom either way, a close price',
+  })
+  @ZodResponse({ status: HttpStatus.OK, type: ListingCardsResponse })
+  @ApiErrors('INVALID_PARAMETER', 'SESSION_EXPIRED', 'RESOURCE_NOT_FOUND')
+  async similar(
+    @OptionalPrincipal() principal: Principal | null,
+    @UuidParam('listingId') listingId: string,
+  ): Promise<ListingCardsResponse> {
+    return toListingCardsResponse(
+      await this.listingService.findSimilar(listingId, principal?.userId ?? null),
     );
   }
 

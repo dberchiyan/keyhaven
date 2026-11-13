@@ -65,6 +65,31 @@ export const ListingFilterQuerySchema = z
 
 export class ListingFilterQuery extends createZodDto(ListingFilterQuerySchema) {}
 
+/** Up to this many cards by id in one call (a visitor's "recently viewed", kept in the browser). */
+export const MAX_CARD_IDS = 12;
+
+export const ListingIdsQuerySchema = z.object({
+  /** Comma-separated listing ids. */
+  ids: z
+    .string()
+    .trim()
+    .max(MAX_CARD_IDS * 37, 'validation.invalid')
+    .transform((value) =>
+      value
+        .split(',')
+        .map((id) => id.trim())
+        .filter((id) => id.length > 0),
+    )
+    .pipe(
+      z
+        .array(z.uuid({ error: 'validation.invalid' }))
+        .min(1)
+        .max(MAX_CARD_IDS),
+    ),
+});
+
+export class ListingIdsQuery extends createZodDto(ListingIdsQuerySchema) {}
+
 export const MANAGED_SEARCH_MAX_LENGTH = 100;
 
 /** The dashboard's filters. */

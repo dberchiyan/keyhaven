@@ -129,6 +129,30 @@ export class ListingService {
     );
   }
 
+  /** Homes like this one (the policy admitted the id); "saved" is the viewer's. */
+  async findSimilar(listingId: string, viewerUserId: string | null): Promise<ListingCard[]> {
+    const listing = await this.findDetail(listingId, null);
+    const ids = await this.listingRepository.findSimilarIds({
+      ...listing,
+      cityId: listing.city.id,
+    });
+    const cards = await this.listingRepository.findCardsByIds(ids, viewerUserId);
+    return cards.map((card) => this.toViewerCard(card));
+  }
+
+  /** The homes the caller opened lately, still on the site, latest first. */
+  async findRecentlyViewed(userId: string): Promise<ListingCard[]> {
+    const ids = await this.listingRepository.findRecentlyViewedIds(userId);
+    const cards = await this.listingRepository.findCardsByIds(ids, userId);
+    return cards.map((card) => this.toViewerCard(card));
+  }
+
+  /** Cards for ids a visitor kept (their own "recently viewed"), in the order given. */
+  async findCards(ids: readonly string[], viewerUserId: string | null): Promise<ListingCard[]> {
+    const cards = await this.listingRepository.findCardsByIds(ids, viewerUserId);
+    return cards.map((card) => this.toViewerCard(card));
+  }
+
   /** The dashboard page: the caller's scope (landlord / agency / everything for admins). */
   async findManagedPage(
     principal: Principal,

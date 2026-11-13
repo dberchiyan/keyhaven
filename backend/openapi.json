@@ -1138,6 +1138,157 @@
         ]
       }
     },
+    "/api/v1/listing-cards": {
+      "get": {
+        "operationId": "ListingController_cards",
+        "parameters": [
+          {
+            "name": "ids",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "maxLength": 444,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingCardsResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Cards for up to 12 listing ids, in the order given — published ones only",
+        "tags": [
+          "Listings"
+        ]
+      }
+    },
+    "/api/v1/recent-listings": {
+      "get": {
+        "operationId": "ListingController_recent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingCardsResponse_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The homes the caller opened lately, latest first, still on the site",
+        "tags": [
+          "Listings"
+        ]
+      }
+    },
+    "/api/v1/listings/{listingId}/similar": {
+      "get": {
+        "operationId": "ListingController_similar",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingCardsResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RESOURCE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Homes like this one: the same kind and city, a bedroom either way, a close price",
+        "tags": [
+          "Listings"
+        ]
+      }
+    },
     "/api/v1/listings/{listingId}": {
       "get": {
         "operationId": "ListingController_findOne",
@@ -3550,6 +3701,22 @@
         "required": [
           "content",
           "totalElements"
+        ],
+        "additionalProperties": false
+      },
+      "ListingCardsResponse_Output": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "maxItems": 12,
+            "items": {
+              "$ref": "#/components/schemas/ListingCard_Output"
+            }
+          }
+        },
+        "required": [
+          "content"
         ],
         "additionalProperties": false
       },

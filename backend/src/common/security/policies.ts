@@ -92,6 +92,8 @@ export const can = {
   ),
   /** Saved homes are a tenant's thing. */
   viewSavedListings: policy([], isTenant),
+  /** The homes one opened lately: anyone signed in, their own rows only. */
+  viewRecentListings: policy([], () => true),
   /** Saving: a tenant, and the listing is on the site (otherwise 404, like an unknown id). */
   saveListing: policy(
     ['listingId'],
