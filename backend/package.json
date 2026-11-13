@@ -30,9 +30,13 @@
     "i18n:generate": "nestjs-i18n -p src/i18n -o src/generated/i18n.generated.ts",
     "i18n:check": "tsx scripts/i18n-check.ts",
     "openapi:generate": "nest build && node dist/openapi-generate.js",
-    "openapi:check": "nest build && sh scripts/openapi-check.sh"
+    "openapi:check": "nest build && sh scripts/openapi-check.sh",
+    "bench:search": "tsx scripts/bench-search.ts",
+    "storage:init": "tsx scripts/storage-init.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1168.0",
+    "@aws-sdk/s3-request-presigner": "3.1168.0",
     "@nestjs-cls/transactional": "4.0.2",
     "@nestjs-cls/transactional-adapter-prisma": "2.0.2",
     "@nestjs/common": "11.2.10",
@@ -47,6 +51,7 @@
     "@prometheus-io/client": "0.16.1",
     "argon2": "0.45.2",
     "cookie-parser": "1.4.7",
+    "file-type": "22.3.0",
     "helmet": "8.3.0",
     "nestjs-cls": "7.0.2",
     "nestjs-i18n": "10.8.5",

@@ -61,6 +61,23 @@ export const envSchema = z.object({
     .transform((value) => (value ? value : undefined)),
   /** The From header: `Name <address>` or a bare address. */
   EMAIL_FROM: z.string().min(3).max(254),
+  /**
+   * Object storage for uploaded photos (uploads module): any S3-compatible endpoint — Cloudflare
+   * R2 in production, MinIO locally. `R2_PUBLIC_URL` is where the bucket's objects are read from.
+   */
+  R2_ENDPOINT: z.url(),
+  /** The store's address from the backend when it differs from the browser's (docker network). */
+  R2_INTERNAL_ENDPOINT: z
+    .string()
+    .max(512)
+    .optional()
+    .transform((value) => (value ? value : undefined))
+    .pipe(z.url().optional()),
+  R2_REGION: z.string().min(1).max(32).default('auto'),
+  R2_BUCKET: z.string().min(3).max(63),
+  R2_ACCESS_KEY: z.string().min(1).max(128),
+  R2_SECRET_KEY: z.string().min(1).max(128),
+  R2_PUBLIC_URL: z.url().transform((value) => value.replace(/\/+$/, '')),
   // Public demo: actions that would lock other visitors out are refused (off by default).
   DEMO_MODE: booleanString.default(false),
   // The showcase accounts (README) whose password and sessions nobody may change in the demo.

@@ -23,6 +23,43 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # Object storage for uploaded listing photos: RustFS, S3-compatible (Cloudflare R2 in production).
+  storage:
+    image: rustfs/rustfs:1.0.5
+    environment:
+      RUSTFS_ACCESS_KEY: ${R2_ACCESS_KEY:-keyhaven}
+      RUSTFS_SECRET_KEY: ${R2_SECRET_KEY:-keyhaven-local}
+    ports:
+      - '${STORAGE_PORT:-9000}:9000'
+    volumes:
+      - storage-data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -sf http://localhost:9000/health/live || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+    restart: unless-stopped
+
+  # Creates the bucket with public reads and the browser's CORS rule, then exits
+  # (backend/scripts/storage-init.ts — the same step as `make setup` runs).
+  storage-init:
+    build:
+      context: ./backend
+      target: build
+    depends_on:
+      storage:
+        condition: service_healthy
+    environment:
+      R2_ENDPOINT: http://storage:9000
+      R2_REGION: us-east-1
+      R2_BUCKET: ${R2_BUCKET:-keyhaven}
+      R2_ACCESS_KEY: ${R2_ACCESS_KEY:-keyhaven}
+      R2_SECRET_KEY: ${R2_SECRET_KEY:-keyhaven-local}
+      APP_URL: http://localhost:${APP_PORT:-8080}
+    command: ['npx', 'tsx', 'scripts/storage-init.ts']
+    restart: 'no'
+
   # Applies pending migrations, then exits; the backend starts after it. The same image runs the
   # seed: docker compose run --rm migrate npm run db:seed
   migrate:
@@ -43,6 +80,8 @@ services:
       target: runtime
     depends_on:
       migrate:
+        condition: service_completed_successfully
+      storage-init:
         condition: service_completed_successfully
     environment:
       <<: *database
@@ -68,6 +107,15 @@ services:
       EMAIL_TRANSPORT: ${EMAIL_TRANSPORT:-log}
       SMTP_URL: ${SMTP_URL:-}
       EMAIL_FROM: ${EMAIL_FROM:-Keyhaven <no-reply@keyhaven.local>}
+      # The backend signs upload URLs against the host address (the browser PUTs there) and
+      # reads objects inside the network; photos are served from the public bucket URL.
+      R2_ENDPOINT: http://localhost:${STORAGE_PORT:-9000}
+      R2_INTERNAL_ENDPOINT: http://storage:9000
+      R2_REGION: us-east-1
+      R2_BUCKET: ${R2_BUCKET:-keyhaven}
+      R2_ACCESS_KEY: ${R2_ACCESS_KEY:-keyhaven}
+      R2_SECRET_KEY: ${R2_SECRET_KEY:-keyhaven-local}
+      R2_PUBLIC_URL: http://localhost:${STORAGE_PORT:-9000}/${R2_BUCKET:-keyhaven}
       # DEMO_MODE=true docker compose up → the public demo's restrictions (README → Environments).
       DEMO_MODE: ${DEMO_MODE:-false}
       DEMO_PROTECTED_EMAILS: ${DEMO_PROTECTED_EMAILS:-}
@@ -90,3 +138,4 @@ services:
 
 volumes:
   db-data:
+  storage-data:
