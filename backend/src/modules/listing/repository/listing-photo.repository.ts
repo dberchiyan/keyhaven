@@ -121,9 +121,12 @@ export class ListingPhotoRepository {
     });
   }
 
-  async deleteByIds(ids: string[]): Promise<void> {
+  /** Only intents go: a row confirmed in the meantime keeps its READY photo. */
+  async deletePendingByIds(ids: string[]): Promise<void> {
     if (ids.length > 0) {
-      await this.txHost.tx.listingPhoto.deleteMany({ where: { id: { in: ids } } });
+      await this.txHost.tx.listingPhoto.deleteMany({
+        where: { id: { in: ids }, status: PhotoStatus.PENDING },
+      });
     }
   }
 }

@@ -435,7 +435,7 @@ export class ListingService {
     ) {
       // Outside any transaction: the object goes first, the row after (platform.md).
       await this.storage.delete(photo.storageKey);
-      await this.photoRepository.deleteByIds([photo.id]);
+      await this.photoRepository.deletePendingByIds([photo.id]);
       throw new BusinessRuleException('errors.listing.photoRejected');
     }
     await this.readyPhoto(listingId, photo.id, stored.sizeBytes);
@@ -500,7 +500,7 @@ export class ListingService {
     if (expired.length === 0) {
       return;
     }
-    await this.photoRepository.deleteByIds(expired.map((photo) => photo.id));
+    await this.photoRepository.deletePendingByIds(expired.map((photo) => photo.id));
     for (const photo of expired) {
       if (photo.storageKey) {
         await this.deleteObjectQuietly(photo.storageKey);
