@@ -230,7 +230,6 @@
     "edit": "Edit details"
   },
   "filters": {
-    "search": "Search by title, neighborhood or ZIP",
     "beds": "Bedrooms",
     "baths": "Bathrooms",
     "any": "Any",
@@ -265,13 +264,17 @@
       "remove": "Remove filter {{filter}}",
       "priceBetween": "{{min}}–{{max}}",
       "priceFrom": "From {{min}}",
-      "priceTo": "Up to {{max}}"
+      "priceTo": "Up to {{max}}",
+      "text": "“{{text}}”"
     },
     "price": "Price",
     "priceMin": "Min",
     "priceMax": "Max",
     "type": "Type of home",
-    "anyType": "Any type"
+    "anyType": "Any type",
+    "more": "More",
+    "apply": "Apply",
+    "clearOne": "Clear"
   },
   "save": {
     "add": "Save {{title}}",
