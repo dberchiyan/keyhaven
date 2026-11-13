@@ -10,45 +10,52 @@ import { SITE } from '@/content/site';
 const { owners } = LANDING;
 ---
 
-<section id="owners" aria-labelledby="owners-title" class="overflow-x-clip py-16 sm:py-20">
-  <Container class="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
-    <div class="flex min-w-0 flex-col gap-10">
-      <SectionHeading
-        id="owners-title"
-        eyebrow={owners.eyebrow}
-        title={owners.title}
-        lead={owners.lead}
-        align="start"
-      />
-      <ul class="reveal grid gap-6 sm:grid-cols-2">
-        {owners.points.map((point) => (
-          <li class="flex gap-3.5">
-            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
-              <Icon name={point.icon} class="size-5" />
-            </span>
-            <div>
-              <h3 class="font-semibold text-ink">{point.title}</h3>
-              <p class="mt-1 text-[0.9375rem] leading-relaxed text-muted">{point.text}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-      <div class="reveal flex flex-col gap-3 sm:flex-row">
-        <Button href={SITE.links.signUp} size="lg">
-          {owners.primary}
-          <Icon name="arrowRight" class="size-4.5" />
-        </Button>
-        <Button href={SITE.links.signIn} variant="secondary" size="lg">
-          {owners.secondary}
-        </Button>
+<section
+  id="owners"
+  aria-labelledby="owners-title"
+  class="overflow-x-clip pt-16 pb-12 sm:pt-20 sm:pb-14"
+>
+  <Container class="flex flex-col gap-10">
+    <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+      <div class="flex min-w-0 flex-col gap-10">
+        <SectionHeading
+          id="owners-title"
+          eyebrow={owners.eyebrow}
+          title={owners.title}
+          lead={owners.lead}
+          align="start"
+        />
+        <ul class="reveal grid gap-6 sm:grid-cols-2">
+          {owners.points.map((point) => (
+            <li class="flex gap-3.5">
+              <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                <Icon name={point.icon} class="size-5" />
+              </span>
+              <div>
+                <h3 class="font-semibold text-ink">{point.title}</h3>
+                <p class="mt-1 text-[0.9375rem] leading-relaxed text-muted">{point.text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div class="reveal relative min-w-0">
+        <div
+          class="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br from-accent-glow/25 via-transparent to-brand/15 blur-2xl"
+          aria-hidden="true"
+        ></div>
+        <DashboardMock label={owners.mockLabel} class="animate-float-slow" />
       </div>
     </div>
-    <div class="reveal relative min-w-0">
-      <div
-        class="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br from-accent-glow/25 via-transparent to-brand/15 blur-2xl"
-        aria-hidden="true"
-      ></div>
-      <DashboardMock label={owners.mockLabel} class="animate-float-slow" />
+    <!-- The actions under both columns, centred, so the section ends on them rather than beside the drawing. -->
+    <div class="reveal flex flex-col justify-center gap-3 sm:flex-row">
+      <Button href={SITE.links.signUp} size="lg">
+        {owners.primary}
+        <Icon name="arrowRight" class="size-4.5" />
+      </Button>
+      <Button href={SITE.links.signIn} variant="secondary" size="lg">
+        {owners.secondary}
+      </Button>
     </div>
   </Container>
 </section>
