@@ -6,7 +6,7 @@ import { defineConfig } from 'astro/config';
  * The landing shares the app's origin: nginx serves it at `/` to visitors without a session and
  * the app everywhere else. Its own files live under `/_landing/`, apart from the app's `/assets/`.
  */
-const SITE_URL = process.env.SITE_URL ?? 'https://demo-keyhaven.osdb.io';
+const SITE_URL = process.env.SITE_URL ?? 'https://keyhaven.osdb.io';
 
 export default defineConfig({
   site: SITE_URL,

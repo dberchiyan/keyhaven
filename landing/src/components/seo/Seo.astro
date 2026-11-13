@@ -11,7 +11,7 @@ interface Props {
 }
 
 const { title, description, path, noindex = false } = Astro.props;
-const site = Astro.site ?? new URL('https://demo-keyhaven.osdb.io');
+const site = Astro.site ?? new URL('https://keyhaven.osdb.io');
 const canonical = new URL(path, site).href;
 const ogImage = new URL('/og.png', site).href;
 

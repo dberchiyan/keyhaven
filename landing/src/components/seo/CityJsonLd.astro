@@ -10,7 +10,7 @@ interface Props {
 }
 
 const { city, kind, data, path } = Astro.props;
-const site = Astro.site ?? new URL('https://demo-keyhaven.osdb.io');
+const site = Astro.site ?? new URL('https://keyhaven.osdb.io');
 // The newest homes as an ItemList, each pointing at its page in the app.
 const jsonLd = {
   '@context': 'https://schema.org',
