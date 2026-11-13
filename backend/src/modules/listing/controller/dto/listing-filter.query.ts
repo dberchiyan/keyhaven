@@ -2,16 +2,60 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { LISTING_STATUSES } from '../../service/listing-status';
 
-/** Search filters (M0: the city; M1 adds rent, beds, baths, amenities, dates and text). */
-export const ListingFilterQuerySchema = z.object({
-  /** A city slug from `GET /api/v1/cities`. */
-  city: z
-    .string()
-    .trim()
-    .max(100, 'validation.city.invalid')
-    .regex(/^[a-z0-9-]+$/, 'validation.city.invalid')
-    .optional(),
-});
+const booleanParam = z
+  .enum(['true', 'false'], { error: 'validation.invalid' })
+  .transform((value) => value === 'true');
+
+/** A whole-dollar or two-place amount typed into the rent filter. */
+const amountParam = z
+  .string()
+  .trim()
+  .max(16, 'validation.amount.invalid')
+  .regex(/^\d{1,9}(\.\d{1,2})?$/, 'validation.amount.invalid');
+
+export const SEARCH_MAX_LENGTH = 100;
+
+/** The search page's filters, every one optional, all kept in the URL by the client. */
+export const ListingFilterQuerySchema = z
+  .object({
+    /** A city slug from `GET /api/v1/cities`. */
+    city: z
+      .string()
+      .trim()
+      .max(100, 'validation.city.invalid')
+      .regex(/^[a-z0-9-]+$/, 'validation.city.invalid')
+      .optional(),
+    rentMin: amountParam.optional(),
+    rentMax: amountParam.optional(),
+    /** At least this many bedrooms (0 = studios too). */
+    beds: z.coerce.number({ error: 'validation.invalid' }).int().min(0).max(20).optional(),
+    /** At least this many bathrooms: 1, 1.5, 2 … */
+    baths: z
+      .string()
+      .regex(/^\d{1,2}(\.5)?$/, 'validation.invalid')
+      .optional(),
+    pets: booleanParam.optional(),
+    furnished: booleanParam.optional(),
+    parking: booleanParam.optional(),
+    /** Available on or before this day. */
+    availableBy: z.iso.date({ error: 'validation.availableBy.invalid' }).optional(),
+    /** Free text, typo-tolerant: title, neighborhood, zip or city. */
+    q: z.string().trim().max(SEARCH_MAX_LENGTH, 'validation.search.tooLong').optional(),
+  })
+  .superRefine((query, context) => {
+    if (
+      query.rentMin !== undefined &&
+      query.rentMax !== undefined &&
+      Number(query.rentMin) > Number(query.rentMax)
+    ) {
+      // Compared as numbers only to order the two bounds; the values stay strings.
+      context.addIssue({
+        code: 'custom',
+        path: ['rentMax'],
+        message: 'validation.rent.maxBelowMin',
+      });
+    }
+  });
 
 export class ListingFilterQuery extends createZodDto(ListingFilterQuerySchema) {}
 

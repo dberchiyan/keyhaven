@@ -14,6 +14,7 @@ const orNotFound = (exists: boolean): true => {
 };
 
 const isAdmin = (principal: Principal): boolean => principal.hasAuthority('ADMIN');
+const isTenant = (principal: Principal): boolean => principal.hasAuthority('TENANT');
 /** Landlords and agents list homes; the agent's agency owns theirs. */
 const isLister = (principal: Principal): boolean =>
   principal.hasAuthority('LANDLORD') || principal.hasAuthority('AGENT');
@@ -67,5 +68,41 @@ export const can = {
     ['listingId'],
     async (principal, args, permissions) =>
       isAdmin(principal) && orNotFound(await permissions.listingExists(args.listingId ?? '')),
+  ),
+  /** Creating a listing: landlords and agents, once their email is verified. */
+  createListing: policy([], isLister, 'verified'),
+  /** Editing details and photos: the owner (landlord / agency agent), verified — someone else's is 403. */
+  editListing: policy(
+    ['listingId'],
+    async (principal, args, permissions) =>
+      isLister(principal) && (await permissions.isOwnListing(principal, args.listingId ?? '')),
+    'verified',
+  ),
+  /** One photo of one of the owner's listings: the whole chain (photo → listing → owner). */
+  managePhoto: policy(
+    ['listingId', 'photoId'],
+    async (principal, args, permissions) =>
+      isLister(principal) &&
+      (await permissions.isOwnListingPhoto(principal, args.listingId ?? '', args.photoId ?? '')),
+    'verified',
+  ),
+  /** Saved homes are a tenant's thing. */
+  viewSavedListings: policy([], isTenant),
+  /** Saving: a tenant, and the listing is on the site (otherwise 404, like an unknown id). */
+  saveListing: policy(
+    ['listingId'],
+    async (principal, args, permissions) =>
+      isTenant(principal) && orNotFound(await permissions.isPublishedListing(args.listingId ?? '')),
+  ),
+  /** Unsaving needs no existing listing: a gone listing's save may go too. */
+  unsaveListing: policy(['listingId'], isTenant),
+  /** Saved searches are a tenant's thing. */
+  manageSavedSearches: policy([], isTenant),
+  /** One saved search: the caller's own (someone else's is 403). */
+  manageSavedSearch: policy(
+    ['savedSearchId'],
+    async (principal, args, permissions) =>
+      isTenant(principal) &&
+      (await permissions.isOwnSavedSearch(principal.userId, args.savedSearchId ?? '')),
   ),
 } as const;

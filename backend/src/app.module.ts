@@ -24,6 +24,8 @@ import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { EmailModule } from './modules/email/email.module';
 import { ListingModule } from './modules/listing/listing.module';
+import { SavedSearchModule } from './modules/saved-search/saved-search.module';
+import { StorageModule } from './modules/storage/storage.module';
 import { UserModule } from './modules/user/user.module';
 
 @Module({
@@ -44,7 +46,9 @@ import { UserModule } from './modules/user/user.module';
     AuditModule,
     EmailModule,
     AuthModule,
+    StorageModule,
     ListingModule,
+    SavedSearchModule,
   ],
   providers: [
     // Guards run in registration order (security.md → Guards).

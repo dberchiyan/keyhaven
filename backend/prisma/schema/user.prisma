@@ -25,6 +25,9 @@ model User {
   idempotencyKeys IdempotencyKey[]
   auditEvents     AuditEvent[]   @relation("AuditEventActor")
   listings        Listing[]      @relation("ListingLandlord")
+  savedListings   SavedListing[]
+  listingViews    ListingView[]
+  savedSearches   SavedSearch[]
 
   @@unique([email], map: "uq_users_email")
   @@index([agencyId], map: "idx_users_agency_id")

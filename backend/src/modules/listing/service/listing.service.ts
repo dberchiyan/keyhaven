@@ -1,5 +1,7 @@
 import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { randomUUID } from 'node:crypto';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import type { Pageable } from '../../../common/dto/pageable';
 import {
@@ -12,17 +14,23 @@ import type { Principal } from '../../../common/security/principal';
 import { AuditAction, AuditTargetType } from '../../audit/service/audit-action';
 import { AuditField, auditValue, changeOf } from '../../audit/service/audit-change';
 import { AuditService } from '../../audit/service/audit.service';
+import { ObjectStorage } from '../../storage/service/object-storage';
 import { UserRole } from '../../user/service/user-role';
+import { ListingPhotoRepository } from '../repository/listing-photo.repository';
 import { ListingRepository } from '../repository/listing.repository';
 import type {
   CityRecord,
   ListingCardRecord,
   ListingDetailRecord,
   ManagedListingCardRecord,
+  ManagedListingRecord,
+  ManagedPhotoRecord,
+  ViewerCardRecord,
 } from '../repository/record/listing.record';
 import type { ListingCriteria, ManagedListingCriteria } from './filter/listing.criteria';
 import type { ListingSortField, ManagedListingSortField } from './listing-sort';
 import {
+  EDITABLE_STATUSES,
   isListingStatus,
   LISTING_STATUSES,
   LISTING_TRANSITIONS,
@@ -34,14 +42,23 @@ import type {
   ListingCard,
   ListingCity,
   ListingDetail,
+  ListingDraft,
   ListingScope,
   ManagedListing,
   ManagedListingCard,
+  ManagedPhoto,
+  NewPhotoIntent,
+  PhotoUploadIntent,
+  UpdateListingCommand,
 } from './listing.types';
+import { isPhotoStatus, MAX_PHOTOS, PHOTO_MAX_BYTES, PhotoStatus } from './photo-status';
+import { sniffImageType } from './photo-type';
 import { isPropertyType, type PropertyType } from './property-type';
 
 /** `?search=` is split into at most this many terms (api.md → Pagination). */
 const MAX_SEARCH_TERMS = 5;
+/** Intents never confirmed within a day are dropped (platform.md → unconfirmed intents). */
+const INTENT_TTL_MS = 24 * 60 * 60 * 1000;
 
 export const toSearchTerms = (search: string | undefined): string[] =>
   (search ?? '')
@@ -60,7 +77,9 @@ const TRANSITION_ACTION: Readonly<Record<ListingTransition, AuditAction>> = {
 export class ListingService {
   constructor(
     private readonly listingRepository: ListingRepository,
+    private readonly photoRepository: ListingPhotoRepository,
     private readonly auditService: AuditService,
+    private readonly storage: ObjectStorage,
     @InjectPinoLogger(ListingService.name) private readonly logger: PinoLogger,
   ) {}
 
@@ -68,26 +87,34 @@ export class ListingService {
     return (await this.listingRepository.findCities()).map(toCity);
   }
 
-  /** Search (every signed-in user): published listings only. */
+  /** Search (every signed-in user): published listings only; `saved` is the viewer's. */
   async search(
     criteria: ListingCriteria,
     pageable: Pageable<ListingSortField>,
+    viewerUserId: string | null,
   ): Promise<{ content: ListingCard[]; totalElements: number }> {
-    const page = await this.listingRepository.findPublishedPage(criteria, pageable);
-    return { content: page.content.map(toCard), totalElements: page.totalElements };
+    const page = await this.listingRepository.findPublishedPage(criteria, pageable, viewerUserId);
+    return {
+      content: page.content.map((listing) => this.toViewerCard(listing)),
+      totalElements: page.totalElements,
+    };
   }
 
   /**
    * One listing for a viewer (the policy admitted them: published, or theirs, or an admin). The
    * exact address is shown only to the owner, the agency's agents and admins — M2 adds a tenant
-   * whose viewing was confirmed.
+   * whose viewing was confirmed. A tenant's visit counts as a view (once per day).
    */
   async findForViewer(principal: Principal, listingId: string): Promise<ListingDetail> {
     const listing = await this.findDetail(listingId);
-    const address = this.ownsOrAdministers(principal, listing)
-      ? { line1: listing.addressLine1, line2: listing.addressLine2 }
-      : null;
-    return toDetail(listing, address);
+    const owns = this.ownsOrAdministers(principal, listing);
+    if (!owns) {
+      await this.listingRepository.recordView(listingId, principal.userId, utcToday());
+    }
+    return this.toDetail(
+      listing,
+      owns ? { line1: listing.addressLine1, line2: listing.addressLine2 } : null,
+    );
   }
 
   /** The dashboard page: the caller's scope (landlord / agency / everything for admins). */
@@ -101,7 +128,10 @@ export class ListingService {
       criteria,
       pageable,
     );
-    return { content: page.content.map(toManagedCard), totalElements: page.totalElements };
+    return {
+      content: page.content.map((listing) => this.toManagedCard(listing)),
+      totalElements: page.totalElements,
+    };
   }
 
   /** Listings of the caller's scope per status; statuses with none are 0. */
@@ -121,13 +151,82 @@ export class ListingService {
 
   /** One listing in the dashboard (the policy checked ownership): the address included. */
   async findManaged(listingId: string): Promise<ManagedListing> {
-    return toManaged(await this.findDetail(listingId));
+    const [listing, photos] = await Promise.all([
+      this.listingRepository.findManagedById(listingId),
+      this.photoRepository.findByListing(listingId),
+    ]);
+    if (!listing) {
+      throw new ResourceNotFoundException();
+    }
+    return this.toManaged(listing, photos);
+  }
+
+  /** A new DRAFT: a landlord's own, or the agent's agency's (never from the request). */
+  async create(principal: Principal, draft: ListingDraft): Promise<ManagedListing> {
+    await this.assertCity(draft.cityId);
+    const id = await this.createDraft(principal, draft);
+    this.logger.info({ listingId: id, by: principal.userId }, 'Listing created');
+    return this.findManaged(id);
+  }
+
+  @Transactional()
+  private async createDraft(principal: Principal, draft: ListingDraft): Promise<string> {
+    const scope = scopeOf(principal);
+    const owner =
+      scope.kind === 'AGENCY'
+        ? { landlordId: null, agencyId: scope.agencyId }
+        : { landlordId: principal.userId, agencyId: null };
+    const id = await this.listingRepository.create(owner, draft, principal.userId);
+    await this.auditService.record({
+      action: AuditAction.LISTING_CREATED,
+      target: { type: AuditTargetType.LISTING, id, label: draft.title },
+      changes: changeOf(AuditField.STATUS, null, auditValue.status('DRAFT')),
+    });
+    return id;
+  }
+
+  /** The owner's edit (optimistic lock); a suspended listing is no longer theirs to shape. */
+  async update(
+    principal: Principal,
+    listingId: string,
+    command: UpdateListingCommand,
+  ): Promise<ManagedListing> {
+    await this.assertCity(command.cityId);
+    await this.applyUpdate(principal, listingId, command);
+    return this.findManaged(listingId);
+  }
+
+  @Transactional()
+  private async applyUpdate(
+    principal: Principal,
+    listingId: string,
+    command: UpdateListingCommand,
+  ): Promise<void> {
+    const current = await this.listingRepository.findStatusById(listingId);
+    if (!current || !isListingStatus(current.status)) {
+      throw new ResourceNotFoundException();
+    }
+    if (!(EDITABLE_STATUSES as readonly ListingStatus[]).includes(current.status)) {
+      throw new BusinessRuleException('errors.listing.notEditable', { status: current.status });
+    }
+    if (current.version !== command.version) {
+      throw new ConcurrentModificationException();
+    }
+    const { version, ...draft } = command;
+    if (!(await this.listingRepository.update(listingId, version, draft, principal.userId))) {
+      throw new ConcurrentModificationException();
+    }
+    await this.auditService.record({
+      action: AuditAction.LISTING_UPDATED,
+      target: { type: AuditTargetType.LISTING, id: listingId, label: draft.title },
+      changes: [],
+    });
   }
 
   /**
    * A status change by its owner (publish, unpublish) or an admin (suspend). Repeating the
    * same decision is a no-op that answers the current state (api.md → Contract); anything the
-   * table does not allow — publishing a suspended listing — is 422.
+   * table does not allow — publishing a suspended listing — is 422. Publishing needs a photo.
    */
   @Transactional()
   async transition(
@@ -148,14 +247,17 @@ export class ListingService {
         status: current.status,
       });
     }
-    const published = await this.listingRepository.updateStatus(
+    if (transition === 'publish' && (await this.photoRepository.countReady(listingId)) === 0) {
+      throw new BusinessRuleException('errors.listing.publishNeedsPhoto');
+    }
+    const changed = await this.listingRepository.updateStatus(
       listingId,
       current.version,
       rule.to,
       transition === 'publish' ? new Date() : undefined,
       principal.userId,
     );
-    if (!published) {
+    if (!changed) {
       throw new ConcurrentModificationException();
     }
     await this.auditService.record({
@@ -171,6 +273,148 @@ export class ListingService {
     return this.findManaged(listingId);
   }
 
+  /**
+   * An upload intent (platform.md → File uploads): the row waits as PENDING, the client PUTs the
+   * bytes straight to storage with the pre-signed URL (type and size signed in), then confirms.
+   */
+  async createPhotoIntent(
+    principal: Principal,
+    listingId: string,
+    intent: NewPhotoIntent,
+  ): Promise<PhotoUploadIntent> {
+    if (intent.sizeBytes > PHOTO_MAX_BYTES) {
+      throw new BusinessRuleException('errors.listing.photoTooLarge', {
+        maxMb: PHOTO_MAX_BYTES / (1024 * 1024),
+      });
+    }
+    if ((await this.photoRepository.countReady(listingId)) >= MAX_PHOTOS) {
+      throw new BusinessRuleException('errors.listing.tooManyPhotos', { max: MAX_PHOTOS });
+    }
+    // Server-generated key: the original filename is display metadata only.
+    const key = `listings/${listingId}/${randomUUID()}.${EXTENSION[intent.contentType]}`;
+    const photoId = await this.photoRepository.createIntent(
+      listingId,
+      key,
+      intent.contentType,
+      intent.sizeBytes,
+      principal.userId,
+    );
+    const upload = await this.storage.presignUpload(key, intent.contentType, intent.sizeBytes);
+    return { photoId, uploadUrl: upload.url, headers: upload.headers, expiresAt: upload.expiresAt };
+  }
+
+  /**
+   * The client finished the PUT: the object is checked (its size from HEAD, its type from the
+   * first bytes — never the client's word) and the photo becomes the last READY one. A repeat on
+   * a ready photo changes nothing; a mismatch removes the object and the intent (422).
+   */
+  async confirmPhoto(listingId: string, photoId: string): Promise<ManagedListing> {
+    const photo = await this.photoRepository.findUpload(listingId, photoId);
+    if (!photo || !photo.storageKey) {
+      throw new ResourceNotFoundException();
+    }
+    if (photo.status === PhotoStatus.READY) {
+      return this.findManaged(listingId);
+    }
+    const stored = await this.storage.head(photo.storageKey);
+    if (!stored) {
+      throw new BusinessRuleException('errors.listing.photoNotUploaded');
+    }
+    const detected = sniffImageType(await this.storage.readHead(photo.storageKey, 32));
+    if (
+      detected !== photo.contentType ||
+      stored.sizeBytes !== photo.sizeBytes ||
+      stored.sizeBytes > PHOTO_MAX_BYTES
+    ) {
+      // Outside any transaction: the object goes first, the row after (platform.md).
+      await this.storage.delete(photo.storageKey);
+      await this.photoRepository.deleteByIds([photo.id]);
+      throw new BusinessRuleException('errors.listing.photoRejected');
+    }
+    await this.readyPhoto(listingId, photo.id, stored.sizeBytes);
+    return this.findManaged(listingId);
+  }
+
+  @Transactional()
+  private async readyPhoto(listingId: string, photoId: string, sizeBytes: number): Promise<void> {
+    if ((await this.photoRepository.countReady(listingId)) >= MAX_PHOTOS) {
+      throw new BusinessRuleException('errors.listing.tooManyPhotos', { max: MAX_PHOTOS });
+    }
+    const position = await this.photoRepository.nextPosition(listingId);
+    await this.photoRepository.markReady(photoId, position, sizeBytes);
+  }
+
+  /** The new order: exactly the listing's ready photos, each once (422 otherwise). */
+  async reorderPhotos(listingId: string, orderedIds: readonly string[]): Promise<ManagedListing> {
+    await this.applyOrder(listingId, orderedIds);
+    return this.findManaged(listingId);
+  }
+
+  @Transactional()
+  private async applyOrder(listingId: string, orderedIds: readonly string[]): Promise<void> {
+    const ready = (await this.photoRepository.findByListing(listingId))
+      .filter((photo) => photo.status === PhotoStatus.READY)
+      .map((photo) => photo.id);
+    const sameSet =
+      ready.length === orderedIds.length &&
+      new Set(orderedIds).size === orderedIds.length &&
+      orderedIds.every((id) => ready.includes(id));
+    if (!sameSet) {
+      throw new BusinessRuleException('errors.listing.photoOrderMismatch');
+    }
+    await this.photoRepository.reorder(listingId, orderedIds);
+  }
+
+  /** Removes a photo: the row first (so the gallery is consistent), the object after commit. */
+  async removePhoto(listingId: string, photoId: string): Promise<void> {
+    const photo = await this.photoRepository.findUpload(listingId, photoId);
+    if (!photo) {
+      throw new ResourceNotFoundException();
+    }
+    await this.deletePhotoRow(listingId, photoId);
+    if (photo.storageKey) {
+      await this.deleteObjectQuietly(photo.storageKey);
+    }
+  }
+
+  @Transactional()
+  private async deletePhotoRow(listingId: string, photoId: string): Promise<void> {
+    await this.photoRepository.remove(listingId, photoId);
+  }
+
+  /** Upload intents never confirmed within a day: rows and objects go (bounded per run). */
+  @Cron(CronExpression.EVERY_HOUR)
+  async deleteExpiredIntents(): Promise<void> {
+    const expired = await this.photoRepository.findExpiredIntents(
+      new Date(Date.now() - INTENT_TTL_MS),
+    );
+    if (expired.length === 0) {
+      return;
+    }
+    await this.photoRepository.deleteByIds(expired.map((photo) => photo.id));
+    for (const photo of expired) {
+      if (photo.storageKey) {
+        await this.deleteObjectQuietly(photo.storageKey);
+      }
+    }
+    this.logger.info({ count: expired.length }, 'Expired photo upload intents deleted');
+  }
+
+  private async deleteObjectQuietly(key: string): Promise<void> {
+    try {
+      await this.storage.delete(key);
+    } catch (error: unknown) {
+      // The row is gone; a leftover object is harmless and the next cleanup may retry.
+      this.logger.warn({ err: error, key }, 'Stored photo not deleted');
+    }
+  }
+
+  private async assertCity(cityId: string): Promise<void> {
+    if (!(await this.listingRepository.cityExists(cityId))) {
+      throw new BusinessRuleException('errors.listing.cityNotFound', {}, 'cityId');
+    }
+  }
+
   private async findDetail(listingId: string): Promise<ListingDetailRecord> {
     const listing = await this.listingRepository.findDetailById(listingId);
     if (!listing) {
@@ -179,7 +423,10 @@ export class ListingService {
     return listing;
   }
 
-  private ownsOrAdministers(principal: Principal, listing: ListingDetailRecord): boolean {
+  private ownsOrAdministers(
+    principal: Principal,
+    listing: { landlordId: string | null; agencyId: string | null },
+  ): boolean {
     if (principal.hasAuthority(UserRole.ADMIN)) {
       return true;
     }
@@ -189,7 +436,103 @@ export class ListingService {
       (scope.kind === 'AGENCY' && listing.agencyId === scope.agencyId)
     );
   }
+
+  /** A photo's public URL: the external one (seed) or the stored object's. */
+  private photoUrl(photo: { url: string | null; storageKey: string | null }): string | null {
+    return photo.url ?? (photo.storageKey ? this.storage.publicUrl(photo.storageKey) : null);
+  }
+
+  private toCard(listing: ListingCardRecord, saved: boolean): ListingCard {
+    const cover = listing.photos[0];
+    return {
+      id: listing.id,
+      title: listing.title,
+      propertyType: toPropertyType(listing.propertyType),
+      rent: toMoney(listing.rent, listing.currency),
+      bedrooms: listing.bedrooms,
+      bathrooms: listing.bathrooms.toFixed(1),
+      sizeSqft: listing.sizeSqft,
+      city: toCity(listing.city),
+      neighborhood: listing.neighborhood,
+      availableFrom: listing.availableFrom,
+      publishedAt: listing.publishedAt,
+      coverPhotoUrl: cover ? this.photoUrl(cover) : null,
+      saved,
+    };
+  }
+
+  private toViewerCard(listing: ViewerCardRecord): ListingCard {
+    return this.toCard(listing, listing.savedBy.length > 0);
+  }
+
+  /** For the saved-listings service (same module): a viewer's card from its record. */
+  cardOf(listing: ViewerCardRecord): ListingCard {
+    return this.toViewerCard(listing);
+  }
+
+  private toManagedCard(listing: ManagedListingCardRecord): ManagedListingCard {
+    return {
+      ...this.toCard(listing, false),
+      status: toStatus(listing.status),
+      viewCount: listing._count.views,
+      saveCount: listing._count.savedBy,
+    };
+  }
+
+  private toDetail(listing: ListingDetailRecord, address: ListingDetail['address']): ListingDetail {
+    return {
+      ...this.toCard(listing, false),
+      description: listing.description,
+      furnished: listing.furnished,
+      petsAllowed: listing.petsAllowed,
+      parking: listing.parking,
+      zip: listing.zip,
+      photos: listing.photos.flatMap((photo) => {
+        const url = this.photoUrl(photo);
+        return url ? [{ id: photo.id, url }] : [];
+      }),
+      listedBy: toListedBy(listing),
+      address,
+    };
+  }
+
+  private toManaged(listing: ManagedListingRecord, photos: ManagedPhotoRecord[]): ManagedListing {
+    return {
+      ...this.toDetail(listing, { line1: listing.addressLine1, line2: listing.addressLine2 }),
+      status: toStatus(listing.status),
+      address: { line1: listing.addressLine1, line2: listing.addressLine2 },
+      cityId: listing.cityId,
+      viewCount: listing._count.views,
+      saveCount: listing._count.savedBy,
+      managedPhotos: photos.map((photo) => this.toManagedPhoto(photo)),
+      createdAt: listing.createdAt,
+      updatedAt: listing.updatedAt,
+      version: listing.version,
+    };
+  }
+
+  private toManagedPhoto(photo: ManagedPhotoRecord): ManagedPhoto {
+    if (!isPhotoStatus(photo.status)) {
+      // Guarded by ck_listing_photos_status.
+      throw new Error('Unknown photo status in database');
+    }
+    return {
+      id: photo.id,
+      url: this.photoUrl(photo),
+      status: photo.status,
+      position: photo.position,
+    };
+  }
 }
+
+/** Object key extension per accepted type. */
+const EXTENSION = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' } as const;
+
+/** Today as a UTC day (data.md → Time). */
+const utcToday = (): Date => {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+};
 
 /** Whose listings the caller manages — the one place the role becomes a query scope. */
 const scopeOf = (principal: Principal): ListingScope => {
@@ -219,21 +562,6 @@ const toPropertyType = (value: string): PropertyType => {
   return value;
 };
 
-const toCard = (listing: ListingCardRecord): ListingCard => ({
-  id: listing.id,
-  title: listing.title,
-  propertyType: toPropertyType(listing.propertyType),
-  rent: toMoney(listing.rent, listing.currency),
-  bedrooms: listing.bedrooms,
-  bathrooms: listing.bathrooms.toFixed(1),
-  sizeSqft: listing.sizeSqft,
-  city: toCity(listing.city),
-  neighborhood: listing.neighborhood,
-  availableFrom: listing.availableFrom,
-  publishedAt: listing.publishedAt,
-  coverPhotoUrl: listing.photos[0]?.url ?? null,
-});
-
 const toStatus = (value: string): ListingStatus => {
   if (!isListingStatus(value)) {
     // Guarded by ck_listings_status.
@@ -241,11 +569,6 @@ const toStatus = (value: string): ListingStatus => {
   }
   return value;
 };
-
-const toManagedCard = (listing: ManagedListingCardRecord): ManagedListingCard => ({
-  ...toCard(listing),
-  status: toStatus(listing.status),
-});
 
 const toListedBy = (listing: ListingDetailRecord): ListedBy => {
   if (listing.agency) {
@@ -267,30 +590,4 @@ const toListedBy = (listing: ListingDetailRecord): ListedBy => {
   }
   // Guarded by ck_listings_owner (exactly one owner).
   throw new Error('Listing without an owner in database');
-};
-
-const toDetail = (
-  listing: ListingDetailRecord,
-  address: ListingDetail['address'],
-): ListingDetail => ({
-  ...toCard(listing),
-  description: listing.description,
-  furnished: listing.furnished,
-  petsAllowed: listing.petsAllowed,
-  parking: listing.parking,
-  zip: listing.zip,
-  photos: listing.photos.map((photo) => ({ id: photo.id, url: photo.url })),
-  listedBy: toListedBy(listing),
-  address,
-});
-
-const toManaged = (listing: ListingDetailRecord): ManagedListing => {
-  return {
-    ...toDetail(listing, { line1: listing.addressLine1, line2: listing.addressLine2 }),
-    status: toStatus(listing.status),
-    address: { line1: listing.addressLine1, line2: listing.addressLine2 },
-    createdAt: listing.createdAt,
-    updatedAt: listing.updatedAt,
-    version: listing.version,
-  };
 };

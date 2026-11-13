@@ -1,6 +1,8 @@
 /** `<resource>.<past_tense>` — the list is mirrored by ck_audit_events_action. */
 export const AuditAction = {
-  /** Listings (target type `listing`): the owner's publishing and an admin's suspension. */
+  /** Listings (target type `listing`): the owner's writing and publishing, an admin's suspension. */
+  LISTING_CREATED: 'listing.created',
+  LISTING_UPDATED: 'listing.updated',
   LISTING_PUBLISHED: 'listing.published',
   LISTING_UNPUBLISHED: 'listing.unpublished',
   LISTING_SUSPENDED: 'listing.suspended',

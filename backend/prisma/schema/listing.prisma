@@ -57,6 +57,8 @@ model Listing {
   updatedBy    String?        @map("updated_by") @db.Uuid
   version      Int            @default(0)
   photos       ListingPhoto[]
+  savedBy      SavedListing[]
+  views        ListingView[]
 
   @@index([landlordId, status], map: "idx_listings_landlord_id_status")
   @@index([agencyId, status], map: "idx_listings_agency_id_status")
@@ -67,16 +69,78 @@ model Listing {
   @@map("listings")
 }
 
-/// A photo of a listing, in display order. Immutable apart from reordering (M1).
+/// A photo of a listing. Seeded photos carry an external `url`; uploaded ones live in object
+/// storage under `storage_key` (public URL built from R2_PUBLIC_URL) — exactly one of the two,
+/// CHECK in migration. Uploaded photos start PENDING (an intent) and become READY once the object
+/// was checked; only READY photos have a `position` and are shown.
 model ListingPhoto {
-  id        String   @id(map: "pk_listing_photos") @default(dbgenerated("uuidv7()")) @db.Uuid
-  listingId String   @map("listing_id") @db.Uuid
+  id          String    @id(map: "pk_listing_photos") @default(dbgenerated("uuidv7()")) @db.Uuid
+  listingId   String    @map("listing_id") @db.Uuid
   // A photo means nothing without its listing.
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_listing_photos_listing_id")
-  url       String   @db.VarChar(500)
-  position  Int      @db.SmallInt
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_listing_photos_listing_id")
+  url         String?   @db.VarChar(500)
+  storageKey  String?   @map("storage_key") @db.VarChar(255)
+  contentType String?   @map("content_type") @db.VarChar(64)
+  sizeBytes   Int?      @map("size_bytes")
+  status      String    @default("READY") @db.VarChar(16) // PENDING | READY — CHECK in migration
+  /// Display order; null while PENDING.
+  position    Int?      @db.SmallInt
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  createdBy   String?   @map("created_by") @db.Uuid
 
   @@unique([listingId, position], map: "uq_listing_photos_listing_id_position")
+  @@unique([storageKey], map: "uq_listing_photos_storage_key")
+  @@index([status, createdAt], map: "idx_listing_photos_status_created_at")
   @@map("listing_photos")
+}
+
+/// A tenant's saved home. Immutable: created_at only.
+model SavedListing {
+  userId    String   @map("user_id") @db.Uuid
+  // Saves belong to the person.
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_saved_listings_user_id")
+  listingId String   @map("listing_id") @db.Uuid
+  // A save means nothing without its listing.
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_saved_listings_listing_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@id([userId, listingId], map: "pk_saved_listings")
+  @@index([listingId], map: "idx_saved_listings_listing_id")
+  @@map("saved_listings")
+}
+
+/// One person opening a listing page, counted once per UTC day (the owner's "views"). Immutable.
+model ListingView {
+  listingId String   @map("listing_id") @db.Uuid
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_listing_views_listing_id")
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_listing_views_user_id")
+  viewedOn  DateTime @map("viewed_on") @db.Date
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@id([listingId, userId, viewedOn], map: "pk_listing_views")
+  @@index([userId], map: "idx_listing_views_user_id")
+  @@map("listing_views")
+}
+
+/// A tenant's saved search: its filters as a document (validated by Zod on write and read) and
+/// whether a daily email lists new matches.
+model SavedSearch {
+  id             String    @id(map: "pk_saved_searches") @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_saved_searches_user_id")
+  name           String    @db.VarChar(80)
+  criteria       Json      @db.JsonB
+  emailAlerts    Boolean   @default(true) @map("email_alerts")
+  /// Listings published after this instant are "new" for the next digest; null = never sent.
+  lastNotifiedAt DateTime? @map("last_notified_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy      String?   @map("created_by") @db.Uuid
+  updatedBy      String?   @map("updated_by") @db.Uuid
+  version        Int       @default(0)
+
+  @@index([userId, createdAt], map: "idx_saved_searches_user_id_created_at")
+  @@index([emailAlerts, lastNotifiedAt], map: "idx_saved_searches_email_alerts_last_notified_at")
+  @@map("saved_searches")
 }

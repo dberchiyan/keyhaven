@@ -284,7 +284,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** A page of published listings, newest first */
+        /** Search published listings: city, rent range, beds, baths, pets, furnished, parking, available-by date and typo-tolerant text */
         get: operations["ListingController_search"];
         put?: never;
         post?: never;
@@ -321,7 +321,8 @@ export interface paths {
         /** A page of the listings the caller manages, last changed first */
         get: operations["ManagedListingController_findPage"];
         put?: never;
-        post?: never;
+        /** Create a draft listing (a landlord’s own, or the agent’s agency’s) */
+        post: operations["ManagedListingController_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -354,7 +355,8 @@ export interface paths {
         };
         /** One of the listings the caller manages, with its exact address */
         get: operations["ManagedListingController_findOne"];
-        put?: never;
+        /** Edit a listing’s details (owner, verified email); `version` guards the save */
+        put: operations["ManagedListingController_update"];
         post?: never;
         delete?: never;
         options?: never;
@@ -371,7 +373,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Publish a draft or unpublished listing (owner, verified email) */
+        /** Publish a draft or unpublished listing (owner, verified email, at least one photo) */
         post: operations["ManagedListingController_publish"];
         delete?: never;
         options?: never;
@@ -407,6 +409,162 @@ export interface paths {
         put?: never;
         /** Take a listing off the site as an admin; its owner cannot publish it again */
         post: operations["ManagedListingController_suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/managed-listings/{listingId}/photo-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start a photo upload: answers a pre-signed URL the browser PUTs the file to */
+        post: operations["ManagedListingController_createPhotoIntent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/managed-listings/{listingId}/photos/{photoId}/confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finish a photo upload: the object is checked and the photo shown last */
+        post: operations["ManagedListingController_confirmPhoto"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/managed-listings/{listingId}/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reorder the photos: the complete new order of the ready ones */
+        put: operations["ManagedListingController_reorderPhotos"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/managed-listings/{listingId}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a photo */
+        delete: operations["ManagedListingController_removePhoto"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/saved-listings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's saved homes that are still on the site, newest save first */
+        get: operations["SavedListingController_findPage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/saved-listings/{listingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save a published home (saving it again changes nothing) */
+        put: operations["SavedListingController_save"];
+        post?: never;
+        /** Remove a home from the saved ones */
+        delete: operations["SavedListingController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/saved-searches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's saved searches, newest first (at most 20) */
+        get: operations["SavedSearchController_list"];
+        put?: never;
+        /** Save the current filters as a named search, with or without daily emails */
+        post: operations["SavedSearchController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/saved-searches/{savedSearchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Rename a saved search or switch its daily email on or off */
+        put: operations["SavedSearchController_update"];
+        post?: never;
+        /** Delete a saved search */
+        delete: operations["SavedSearchController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/saved-search-digests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send the daily saved-search digests now (admins); the scheduler does it at 08:00 UTC */
+        post: operations["SavedSearchController_sendDigests"];
         delete?: never;
         options?: never;
         head?: never;
@@ -559,6 +717,7 @@ export interface components {
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
+            saved: boolean;
         };
         /** @enum {string} */
         PropertyType_Output: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
@@ -604,6 +763,7 @@ export interface components {
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
+            saved: boolean;
             description: string;
             furnished: boolean;
             petsAllowed: boolean;
@@ -633,7 +793,10 @@ export interface components {
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
+            saved: boolean;
             status: components["schemas"]["ListingStatus_Output"];
+            viewCount: number;
+            saveCount: number;
         };
         /** @enum {string} */
         ListingStatus_Output: "DRAFT" | "PUBLISHED" | "UNPUBLISHED" | "SUSPENDED";
@@ -641,12 +804,36 @@ export interface components {
             content: components["schemas"]["ManagedListingCard_Output"][];
             totalElements: number;
         };
-        ListingStatusCountsResponse_Output: {
-            DRAFT: number;
-            PUBLISHED: number;
-            UNPUBLISHED: number;
-            SUSPENDED: number;
+        CreateListingRequest: {
+            title: string;
+            description: string;
+            /** @enum {string} */
+            propertyType: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
+            rent: string;
+            bedrooms: number;
+            bathrooms: string;
+            sizeSqft: number;
+            addressLine1: string;
+            addressLine2?: string | null;
+            /** Format: uuid */
+            cityId: string;
+            neighborhood?: string | null;
+            zip: string;
+            petsAllowed: boolean;
+            furnished: boolean;
+            parking: boolean;
+            /** Format: date */
+            availableFrom: string;
         };
+        ManagedPhoto_Output: {
+            /** Format: uuid */
+            id: string;
+            url: string | null;
+            status: components["schemas"]["PhotoStatus_Output"];
+            position: number | null;
+        };
+        /** @enum {string} */
+        PhotoStatus_Output: "PENDING" | "READY";
         ManagedListingResponse_Output: {
             /** Format: uuid */
             id: string;
@@ -663,6 +850,7 @@ export interface components {
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
+            saved: boolean;
             description: string;
             furnished: boolean;
             petsAllowed: boolean;
@@ -676,11 +864,135 @@ export interface components {
             listedBy: components["schemas"]["ListedBy_Output"];
             address: components["schemas"]["ListingAddress_Output"];
             status: components["schemas"]["ListingStatus_Output"];
+            /** Format: uuid */
+            cityId: string;
+            viewCount: number;
+            saveCount: number;
+            managedPhotos: components["schemas"]["ManagedPhoto_Output"][];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
             updatedAt: string;
             version: number;
+        };
+        ListingStatusCountsResponse_Output: {
+            DRAFT: number;
+            PUBLISHED: number;
+            UNPUBLISHED: number;
+            SUSPENDED: number;
+        };
+        UpdateListingRequest: {
+            title: string;
+            description: string;
+            /** @enum {string} */
+            propertyType: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
+            rent: string;
+            bedrooms: number;
+            bathrooms: string;
+            sizeSqft: number;
+            addressLine1: string;
+            addressLine2?: string | null;
+            /** Format: uuid */
+            cityId: string;
+            neighborhood?: string | null;
+            zip: string;
+            petsAllowed: boolean;
+            furnished: boolean;
+            parking: boolean;
+            /** Format: date */
+            availableFrom: string;
+            version: number;
+        };
+        PhotoIntentRequest: {
+            filename: string;
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+            sizeBytes: number;
+        };
+        PhotoIntentResponse_Output: {
+            /** Format: uuid */
+            photoId: string;
+            uploadUrl: string;
+            headers: {
+                [key: string]: string;
+            };
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        ReorderPhotosRequest: {
+            photoIds: string[];
+        };
+        SavedListingResponse_Output: {
+            /** Format: uuid */
+            listingId: string;
+            saved: boolean;
+        };
+        SavedSearch_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            criteria: components["schemas"]["SavedSearchCriteria_Output"];
+            emailAlerts: boolean;
+            /** Format: date-time */
+            lastNotifiedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            version: number;
+        };
+        SavedSearchCriteria_Output: {
+            city?: string;
+            rentMin?: string;
+            rentMax?: string;
+            beds?: number;
+            baths?: string;
+            pets?: boolean;
+            furnished?: boolean;
+            parking?: boolean;
+            /** Format: date */
+            availableBy?: string;
+            q?: string;
+        };
+        SavedSearchListResponse_Output: {
+            content: components["schemas"]["SavedSearch_Output"][];
+        };
+        SavedSearchCriteria: {
+            city?: string;
+            rentMin?: string;
+            rentMax?: string;
+            beds?: number;
+            baths?: string;
+            pets?: boolean;
+            furnished?: boolean;
+            parking?: boolean;
+            /** Format: date */
+            availableBy?: string;
+            q?: string;
+        };
+        CreateSavedSearchRequest: {
+            name: string;
+            criteria: components["schemas"]["SavedSearchCriteria"];
+            emailAlerts: boolean;
+        };
+        SavedSearchResponse_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            criteria: components["schemas"]["SavedSearchCriteria_Output"];
+            emailAlerts: boolean;
+            /** Format: date-time */
+            lastNotifiedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            version: number;
+        };
+        UpdateSavedSearchRequest: {
+            name: string;
+            emailAlerts: boolean;
+            version: number;
+        };
+        DigestSummaryResponse_Output: {
+            searches: number;
+            emails: number;
         };
     };
     responses: never;
@@ -1392,6 +1704,15 @@ export interface operations {
         parameters: {
             query?: {
                 city?: string;
+                rentMin?: string;
+                rentMax?: string;
+                beds?: number;
+                baths?: string;
+                pets?: "true" | "false";
+                furnished?: "true" | "false";
+                parking?: "true" | "false";
+                availableBy?: string;
+                q?: string;
                 page?: number;
                 size?: number;
                 /** @description One of: publishedAt,asc|desc, rent,asc|desc */
@@ -1530,6 +1851,86 @@ export interface operations {
             };
         };
     };
+    ManagedListingController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description UUID per logical operation, reused on retry */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateListingRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedListingResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN | EMAIL_NOT_VERIFIED */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CONCURRENT_MODIFICATION | IDEMPOTENCY_KEY_REUSED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     ManagedListingController_statusCounts: {
         parameters: {
             query?: never;
@@ -1622,6 +2023,83 @@ export interface operations {
             };
         };
     };
+    ManagedListingController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateListingRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedListingResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN | EMAIL_NOT_VERIFIED */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CONCURRENT_MODIFICATION */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     ManagedListingController_publish: {
         parameters: {
             query?: never;
@@ -1639,7 +2117,7 @@ export interface operations {
                     "application/json": components["schemas"]["ManagedListingResponse_Output"];
                 };
             };
-            /** @description INVALID_PARAMETER */
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1712,7 +2190,7 @@ export interface operations {
                     "application/json": components["schemas"]["ManagedListingResponse_Output"];
                 };
             };
-            /** @description INVALID_PARAMETER */
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -1823,6 +2301,723 @@ export interface operations {
             };
             /** @description CONCURRENT_MODIFICATION */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ManagedListingController_createPhotoIntent: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description UUID per logical operation, reused on retry */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotoIntentRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PhotoIntentResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN | EMAIL_NOT_VERIFIED */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CONCURRENT_MODIFICATION | IDEMPOTENCY_KEY_REUSED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UPSTREAM_UNAVAILABLE */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ManagedListingController_confirmPhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedListingResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN | EMAIL_NOT_VERIFIED */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CONCURRENT_MODIFICATION */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UPSTREAM_UNAVAILABLE */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ManagedListingController_reorderPhotos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderPhotosRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedListingResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN | EMAIL_NOT_VERIFIED */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CONCURRENT_MODIFICATION */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ManagedListingController_removePhoto: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN | EMAIL_NOT_VERIFIED */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CONCURRENT_MODIFICATION */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UPSTREAM_UNAVAILABLE */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    SavedListingController_findPage: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+                /** @description One of: savedAt,asc|desc */
+                sort?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListingPageResponse_Output"];
+                };
+            };
+            /** @description INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    SavedListingController_save: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedListingResponse_Output"];
+                };
+            };
+            /** @description INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    SavedListingController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    SavedSearchController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedSearchListResponse_Output"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    SavedSearchController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description UUID per logical operation, reused on retry */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSavedSearchRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedSearchResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IDEMPOTENCY_KEY_REUSED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    SavedSearchController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSavedSearchRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavedSearchResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CONCURRENT_MODIFICATION */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    SavedSearchController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    SavedSearchController_sendDigests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DigestSummaryResponse_Output"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

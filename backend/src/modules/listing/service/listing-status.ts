@@ -29,3 +29,10 @@ export const LISTING_TRANSITIONS = {
   },
 } as const satisfies Record<string, { from: readonly ListingStatus[]; to: ListingStatus }>;
 export type ListingTransition = keyof typeof LISTING_TRANSITIONS;
+
+/** The owner edits a listing while it is theirs to shape: never once an admin suspended it. */
+export const EDITABLE_STATUSES = [
+  ListingStatus.DRAFT,
+  ListingStatus.PUBLISHED,
+  ListingStatus.UNPUBLISHED,
+] as const satisfies readonly ListingStatus[];

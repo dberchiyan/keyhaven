@@ -1,5 +1,6 @@
-import type { Money } from '../../../common/persistence/money';
+import type { Decimal, Money } from '../../../common/persistence/money';
 import type { ListingStatus } from './listing-status';
+import type { PhotoContentType, PhotoStatus } from './photo-status';
 import type { PropertyType } from './property-type';
 
 export interface ListingCity {
@@ -12,6 +13,8 @@ export interface ListingCity {
 
 /** What a search result card shows. */
 export interface ListingCard {
+  /** The viewer saved it (tenants); false for everyone else. */
+  saved: boolean;
   id: string;
   title: string;
   propertyType: PropertyType;
@@ -30,6 +33,9 @@ export interface ListingCard {
 /** A row of the owner's dashboard. */
 export interface ManagedListingCard extends ListingCard {
   status: ListingStatus;
+  /** People who opened the page (one per person and day) and who saved it. */
+  viewCount: number;
+  saveCount: number;
 }
 
 /** Who to contact: the landlord, or the agency. */
@@ -55,13 +61,63 @@ export interface ListingDetail extends ListingCard {
   address: ListingAddress | null;
 }
 
+/** A photo of a listing as its owner sees it: uploads that were never finished show as pending. */
+export interface ManagedPhoto {
+  id: string;
+  url: string | null;
+  status: PhotoStatus;
+  position: number | null;
+}
+
 /** A listing as its owner (or an admin) manages it. */
 export interface ManagedListing extends ListingDetail {
   status: ListingStatus;
   address: ListingAddress;
+  cityId: string;
+  viewCount: number;
+  saveCount: number;
+  managedPhotos: ManagedPhoto[];
   createdAt: Date;
   updatedAt: Date;
   version: number;
+}
+
+/** What the owner writes (create and edit); ownership and status never come from the client. */
+export interface ListingDraft {
+  title: string;
+  description: string;
+  propertyType: PropertyType;
+  rent: Decimal;
+  bedrooms: number;
+  bathrooms: Decimal;
+  sizeSqft: number;
+  addressLine1: string;
+  addressLine2: string | null;
+  cityId: string;
+  neighborhood: string | null;
+  zip: string;
+  petsAllowed: boolean;
+  furnished: boolean;
+  parking: boolean;
+  availableFrom: Date;
+}
+
+export interface UpdateListingCommand extends ListingDraft {
+  version: number;
+}
+
+/** An upload intent: where the client PUTs the photo, and the row that waits for it. */
+export interface PhotoUploadIntent {
+  photoId: string;
+  uploadUrl: string;
+  headers: Record<string, string>;
+  expiresAt: Date;
+}
+
+export interface NewPhotoIntent {
+  filename: string;
+  contentType: PhotoContentType;
+  sizeBytes: number;
 }
 
 /** Whose listings a dashboard shows — derived from the principal, never from the request. */

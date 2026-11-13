@@ -36,6 +36,32 @@ export class PermissionService {
     return count > 0;
   }
 
+  async isPublishedListing(listingId: string): Promise<boolean> {
+    const count = await this.prisma.listing.count({ where: { id: listingId, status: PUBLISHED } });
+    return count > 0;
+  }
+
+  /** The photo belongs to the listing, and the listing to the caller (whole chain). */
+  async isOwnListingPhoto(
+    principal: Principal,
+    listingId: string,
+    photoId: string,
+  ): Promise<boolean> {
+    const ownership = ownedBy(principal);
+    if (!ownership) {
+      return false;
+    }
+    const count = await this.prisma.listingPhoto.count({
+      where: { id: photoId, listingId, listing: ownership },
+    });
+    return count > 0;
+  }
+
+  async isOwnSavedSearch(userId: string, savedSearchId: string): Promise<boolean> {
+    const count = await this.prisma.savedSearch.count({ where: { id: savedSearchId, userId } });
+    return count > 0;
+  }
+
   /** Published, or the caller's own, or the caller is an admin. */
   async isVisibleListing(principal: Principal, listingId: string): Promise<boolean> {
     if (principal.hasAuthority('ADMIN')) {

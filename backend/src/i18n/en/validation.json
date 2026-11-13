@@ -39,9 +39,64 @@
     "tooLong": "Search must be at most {max} characters"
   },
   "city": {
-    "invalid": "Choose a city from the list"
+    "invalid": "Choose a city from the list",
+    "required": "Choose a city"
   },
   "amount": {
     "invalid": "Enter an amount like 1800 or 1800.50"
+  },
+  "rent": {
+    "maxBelowMin": "The highest rent must not be below the lowest"
+  },
+  "availableBy": {
+    "invalid": "Enter a date"
+  },
+  "title": {
+    "required": "Enter a title",
+    "tooLong": "Title must be at most {max} characters"
+  },
+  "description": {
+    "required": "Describe the home",
+    "tooLong": "Description must be at most {max} characters"
+  },
+  "propertyType": {
+    "required": "Choose a property type"
+  },
+  "bedrooms": {
+    "invalid": "Enter the number of bedrooms (0 for a studio)"
+  },
+  "bathrooms": {
+    "invalid": "Enter the number of bathrooms, e.g. 1 or 1.5"
+  },
+  "sizeSqft": {
+    "invalid": "Enter the size in square feet"
+  },
+  "addressLine1": {
+    "required": "Enter the street address",
+    "tooLong": "Address must be at most {max} characters"
+  },
+  "addressLine2": {
+    "tooLong": "Address must be at most {max} characters"
+  },
+  "neighborhood": {
+    "tooLong": "Neighborhood must be at most {max} characters"
+  },
+  "zip": {
+    "required": "Enter the ZIP code",
+    "invalid": "Enter a ZIP code like 78701 or 78701-1234"
+  },
+  "availableFrom": {
+    "invalid": "Enter the move-in date"
+  },
+  "photo": {
+    "filenameRequired": "The file has no name",
+    "filenameTooLong": "The file name is too long",
+    "typeRejected": "Upload a JPEG, PNG or WebP",
+    "sizeInvalid": "The file size is not valid",
+    "tooLarge": "A photo can be at most 10 MB"
+  },
+  "savedSearchName": {
+    "required": "Name this search",
+    "tooLong": "Name must be at most {max} characters"
   }
 }

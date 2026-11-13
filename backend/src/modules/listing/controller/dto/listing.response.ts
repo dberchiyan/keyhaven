@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { MoneySchema } from '../../../../common/dto/money';
 import { pageResponseSchema } from '../../../../common/dto/page.response';
 import { LISTING_STATUSES } from '../../service/listing-status';
+import { PHOTO_STATUSES } from '../../service/photo-status';
 import { PROPERTY_TYPES } from '../../service/property-type';
 
 export const PropertyTypeSchema = z.enum(PROPERTY_TYPES).meta({ id: 'PropertyType' });
@@ -38,13 +39,30 @@ export const ListingCardSchema = z
     availableFrom: z.iso.date(),
     publishedAt: z.iso.datetime().nullable(),
     coverPhotoUrl: z.string().max(500).nullable(),
+    /** The viewer saved it (tenants); false for everyone else. */
+    saved: z.boolean(),
   })
   .meta({ id: 'ListingCard' });
 
-/** A row of the owner's dashboard: the card plus its status. */
+/** A row of the owner's dashboard: the card plus its status, views and saves. */
 export const ManagedListingCardSchema = z
-  .object({ ...ListingCardSchema.shape, status: ListingStatusSchema })
+  .object({
+    ...ListingCardSchema.shape,
+    status: ListingStatusSchema,
+    viewCount: z.number().int().min(0),
+    saveCount: z.number().int().min(0),
+  })
   .meta({ id: 'ManagedListingCard' });
+
+/** A photo as its owner manages it: pending uploads included. */
+export const ManagedPhotoSchema = z
+  .object({
+    id: z.uuid(),
+    url: z.string().max(500).nullable(),
+    status: z.enum(PHOTO_STATUSES).meta({ id: 'PhotoStatus' }),
+    position: z.number().int().min(0).nullable(),
+  })
+  .meta({ id: 'ManagedPhoto' });
 
 const ListedBySchema = z
   .discriminatedUnion('kind', [
@@ -90,6 +108,10 @@ export const ManagedListingSchema = z
     ...ListingDetailSchema.shape,
     status: ListingStatusSchema,
     address: ListingAddressSchema,
+    cityId: z.uuid(),
+    viewCount: z.number().int().min(0),
+    saveCount: z.number().int().min(0),
+    managedPhotos: z.array(ManagedPhotoSchema).max(40),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
     version: z.number().int().min(0),
@@ -109,6 +131,11 @@ export class ManagedListingPageResponse extends createZodDto(
 ) {}
 export class ListingDetailResponse extends createZodDto(z.object(ListingDetailSchema.shape)) {}
 export class ManagedListingResponse extends createZodDto(z.object(ManagedListingSchema.shape)) {}
+
+/** A tenant's saved home. */
+export class SavedListingResponse extends createZodDto(
+  z.object({ listingId: z.uuid(), saved: z.boolean() }),
+) {}
 
 /** How many listings the caller manages in each status. */
 export class ListingStatusCountsResponse extends createZodDto(

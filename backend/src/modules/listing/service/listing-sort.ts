@@ -13,3 +13,10 @@ export const MANAGED_LISTING_PAGEABLE = pageableOptions({
   defaultSort: 'updatedAt,desc',
 });
 export type ManagedListingSortField = (typeof MANAGED_LISTING_PAGEABLE.sortable)[number];
+
+/** Saved homes: newest save first — the order is fixed, only page and size apply. */
+export const SAVED_LISTING_PAGEABLE = pageableOptions({
+  sortable: ['savedAt'] as const,
+  defaultSort: 'savedAt,desc',
+});
+export type SavedListingSortField = (typeof SAVED_LISTING_PAGEABLE.sortable)[number];

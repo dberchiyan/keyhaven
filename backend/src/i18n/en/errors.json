@@ -25,7 +25,15 @@
   "listing": {
     "publishNotAllowed": "This listing can't be published while it is {status}",
     "unpublishNotAllowed": "This listing can't be unpublished while it is {status}",
-    "suspendNotAllowed": "This listing can't be suspended while it is {status}"
+    "suspendNotAllowed": "This listing can't be suspended while it is {status}",
+    "notEditable": "This listing can't be edited while it is {status}",
+    "publishNeedsPhoto": "Add at least one photo before publishing",
+    "cityNotFound": "Choose a city from the list",
+    "tooManyPhotos": "A listing can have at most {max} photos",
+    "photoTooLarge": "A photo can be at most {maxMb} MB",
+    "photoNotUploaded": "The photo was not uploaded — try again",
+    "photoRejected": "The file is not the photo that was announced — upload a JPEG, PNG or WebP",
+    "photoOrderMismatch": "The order must list every photo once — reload and try again"
   },
   "registration": {
     "emailTaken": "An account with this email already exists — sign in instead"
@@ -33,5 +41,8 @@
   "verification": {
     "alreadyVerified": "This email address is already verified",
     "invalidLink": "This link is not valid any more — ask for a new one"
+  },
+  "savedSearch": {
+    "tooMany": "You can keep at most {max} saved searches — delete one first"
   }
 }

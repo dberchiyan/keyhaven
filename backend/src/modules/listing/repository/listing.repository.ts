@@ -1,40 +1,49 @@
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { Injectable } from '@nestjs/common';
+import { z } from 'zod';
 import type { Pageable } from '../../../common/dto/pageable';
 import { toPrismaPage } from '../../../common/persistence/pageable';
 import type { PrismaService } from '../../../common/persistence/prisma.service';
-import type { Prisma } from '../../../generated/prisma/client';
+import { Prisma } from '../../../generated/prisma/client';
 import type { ListingCriteria, ManagedListingCriteria } from '../service/filter/listing.criteria';
 import type { ListingSortField, ManagedListingSortField } from '../service/listing-sort';
-import type { ListingScope } from '../service/listing.types';
-import { managedListingWhere, publishedListingWhere } from './listing-where';
+import type { ListingDraft, ListingScope } from '../service/listing.types';
+import { managedListingWhere, publishedListingSql } from './listing-where';
 import {
   type CityRecord,
   citySelect,
-  type ListingCardRecord,
-  listingCardSelect,
   type ListingDetailRecord,
   listingDetailSelect,
   type ListingStatusRecord,
   listingStatusSelect,
   type ManagedListingCardRecord,
   managedListingCardSelect,
+  type ManagedListingRecord,
+  managedListingSelect,
+  type ViewerCardRecord,
+  viewerCardSelect,
 } from './record/listing.record';
 
 /** Cities are reference data: a handful of rows, listed whole. */
 const MAX_CITIES = 100;
 
-const searchOrderBy = (
-  field: ListingSortField,
-  direction: Prisma.SortOrder,
-): Prisma.ListingOrderByWithRelationInput[] =>
-  field === 'rent' ? [{ rent: direction }] : [{ publishedAt: direction }];
+const searchOrderBy = (field: ListingSortField, direction: Prisma.SortOrder): Prisma.Sql =>
+  field === 'rent'
+    ? direction === 'asc'
+      ? Prisma.sql`l.rent ASC, l.id ASC`
+      : Prisma.sql`l.rent DESC, l.id DESC`
+    : direction === 'asc'
+      ? Prisma.sql`l.published_at ASC NULLS LAST, l.id ASC`
+      : Prisma.sql`l.published_at DESC NULLS LAST, l.id DESC`;
 
 const managedOrderBy = (
   field: ManagedListingSortField,
   direction: Prisma.SortOrder,
 ): Prisma.ListingOrderByWithRelationInput[] => [{ [field]: direction }];
+
+/** The id page of a search plus the total, from one statement (`count(*) over ()`). */
+const searchRowsSchema = z.array(z.object({ id: z.string(), total: z.number().int() }));
 
 @Injectable()
 export class ListingRepository {
@@ -50,18 +59,52 @@ export class ListingRepository {
     });
   }
 
+  cityExists(cityId: string): Promise<boolean> {
+    return this.txHost.tx.city.count({ where: { id: cityId } }).then((count) => count > 0);
+  }
+
+  /**
+   * Search: the matching page of ids and the total come from one raw statement (the trigram
+   * operators have no Prisma equivalent); the cards are then loaded by id and put back in order.
+   * Two statements for any page, never one per row.
+   */
   async findPublishedPage(
     criteria: ListingCriteria,
     pageable: Pageable<ListingSortField>,
-  ): Promise<{ content: ListingCardRecord[]; totalElements: number }> {
-    const where = publishedListingWhere(criteria);
-    const page = toPrismaPage(pageable, searchOrderBy, (direction) => ({ id: direction }));
-    // In parallel (api.md → Pagination): a concurrent write may make them differ by a row.
-    const [totalElements, content] = await Promise.all([
-      this.txHost.tx.listing.count({ where }),
-      this.txHost.tx.listing.findMany({ where, select: listingCardSelect, ...page }),
-    ]);
-    return { content, totalElements };
+    viewerUserId: string | null,
+  ): Promise<{ content: ViewerCardRecord[]; totalElements: number }> {
+    const rows = await this.txHost.tx.$queryRaw<unknown[]>`
+      SELECT l.id, count(*) OVER ()::int AS total
+      FROM listings l JOIN cities c ON c.id = l.city_id
+      WHERE ${publishedListingSql(criteria)}
+      ORDER BY ${searchOrderBy(pageable.sort.field, pageable.sort.direction)}
+      LIMIT ${pageable.size} OFFSET ${pageable.page * pageable.size}`;
+    const page = searchRowsSchema.parse(rows);
+    if (page.length === 0) {
+      // Past the last page (or nothing matches): the total still needs a count.
+      return { content: [], totalElements: await this.countPublished(criteria) };
+    }
+    const ids = page.map((row) => row.id);
+    const cards = await this.txHost.tx.listing.findMany({
+      where: { id: { in: ids } },
+      select: viewerCardSelect(viewerUserId),
+    });
+    const byId = new Map(cards.map((card) => [card.id, card]));
+    return {
+      content: ids.flatMap((id) => {
+        const card = byId.get(id);
+        return card ? [card] : [];
+      }),
+      totalElements: page[0]?.total ?? 0,
+    };
+  }
+
+  private async countPublished(criteria: ListingCriteria): Promise<number> {
+    const rows = await this.txHost.tx.$queryRaw<unknown[]>`
+      SELECT count(*)::int AS total
+      FROM listings l JOIN cities c ON c.id = l.city_id
+      WHERE ${publishedListingSql(criteria)}`;
+    return z.array(z.object({ total: z.number().int() })).parse(rows)[0]?.total ?? 0;
   }
 
   async findManagedPage(
@@ -93,8 +136,47 @@ export class ListingRepository {
     return this.txHost.tx.listing.findUnique({ where: { id }, select: listingDetailSelect });
   }
 
+  findManagedById(id: string): Promise<ManagedListingRecord | null> {
+    return this.txHost.tx.listing.findUnique({ where: { id }, select: managedListingSelect });
+  }
+
   findStatusById(id: string): Promise<ListingStatusRecord | null> {
     return this.txHost.tx.listing.findUnique({ where: { id }, select: listingStatusSelect });
+  }
+
+  /** A new DRAFT owned by a landlord or an agency; returns its id. */
+  async create(
+    owner: { landlordId: string | null; agencyId: string | null },
+    draft: ListingDraft,
+    createdBy: string,
+  ): Promise<string> {
+    const { id } = await this.txHost.tx.listing.create({
+      data: {
+        ...toColumns(draft),
+        landlordId: owner.landlordId,
+        agencyId: owner.agencyId,
+        currency: 'USD',
+        status: 'DRAFT',
+        createdBy,
+        updatedBy: createdBy,
+      },
+      select: { id: true },
+    });
+    return id;
+  }
+
+  /** Optimistic update of the owner's fields; false when the row changed meanwhile (data.md). */
+  async update(
+    id: string,
+    version: number,
+    draft: ListingDraft,
+    updatedBy: string,
+  ): Promise<boolean> {
+    const { count } = await this.txHost.tx.listing.updateMany({
+      where: { id, version },
+      data: { ...toColumns(draft), updatedBy, version: { increment: 1 } },
+    });
+    return count > 0;
   }
 
   /** Optimistic update of the status; false when the row changed meanwhile (data.md). */
@@ -116,4 +198,32 @@ export class ListingRepository {
     });
     return count > 0;
   }
+
+  /** A page view, counted once per person and UTC day (the primary key makes repeats no-ops). */
+  async recordView(listingId: string, userId: string, viewedOn: Date): Promise<void> {
+    await this.txHost.tx.listingView.createMany({
+      data: [{ listingId, userId, viewedOn }],
+      skipDuplicates: true,
+    });
+  }
 }
+
+/** The draft's fields as columns — money and counts as Decimal, the day as a UTC instant. */
+const toColumns = (draft: ListingDraft) => ({
+  title: draft.title,
+  description: draft.description,
+  propertyType: draft.propertyType,
+  rent: draft.rent,
+  bedrooms: draft.bedrooms,
+  bathrooms: draft.bathrooms,
+  sizeSqft: draft.sizeSqft,
+  addressLine1: draft.addressLine1,
+  addressLine2: draft.addressLine2,
+  cityId: draft.cityId,
+  neighborhood: draft.neighborhood,
+  zip: draft.zip,
+  petsAllowed: draft.petsAllowed,
+  furnished: draft.furnished,
+  parking: draft.parking,
+  availableFrom: draft.availableFrom,
+});
