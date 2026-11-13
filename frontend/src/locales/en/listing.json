@@ -141,7 +141,14 @@
     "contact": "Contact",
     "similar": "Similar homes",
     "similarNoteRent": "For rent in {{place}}, about the same size and rent",
-    "similarNoteSale": "For sale in {{place}}, about the same size and price"
+    "similarNoteSale": "For sale in {{place}}, about the same size and price",
+    "priceContext": {
+      "below": "{{percent}}% below typical for a {{type}} in {{place}}",
+      "above": "{{percent}}% above typical for a {{type}} in {{place}}",
+      "typical": "About typical for a {{type}} in {{place}}",
+      "basis_one": "— median {{median}} from {{count}} home",
+      "basis_other": "— median {{median}} from {{count}} homes"
+    }
   },
   "manage": {
     "pageTitle": "Listings · Keyhaven",

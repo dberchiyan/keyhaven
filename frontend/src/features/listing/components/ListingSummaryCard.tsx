@@ -23,6 +23,7 @@ import { PATHS } from '@/shared/lib/paths';
 import { formatBaths, formatBeds, formatSize } from '../format';
 import { useNearbyCount } from '../hooks/useNearbyCount';
 import type { ListingDetail } from '../types';
+import { PriceContextLine } from './PriceContextLine';
 
 export interface ListingSummaryCardProps {
   listing: ListingDetail;
@@ -119,6 +120,7 @@ export function ListingSummaryCard({ listing, actions }: ListingSummaryCardProps
               </Typography>
             )}
           </Typography>
+          <PriceContextLine listing={listing} />
           <div className="flex items-center gap-1.5">
             <PlaceOutlined aria-hidden fontSize="small" className="text-primary" />
             <Typography variant="subtitle1" component="p">

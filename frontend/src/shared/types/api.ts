@@ -804,6 +804,13 @@ export interface components {
             line1: string;
             line2: string | null;
         };
+        PriceContext_Output: {
+            /** @enum {string} */
+            scope: "NEIGHBORHOOD" | "CITY";
+            median: components["schemas"]["Money_Output"];
+            sample: number;
+            differencePercent: number;
+        };
         ListingDetailResponse_Output: {
             /** Format: uuid */
             id: string;
@@ -834,6 +841,7 @@ export interface components {
             }[];
             listedBy: components["schemas"]["ListedBy_Output"];
             address: components["schemas"]["ListingAddress_Output"] | null;
+            priceContext: components["schemas"]["PriceContext_Output"] | null;
         };
         ManagedListingCard_Output: {
             /** Format: uuid */
@@ -925,6 +933,7 @@ export interface components {
             }[];
             listedBy: components["schemas"]["ListedBy_Output"];
             address: components["schemas"]["ListingAddress_Output"];
+            priceContext: components["schemas"]["PriceContext_Output"] | null;
             status: components["schemas"]["ListingStatus_Output"];
             /** Format: uuid */
             cityId: string;
