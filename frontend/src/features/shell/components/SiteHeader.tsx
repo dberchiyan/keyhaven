@@ -57,7 +57,9 @@ export function SiteHeader() {
     pathname === PATHS.browse ? (params.type === 'HOUSE' ? 'houses' : params.kind) : null;
 
   return (
-    <header className="sticky top-0 z-10 flex shrink-0 flex-col border-b border-divider bg-background-paper shadow-[0_1px_2px_var(--mui-palette-shadow-soft)]">
+    // z-20: above the cards' hearts (z-10, raised over their stretched link), which otherwise
+    // show through the sticky bar while the grid scrolls under it.
+    <header className="sticky top-0 z-20 flex shrink-0 flex-col border-b border-divider bg-background-paper shadow-[0_1px_2px_var(--mui-palette-shadow-soft)]">
       <div className="mx-auto flex h-top-bar-height w-full max-w-page items-center gap-3 px-4 md:px-8">
         <Link
           to={PATHS.browse}
