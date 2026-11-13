@@ -3,6 +3,7 @@ import { bodyOf, Client, createTestApp, type TestApp } from './app';
 import { FakeEmailSender } from './fake-email.sender';
 import { PNG_HEAD } from './fake-object.storage';
 import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
+import { MAX_PENDING_PHOTOS } from '../src/modules/listing/service/photo-status';
 
 const rows = (response: { body: unknown }): Record<string, unknown>[] =>
   (bodyOf(response as never).content as Record<string, unknown>[] | undefined) ?? [];
@@ -355,6 +356,24 @@ describe('Listings and search (M1)', () => {
       expect(gallery.filter((p) => p.status === 'PENDING').map((p) => p.id)).toEqual([
         abandoned.photoId,
       ]);
+    });
+
+    it('bounds the upload intents a listing can hold open', async () => {
+      const own = bodyOf(
+        await landlord.postIdempotent('/api/v1/managed-listings', draft({ title: 'Intent bound' })),
+      );
+      const open = (): Promise<{ status: number; body: unknown }> =>
+        landlord.postIdempotent(`/api/v1/managed-listings/${String(own.id)}/photo-intents`, {
+          filename: 'x.png',
+          contentType: 'image/png',
+          sizeBytes: PNG_HEAD.length,
+        });
+      for (let i = 0; i < MAX_PENDING_PHOTOS; i += 1) {
+        expect((await open()).status).toBe(200);
+      }
+      const refused = await open();
+      expect(refused.status).toBe(422);
+      expect(refused.body).toMatchObject({ error: 'BUSINESS_RULE_VIOLATION' });
     });
 
     it('publishes, appears in search, counts a view, and the saved search mails the match', async () => {
