@@ -73,6 +73,7 @@ const CIRCLES = [
                 <a
                   href={item.href}
                   class="footer-link inline-flex min-h-9 items-center text-[0.9375rem] font-medium transition-colors"
+                  {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
                 >
                   {item.label}
                 </a>
