@@ -414,8 +414,10 @@ export class ListingService {
     return this.findManaged(listingId);
   }
 
+  /** Count and position under the listing's row lock: two confirmations at once stay in order. */
   @Transactional()
   private async readyPhoto(listingId: string, photoId: string, sizeBytes: number): Promise<void> {
+    await this.listingRepository.lock(listingId);
     if ((await this.photoRepository.countReady(listingId)) >= MAX_PHOTOS) {
       throw new BusinessRuleException('errors.listing.tooManyPhotos', { max: MAX_PHOTOS });
     }
