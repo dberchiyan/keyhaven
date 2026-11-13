@@ -53,7 +53,24 @@ export interface ListingAddress {
   line2: string | null;
 }
 
+/** How many comparable homes the median rests on before it is shown at all. */
+export const PRICE_CONTEXT_MIN_SAMPLE = 3;
+
+/**
+ * The price against comparable homes (same kind, city and type): the neighborhood's median when
+ * enough homes are there, else the city's; null when even the city has too few.
+ */
+export interface PriceContext {
+  scope: 'NEIGHBORHOOD' | 'CITY';
+  median: Money;
+  /** Homes the median is based on. */
+  sample: number;
+  /** This home against the median, in whole percent: −8 is 8 % below. */
+  differencePercent: number;
+}
+
 export interface ListingDetail extends ListingCard {
+  priceContext: PriceContext | null;
   description: string;
   furnished: boolean;
   petsAllowed: boolean;

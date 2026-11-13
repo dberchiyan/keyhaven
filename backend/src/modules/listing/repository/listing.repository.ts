@@ -46,6 +46,21 @@ const managedOrderBy = (
 /** The id page of a search plus the total, from one statement (`count(*) over ()`). */
 const searchRowsSchema = z.array(z.object({ id: z.string(), total: z.number().int() }));
 const idRowsSchema = z.array(z.object({ id: z.string() }));
+/** The two medians come back as doubles (percentile_cont); the service turns them into Decimals. */
+const medianRowsSchema = z.array(
+  z.object({
+    neighborhoodSample: z.number().int(),
+    neighborhoodMedian: z.number().nullable(),
+    citySample: z.number().int(),
+    cityMedian: z.number().nullable(),
+  }),
+);
+export interface PriceMedians {
+  neighborhoodSample: number;
+  neighborhoodMedian: number | null;
+  citySample: number;
+  cityMedian: number | null;
+}
 
 /** "Similar" homes: the same kind and city, a bedroom either way, a price within this share. */
 const SIMILAR_PRICE_SPREAD = 0.25;
@@ -144,6 +159,41 @@ export class ListingRepository {
       ORDER BY abs(l.price - ${price}::numeric) ASC, l.published_at DESC NULLS LAST, l.id ASC
       LIMIT ${SIMILAR_LIMIT}`;
     return idRowsSchema.parse(rows).map((row) => row.id);
+  }
+
+  /**
+   * The median price of comparable published homes — the same kind, city and type, this one
+   * excluded — for the neighborhood and for the whole city, with how many each is based on.
+   * One statement: `percentile_cont` over the city, filtered once more for the neighborhood.
+   */
+  async findPriceMedians(listing: {
+    id: string;
+    kind: string;
+    cityId: string;
+    propertyType: string;
+    neighborhood: string | null;
+  }): Promise<PriceMedians> {
+    const rows = await this.txHost.tx.$queryRaw<unknown[]>`
+      SELECT
+        count(*) FILTER (WHERE l.neighborhood = ${listing.neighborhood ?? ''})::int AS "neighborhoodSample",
+        percentile_cont(0.5) WITHIN GROUP (ORDER BY l.price)
+          FILTER (WHERE l.neighborhood = ${listing.neighborhood ?? ''}) AS "neighborhoodMedian",
+        count(*)::int AS "citySample",
+        percentile_cont(0.5) WITHIN GROUP (ORDER BY l.price) AS "cityMedian"
+      FROM listings l
+      WHERE l.status = ${ListingStatus.PUBLISHED}
+        AND l.kind = ${listing.kind}
+        AND l.city_id = ${listing.cityId}::uuid
+        AND l.property_type = ${listing.propertyType}
+        AND l.id <> ${listing.id}::uuid`;
+    return (
+      medianRowsSchema.parse(rows)[0] ?? {
+        neighborhoodSample: 0,
+        neighborhoodMedian: null,
+        citySample: 0,
+        cityMedian: null,
+      }
+    );
   }
 
   /** The homes a person opened, latest first (each once), from their view rows. */

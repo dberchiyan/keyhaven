@@ -86,6 +86,17 @@ const ListedBySchema = z
   ])
   .meta({ id: 'ListedBy' });
 
+/** The price against comparable homes (same kind, city and type); null with too few of them. */
+const PriceContextSchema = z
+  .object({
+    scope: z.enum(['NEIGHBORHOOD', 'CITY']),
+    median: MoneySchema,
+    sample: z.number().int().min(1),
+    /** Whole percent against the median: −8 is 8 % below. */
+    differencePercent: z.number().int().min(-1000).max(100000),
+  })
+  .meta({ id: 'PriceContext' });
+
 /** The private part of the address; null when the caller may not see it. */
 const ListingAddressSchema = z
   .object({ line1: z.string().max(255), line2: z.string().max(255).nullable() })
@@ -103,6 +114,7 @@ export const ListingDetailSchema = z
     listedBy: ListedBySchema,
     /** Shown to the owner, the agency's agents and admins; null for everyone else (M2: confirmed viewings). */
     address: ListingAddressSchema.nullable(),
+    priceContext: PriceContextSchema.nullable(),
   })
   .meta({ id: 'ListingDetail' });
 

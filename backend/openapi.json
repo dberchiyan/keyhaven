@@ -3810,6 +3810,38 @@
         ],
         "additionalProperties": false
       },
+      "PriceContext_Output": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "NEIGHBORHOOD",
+              "CITY"
+            ]
+          },
+          "median": {
+            "$ref": "#/components/schemas/Money_Output"
+          },
+          "sample": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "differencePercent": {
+            "type": "integer",
+            "minimum": -1000,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "scope",
+          "median",
+          "sample",
+          "differencePercent"
+        ],
+        "additionalProperties": false
+      },
       "ListingDetailResponse_Output": {
         "type": "object",
         "properties": {
@@ -3923,6 +3955,14 @@
               }
             ],
             "nullable": true
+          },
+          "priceContext": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceContext_Output"
+              }
+            ],
+            "nullable": true
           }
         },
         "required": [
@@ -3947,7 +3987,8 @@
           "zip",
           "photos",
           "listedBy",
-          "address"
+          "address",
+          "priceContext"
         ],
         "additionalProperties": false
       },
@@ -4332,6 +4373,14 @@
           "address": {
             "$ref": "#/components/schemas/ListingAddress_Output"
           },
+          "priceContext": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PriceContext_Output"
+              }
+            ],
+            "nullable": true
+          },
           "status": {
             "$ref": "#/components/schemas/ListingStatus_Output"
           },
@@ -4396,6 +4445,7 @@
           "photos",
           "listedBy",
           "address",
+          "priceContext",
           "status",
           "cityId",
           "viewCount",

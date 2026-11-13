@@ -9,7 +9,7 @@ import {
   ConcurrentModificationException,
   ResourceNotFoundException,
 } from '../../../common/exception/api.exception';
-import { toMoney } from '../../../common/persistence/money';
+import { toDecimal, toMoney } from '../../../common/persistence/money';
 import type { Principal } from '../../../common/security/principal';
 import { AuditAction, AuditTargetType } from '../../audit/service/audit-action';
 import { AuditField, auditValue, changeOf } from '../../audit/service/audit-change';
@@ -47,6 +47,7 @@ import type {
   ListingScope,
   ListingViewer,
   ManagedListing,
+  PriceContext,
   ManagedListingCard,
   ManagedPhoto,
   NewPhotoIntent,
@@ -54,6 +55,7 @@ import type {
   UpdateListingCommand,
 } from './listing.types';
 import { isListingKind, type ListingKind } from './listing-kind';
+import { PRICE_CONTEXT_MIN_SAMPLE } from './listing.types';
 import { isPhotoStatus, MAX_PHOTOS, PHOTO_MAX_BYTES, PhotoStatus } from './photo-status';
 import { sniffImageType } from './photo-type';
 import { isPropertyType, type PropertyType } from './property-type';
@@ -122,11 +124,14 @@ export class ListingService {
         : { kind: 'VISITOR', visitorKey };
       await this.listingRepository.recordView(listingId, viewer, utcToday());
     }
-    return this.toDetail(
-      listing,
-      owns ? { line1: listing.addressLine1, line2: listing.addressLine2 } : null,
-      listing.savedBy.length > 0,
-    );
+    return {
+      ...this.toDetail(
+        listing,
+        owns ? { line1: listing.addressLine1, line2: listing.addressLine2 } : null,
+        listing.savedBy.length > 0,
+      ),
+      priceContext: await this.priceContextOf(listing),
+    };
   }
 
   /** Homes like this one (the policy admitted the id); "saved" is the viewer's. */
@@ -151,6 +156,44 @@ export class ListingService {
   async findCards(ids: readonly string[], viewerUserId: string | null): Promise<ListingCard[]> {
     const cards = await this.listingRepository.findCardsByIds(ids, viewerUserId);
     return cards.map((card) => this.toViewerCard(card));
+  }
+
+  /** The home's price against comparable ones (ListingDetail.priceContext); null without enough of them. */
+  private async priceContextOf(listing: ListingDetailRecord): Promise<PriceContext | null> {
+    const medians = await this.listingRepository.findPriceMedians({
+      id: listing.id,
+      kind: listing.kind,
+      cityId: listing.city.id,
+      propertyType: listing.propertyType,
+      neighborhood: listing.neighborhood,
+    });
+    const chosen =
+      medians.neighborhoodMedian !== null && medians.neighborhoodSample >= PRICE_CONTEXT_MIN_SAMPLE
+        ? {
+            scope: 'NEIGHBORHOOD' as const,
+            median: medians.neighborhoodMedian,
+            sample: medians.neighborhoodSample,
+          }
+        : medians.cityMedian !== null && medians.citySample >= PRICE_CONTEXT_MIN_SAMPLE
+          ? { scope: 'CITY' as const, median: medians.cityMedian, sample: medians.citySample }
+          : null;
+    if (!chosen) {
+      return null;
+    }
+    // The median arrives as a double from SQL; from here on it is a Decimal (data.md → Money).
+    const median = toDecimal(chosen.median.toFixed(4));
+    const differencePercent = listing.price
+      .minus(median)
+      .div(median)
+      .times(100)
+      .toDecimalPlaces(0)
+      .toNumber();
+    return {
+      scope: chosen.scope,
+      median: toMoney(median, listing.currency),
+      sample: chosen.sample,
+      differencePercent,
+    };
   }
 
   /** The dashboard page: the caller's scope (landlord / agency / everything for admins). */
@@ -194,7 +237,7 @@ export class ListingService {
     if (!listing) {
       throw new ResourceNotFoundException();
     }
-    return this.toManaged(listing, photos);
+    return { ...this.toManaged(listing, photos), priceContext: await this.priceContextOf(listing) };
   }
 
   /** A new DRAFT: a landlord's own, or the agent's agency's (never from the request). */
@@ -537,6 +580,8 @@ export class ListingService {
       }),
       listedBy: toListedBy(listing),
       address,
+      // Filled by the callers that show a price against the market (the viewer's and the owner's pages).
+      priceContext: null,
     };
   }
 

@@ -78,6 +78,7 @@ export const toListingDetailResponse = (listing: ListingDetail): ListingDetailBo
   photos: listing.photos,
   listedBy: listing.listedBy,
   address: listing.address,
+  priceContext: listing.priceContext,
 });
 
 export const toManagedListingResponse = (listing: ManagedListing): ManagedListingBody => ({
