@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ApiError } from '@/shared/api/apiError';
+import { DEFAULT_BROWSE_SORT, type SearchFilters } from '@/shared/lib/listingSearch';
 import { listingApi } from '../api/listingApi';
 import { managedListingApi } from '../api/managedListingApi';
 import { savedListingApi } from '../api/savedListingApi';
@@ -32,6 +33,19 @@ export const useListings = (params: BrowseParams) =>
     queryKey: listingKeys.search(params),
     queryFn: () => listingApi.search(params),
     placeholderData: keepPreviousData,
+  });
+
+/**
+ * How many homes a set of filters would show — the filter drawer's "Show N homes" button. One
+ * card is enough: the API answers the total with every page.
+ */
+export const useListingCount = (filters: SearchFilters, enabled: boolean) =>
+  useQuery({
+    queryKey: listingKeys.count(filters),
+    queryFn: () => listingApi.search({ ...filters, sort: DEFAULT_BROWSE_SORT, page: 1, size: 1 }),
+    select: (page) => page.totalElements,
+    placeholderData: keepPreviousData,
+    enabled,
   });
 
 export const useListing = (listingId: string) =>

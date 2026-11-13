@@ -192,7 +192,30 @@
     "pets": "Pets welcome",
     "furnished": "Furnished",
     "parking": "Parking",
-    "clear": "Clear filters"
+    "clear": "Clear filters",
+    "open": "Filters",
+    "openActive_one": "Filters, {{count}} active",
+    "openActive_other": "Filters, {{count}} active",
+    "title": "Filters",
+    "close": "Close filters",
+    "rent": "Monthly rent",
+    "availableByLabel": "Move in by",
+    "clearAll": "Clear all",
+    "show": "Show homes",
+    "showCount_zero": "No homes match",
+    "showCount_one": "Show {{formatted}} home",
+    "showCount_other": "Show {{formatted}} homes",
+    "chip": {
+      "rentBetween": "{{min}}–{{max}}",
+      "rentFrom": "From {{min}}",
+      "rentTo": "Up to {{max}}",
+      "beds_zero": "Studio+",
+      "beds_one": "{{count}}+ bed",
+      "beds_other": "{{count}}+ beds",
+      "baths": "{{count}}+ baths",
+      "availableBy": "By {{date}}",
+      "remove": "Remove filter {{filter}}"
+    }
   },
   "save": {
     "add": "Save {{title}}",

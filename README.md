@@ -14,7 +14,7 @@ agents manage listings and viewings; Keyhaven admins keep the site clean.
 
 A public demo product · US market · English UI · fictional data only
 
-![Keyhaven — Browse homes: a typo-tolerant text search, city, rent, beds, baths and amenity filters, sorting, saved homes marked with a heart and a "Save this search" button over a grid of listing cards](docs/browse.jpg)
+![Keyhaven — Browse homes: a search box, the city, a Filters button with the number of active filters and the sort in one row; the active filters as removable chips; saved homes marked with a heart and a "Save this search" button over a grid of listing cards](docs/browse.jpg)
 
 [Quick start](#quick-start) · [Demo accounts](#demo-accounts) · [What works today](#what-works-today-m0--m1) ·
 [Architecture](#architecture) · [Development](#development) · [Roadmap](#roadmap)
@@ -92,7 +92,8 @@ in the backend log (or your inbox with SMTP configured).
   City, rent range, beds, baths, pets / furnished / parking, available-by date and a
   **typo-tolerant text search** over title, neighborhood, ZIP and city (PostgreSQL `pg_trgm` word
   similarity: "Walingford" finds Wallingford); sort by newest or rent; everything in the URL, so a
-  search is a link. Listing page with gallery, facts and the landlord / agency card. **The exact
+  search is a link. The detailed filters live in a side sheet whose button already says how many
+  homes they would show; active ones come back as removable chips. Listing page with gallery, facts and the landlord / agency card. **The exact
   address is hidden** until a viewing is confirmed (M2) — only the owner and admins see it today.
 - **Saved homes and saved searches:** a heart on every card; a search can be saved under a name
   and, when alerts are on, a **daily email** (08:00 UTC) lists the homes published since the last

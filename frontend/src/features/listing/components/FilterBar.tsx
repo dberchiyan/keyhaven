@@ -1,6 +1,7 @@
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
+import TuneOutlined from '@mui/icons-material/TuneOutlined';
+import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
@@ -14,13 +15,14 @@ import {
   hasFilters,
   SEARCH_TEXT_MAX_LENGTH,
 } from '@/shared/lib/listingSearch';
+import { countDrawerFilters, type DrawerKey } from '../hooks/useFilterDraft';
 import { useCities } from '../hooks/useListingQueries';
+import { ActiveFilterChips } from './ActiveFilterChips';
+import { FilterDrawer } from './FilterDrawer';
 
 /** Typing pauses this long before the text goes to the URL (and the API). */
 const SEARCH_DEBOUNCE_MS = 350;
 const ALL = '';
-const BEDS = ['', '0', '1', '2', '3', '4'] as const;
-const BATHS = ['', '1', '1.5', '2', '3'] as const;
 
 type Change = Partial<Omit<BrowseParams, 'size' | 'page'>>;
 
@@ -33,13 +35,22 @@ export interface FilterBarProps {
   saveSearch?: ReactNode;
 }
 
-/** Every filter of the search page; each change goes to the URL at once (text after a pause). */
+/**
+ * One quiet row — the search text, the city, a Filters button and the sort — with the detailed
+ * filters behind the button in a drawer. Active filters come back as removable chips.
+ */
 export function FilterBar({ params, total, onChange, onClear, saveSearch }: FilterBarProps) {
   const { t, i18n } = useTranslation('listing');
   const cities = useCities();
   const city = cities.data?.some((candidate) => candidate.slug === params.city)
     ? (params.city ?? ALL)
     : ALL;
+  const filters = filtersOf(params);
+  const active = countDrawerFilters(filters);
+
+  // The drawer remounts on each opening (its draft starts from the URL every time).
+  const [opening, setOpening] = useState(0);
+  const [open, setOpen] = useState(false);
 
   // The URL is the source of truth: a Back navigation puts its text back into the field.
   const [text, setText] = useState(params.q ?? '');
@@ -60,158 +71,97 @@ export function FilterBar({ params, total, onChange, onClear, saveSearch }: Filt
     };
   }, [text, params.q, onChange]);
 
-  const amenity = (key: 'pets' | 'furnished' | 'parking') => (
-    <Chip
-      key={key}
-      label={t(`filters.${key}`)}
-      variant={params[key] ? 'filled' : 'outlined'}
-      color={params[key] ? 'primary' : 'default'}
-      clickable
-      role="checkbox"
-      aria-checked={params[key] === true}
-      onClick={() => {
-        onChange({ [key]: params[key] ? undefined : true });
-      }}
-    />
-  );
+  const remove = (keys: readonly DrawerKey[]): void => {
+    onChange(Object.fromEntries(keys.map((key) => [key, undefined])));
+  };
 
   return (
     <div className="flex flex-col gap-3">
-      <TextField
-        type="search"
-        size="small"
-        label={t('filters.search')}
-        value={text}
-        onChange={(event) => {
-          setText(event.target.value);
-        }}
-        slotProps={{
-          htmlInput: { maxLength: SEARCH_TEXT_MAX_LENGTH, autoComplete: 'off', spellCheck: false },
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchOutlined aria-hidden />
-              </InputAdornment>
-            ),
-          },
-        }}
-        className="w-full md:max-w-lg"
-      />
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center">
         <TextField
-          select
+          type="search"
           size="small"
-          label={t('browse.city')}
-          value={city}
+          placeholder={t('filters.search')}
+          value={text}
           onChange={(event) => {
-            onChange({ city: event.target.value === ALL ? undefined : event.target.value });
-          }}
-          slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-          className="col-span-2 sm:col-span-1"
-        >
-          <MenuItem value={ALL}>{t('browse.allCities')}</MenuItem>
-          {(cities.data ?? []).map((option) => (
-            <MenuItem key={option.id} value={option.slug}>
-              {`${option.name}, ${option.state}`}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          size="small"
-          label={t('filters.rentMin')}
-          value={params.rentMin ?? ''}
-          onChange={(event) => {
-            onChange({ rentMin: event.target.value.replace(/[^\d]/g, '') || undefined });
+            setText(event.target.value);
           }}
           slotProps={{
-            htmlInput: { inputMode: 'numeric', maxLength: 9 },
-            input: { startAdornment: <InputAdornment position="start">$</InputAdornment> },
+            htmlInput: {
+              'aria-label': t('filters.search'),
+              maxLength: SEARCH_TEXT_MAX_LENGTH,
+              autoComplete: 'off',
+              spellCheck: false,
+            },
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchOutlined aria-hidden />
+                </InputAdornment>
+              ),
+            },
           }}
+          className="w-full md:max-w-md md:flex-1"
         />
-        <TextField
-          size="small"
-          label={t('filters.rentMax')}
-          value={params.rentMax ?? ''}
-          onChange={(event) => {
-            onChange({ rentMax: event.target.value.replace(/[^\d]/g, '') || undefined });
-          }}
-          slotProps={{
-            htmlInput: { inputMode: 'numeric', maxLength: 9 },
-            input: { startAdornment: <InputAdornment position="start">$</InputAdornment> },
-          }}
-        />
-        <TextField
-          select
-          size="small"
-          label={t('filters.beds')}
-          value={params.beds === undefined ? '' : String(params.beds)}
-          onChange={(event) => {
-            onChange({ beds: event.target.value === '' ? undefined : Number(event.target.value) });
-          }}
-          slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-        >
-          {BEDS.map((option) => (
-            <MenuItem key={option} value={option}>
-              {option === ''
-                ? t('filters.any')
-                : t('filters.bedsOption', { count: Number(option) })}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          size="small"
-          label={t('filters.baths')}
-          value={params.baths ?? ''}
-          onChange={(event) => {
-            onChange({ baths: event.target.value === '' ? undefined : event.target.value });
-          }}
-          slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-        >
-          {BATHS.map((option) => (
-            <MenuItem key={option} value={option}>
-              {option === '' ? t('filters.any') : t('filters.bathsOption', { count: option })}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          type="date"
-          size="small"
-          label={t('filters.availableBy')}
-          value={params.availableBy ?? ''}
-          onChange={(event) => {
-            onChange({ availableBy: event.target.value || undefined });
-          }}
-          slotProps={{ inputLabel: { shrink: true } }}
-        />
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <div role="group" aria-label={t('filters.amenities')} className="flex flex-wrap gap-2">
-          {amenity('pets')}
-          {amenity('furnished')}
-          {amenity('parking')}
+        <div className="flex flex-wrap items-center gap-2 md:ml-auto">
+          <TextField
+            select
+            size="small"
+            value={city}
+            onChange={(event) => {
+              onChange({ city: event.target.value === ALL ? undefined : event.target.value });
+            }}
+            slotProps={{
+              select: { displayEmpty: true, 'aria-label': t('browse.city') },
+            }}
+            className="w-44"
+          >
+            <MenuItem value={ALL}>{t('browse.allCities')}</MenuItem>
+            {(cities.data ?? []).map((option) => (
+              <MenuItem key={option.id} value={option.slug}>
+                {`${option.name}, ${option.state}`}
+              </MenuItem>
+            ))}
+          </TextField>
+          <Badge badgeContent={active} color="primary" overlap="rectangular">
+            <Button
+              variant="outlined"
+              startIcon={<TuneOutlined aria-hidden />}
+              aria-haspopup="dialog"
+              aria-expanded={open}
+              aria-label={
+                active > 0 ? t('filters.openActive', { count: active }) : t('filters.open')
+              }
+              onClick={() => {
+                setOpening((count) => count + 1);
+                setOpen(true);
+              }}
+            >
+              {t('filters.open')}
+            </Button>
+          </Badge>
+          <TextField
+            select
+            size="small"
+            value={params.sort}
+            onChange={(event) => {
+              const sort = BROWSE_SORTS.find((candidate) => candidate === event.target.value);
+              if (sort) {
+                onChange({ sort });
+              }
+            }}
+            slotProps={{ select: { 'aria-label': t('browse.sort') } }}
+            className="w-44"
+          >
+            {BROWSE_SORTS.map((option) => (
+              <MenuItem key={option} value={option}>
+                {t(`browse.sortOptions.${option}`)}
+              </MenuItem>
+            ))}
+          </TextField>
         </div>
-        <TextField
-          select
-          size="small"
-          label={t('browse.sort')}
-          value={params.sort}
-          onChange={(event) => {
-            const sort = BROWSE_SORTS.find((candidate) => candidate === event.target.value);
-            if (sort) {
-              onChange({ sort });
-            }
-          }}
-          className="w-44 sm:ml-auto"
-        >
-          {BROWSE_SORTS.map((option) => (
-            <MenuItem key={option} value={option}>
-              {t(`browse.sortOptions.${option}`)}
-            </MenuItem>
-          ))}
-        </TextField>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Typography
           variant="body2"
           color="textSecondary"
@@ -225,13 +175,28 @@ export function FilterBar({ params, total, onChange, onClear, saveSearch }: Filt
                 formatted: new Intl.NumberFormat(i18n.language).format(total),
               })}
         </Typography>
-        {hasFilters(filtersOf(params)) && (
+        <ActiveFilterChips filters={filters} onRemove={remove} />
+        {hasFilters(filters) && (
           <Button variant="text" size="small" onClick={onClear}>
             {t('filters.clear')}
           </Button>
         )}
         <div className="ml-auto">{saveSearch}</div>
       </div>
+      {open && (
+        <FilterDrawer
+          key={opening}
+          open={open}
+          filters={filters}
+          onClose={() => {
+            setOpen(false);
+          }}
+          onApply={(change) => {
+            onChange(change);
+            setOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

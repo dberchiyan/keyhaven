@@ -1,3 +1,4 @@
+import type { SearchFilters } from '@/shared/lib/listingSearch';
 import type { BrowseParams, ManagedListParams, SavedListParams } from '../types';
 
 /** The caller comes from the session; the cache is cleared on sign-out. */
@@ -6,6 +7,7 @@ export const listingKeys = {
   cities: () => [...listingKeys.all, 'cities'] as const,
   searches: () => [...listingKeys.all, 'search'] as const,
   search: (params: BrowseParams) => [...listingKeys.searches(), params] as const,
+  count: (filters: SearchFilters) => [...listingKeys.searches(), 'count', filters] as const,
   detail: (listingId: string) => [...listingKeys.all, 'detail', listingId] as const,
   saved: () => [...listingKeys.all, 'saved'] as const,
   savedList: (params: SavedListParams) => [...listingKeys.saved(), params] as const,
