@@ -1,7 +1,6 @@
 import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
+import MailOutlined from '@mui/icons-material/MailOutlined';
 import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
@@ -53,32 +52,40 @@ export default function ListingPage() {
     <DetailPageFrame headingRef={headingRef} title={listing.data.title} back={back}>
       <ListingDetailView
         listing={listing.data}
-        aside={
-          <Card variant="outlined">
-            <CardContent className="flex flex-col gap-2 p-4">
-              {/* M2 brings viewing slots; until then the button says so instead of hiding. */}
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="contained"
-                  size="large"
-                  disabled
-                  startIcon={<CalendarMonthOutlined aria-hidden />}
-                  className="flex-1"
-                >
-                  {`${t('detail.book')} — ${t('detail.bookSoon')}`}
-                </Button>
-                <SaveButton
-                  listingId={listing.data.id}
-                  saved={listing.data.saved}
-                  title={listing.data.title}
-                  className="border border-divider"
-                />
-              </div>
-              <Typography variant="caption" color="textSecondary">
-                {t('detail.bookHint')}
-              </Typography>
-            </CardContent>
-          </Card>
+        summaryActions={
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Button
+                href={`mailto:${listing.data.listedBy.email}?subject=${encodeURIComponent(t('detail.contactSubject', { title: listing.data.title }))}`}
+                variant="contained"
+                size="large"
+                startIcon={<MailOutlined aria-hidden />}
+                className="flex-1"
+              >
+                {listing.data.listedBy.kind === 'AGENCY'
+                  ? t('detail.contactAgency', { name: listing.data.listedBy.name })
+                  : t('detail.contactLandlord')}
+              </Button>
+              <SaveButton
+                listingId={listing.data.id}
+                saved={listing.data.saved}
+                title={listing.data.title}
+                className="border border-divider"
+              />
+            </div>
+            {/* M2 brings viewing slots; until then the button says so instead of hiding. */}
+            <Button
+              variant="outlined"
+              size="large"
+              disabled
+              startIcon={<CalendarMonthOutlined aria-hidden />}
+            >
+              {`${t('detail.book')} — ${t('detail.bookSoon')}`}
+            </Button>
+            <Typography variant="caption" color="textSecondary">
+              {t('detail.bookHint')}
+            </Typography>
+          </div>
         }
       />
     </DetailPageFrame>

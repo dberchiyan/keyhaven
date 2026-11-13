@@ -1,7 +1,6 @@
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatPrice } from '../format';
 import type { ListingDetail } from '../types';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -9,38 +8,41 @@ import { ListedByCard } from './ListedByCard';
 import { ListingAmenities } from './ListingAmenities';
 import { ListingDetails } from './ListingDetails';
 import { ListingLocation } from './ListingLocation';
+import { ListingSummaryCard } from './ListingSummaryCard';
 import { PhotoGallery } from './PhotoGallery';
 
 export interface ListingDetailViewProps {
   listing: ListingDetail;
-  /** Under the title: a status badge (the owner's view). */
+  /** Beside the price: a status badge (the owner's view). */
   badge?: ReactNode;
-  /** The side column's first card: actions (the owner's view) or the viewing call to action. */
-  aside: ReactNode;
+  /** Inside the summary card, under the facts: contact, book, save (the tenant's view). */
+  summaryActions?: ReactNode;
+  /** A card after the summary: the owner's actions. */
+  aside?: ReactNode;
   addressNote?: string;
 }
 
 /** Gallery and the blocks (details, amenities, about, location) on the left; contact and actions on the right. */
-export function ListingDetailView({ listing, badge, aside, addressNote }: ListingDetailViewProps) {
-  const { t, i18n } = useTranslation('listing');
-  const where = [listing.neighborhood, `${listing.city.name}, ${listing.city.state}`]
-    .filter(Boolean)
-    .join(' · ');
+export function ListingDetailView({
+  listing,
+  badge,
+  summaryActions,
+  aside,
+  addressNote,
+}: ListingDetailViewProps) {
+  const { t } = useTranslation('listing');
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
-      <div className="flex min-w-0 flex-col gap-6">
+      {/* On a phone the summary card comes first, as on the example; on a wide screen it heads the side column. */}
+      <div className="order-first flex flex-col gap-2 lg:order-none lg:col-start-2 lg:row-start-1">
+        {badge && <div className="flex">{badge}</div>}
+        <ListingSummaryCard
+          listing={listing}
+          {...(summaryActions === undefined ? {} : { actions: summaryActions })}
+        />
+      </div>
+      <div className="flex min-w-0 flex-col gap-6 lg:col-start-1 lg:row-span-2 lg:row-start-1">
         <PhotoGallery title={listing.title} photos={listing.photos} />
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Typography variant="h5" component="p" className="app-tabular">
-              {formatPrice(listing, i18n.language, t)}
-            </Typography>
-            {badge}
-          </div>
-          <Typography variant="body1" color="textSecondary">
-            {where}
-          </Typography>
-        </div>
         {/* The page reads as blocks: a heading, a note, a card of rows — one per subject. */}
         <ListingDetails listing={listing} />
         <ListingAmenities listing={listing} />
@@ -64,7 +66,7 @@ export function ListingDetailView({ listing, badge, aside, addressNote }: Listin
           {...(addressNote === undefined ? {} : { note: addressNote })}
         />
       </div>
-      <div className="flex flex-col gap-4 lg:sticky lg:top-top-bar-height lg:self-start">
+      <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2 lg:self-start">
         {aside}
         <ListedByCard listedBy={listing.listedBy} />
       </div>

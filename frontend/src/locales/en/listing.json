@@ -110,7 +110,32 @@
     "parkingYes": "Included",
     "parkingNo": "Street parking",
     "location": "Location",
-    "city": "City"
+    "city": "City",
+    "breadcrumb": "Where this home is listed",
+    "breadcrumbHome": "Homes",
+    "breadcrumbRent": "For rent in {{city}}",
+    "breadcrumbSale": "For sale in {{city}}",
+    "perMonthShort": "/mo",
+    "listedAgo": "Listed {{ago}}",
+    "listedJustNow": "Listed just now",
+    "fact": {
+      "beds": "Bedrooms",
+      "size": "Size",
+      "baths": "Bathrooms",
+      "pets": "Pets",
+      "parking": "Parking"
+    },
+    "nearbyCounting": "Counting homes in {{place}}…",
+    "nearbyRent_zero": "No other homes for rent in {{place}} right now — based on Keyhaven listings.",
+    "nearbyRent_one": "{{count}} more home for rent in {{place}} right now — based on Keyhaven listings.",
+    "nearbyRent_other": "{{count}} more homes for rent in {{place}} right now — based on Keyhaven listings.",
+    "nearbySale_zero": "No other homes for sale in {{place}} right now — based on Keyhaven listings.",
+    "nearbySale_one": "{{count}} more home for sale in {{place}} right now — based on Keyhaven listings.",
+    "nearbySale_other": "{{count}} more homes for sale in {{place}} right now — based on Keyhaven listings.",
+    "nearbyLink": "See them",
+    "contactLandlord": "Contact the landlord",
+    "contactAgency": "Contact {{name}}",
+    "contactSubject": "About \"{{title}}\" on Keyhaven"
   },
   "manage": {
     "pageTitle": "Listings · Keyhaven",
