@@ -128,7 +128,10 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    # The landing (Astro) and the app (SPA) behind one nginx: build from the repository root.
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     depends_on:
       backend:
         condition: service_healthy

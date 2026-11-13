@@ -1,0 +1,65 @@
+---
+/**
+ * One search card drawn in HTML/CSS (the app's ListingCard): a photo block, the price, facts,
+ * the place and the move-in pill. Decorative inside a MockFrame.
+ */
+interface Props {
+  price: string;
+  title: string;
+  facts: string;
+  place: string;
+  pill: string;
+  /** The "photo": a gradient standing in for a picture. */
+  tone: 'dusk' | 'moss' | 'clay';
+  saved?: boolean;
+  /** Stagger index for the entrance. */
+  i?: number;
+}
+
+const { price, title, facts, place, pill, tone, saved = false, i = 0 } = Astro.props;
+
+const TONES = {
+  dusk: 'from-chart-1/70 via-navy to-brand-strong',
+  moss: 'from-brand-glow via-brand to-navy',
+  clay: 'from-chart-4/80 via-chart-2/70 to-chart-3/60',
+} as const;
+---
+
+<div
+  class="anim-rise flex flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass"
+  style={`--i: ${i}`}
+>
+  <div class:list={['relative aspect-[4/3] bg-gradient-to-br', TONES[tone]]}>
+    <!-- A window and a roof line, so the block reads as a home rather than a swatch. -->
+    <span class="absolute inset-x-[22%] bottom-0 h-[52%] rounded-t-md bg-surface/25"></span>
+    <span class="absolute top-[18%] left-[34%] h-[14%] w-[12%] rounded-sm bg-surface/50"></span>
+    <span class="absolute top-[18%] left-[54%] h-[14%] w-[12%] rounded-sm bg-surface/50"></span>
+    <span
+      class:list={[
+        'anim-pop absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-surface shadow-card',
+        saved ? 'text-danger-dot' : 'text-ink',
+      ]}
+      style="--i: 4"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        class="size-4.5"
+        fill={saved ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linejoin="round"
+      >
+        <path d="M12 20.5 4.9 13.6A4.6 4.6 0 0 1 11.4 7l.6.6.6-.6a4.6 4.6 0 0 1 6.5 6.6L12 20.5Z"></path>
+      </svg>
+    </span>
+  </div>
+  <div class="flex flex-col gap-1 p-4">
+    <p class="text-lg font-semibold text-ink tabular-nums">{price}</p>
+    <p class="text-sm font-medium text-ink-2">{title}</p>
+    <p class="text-[0.8125rem] text-muted">{facts}</p>
+    <p class="text-[0.8125rem] text-muted">{place}</p>
+    <span class="mt-1.5 inline-flex w-fit items-center rounded-full bg-success-bg px-2 py-0.5 text-[0.6875rem] font-medium text-success-fg">
+      {pill}
+    </span>
+  </div>
+</div>

@@ -1,0 +1,80 @@
+---
+import StatusBadge from '@/components/ui/StatusBadge.astro';
+import MockFrame from './MockFrame.astro';
+
+interface Props {
+  label: string;
+  class?: string | undefined;
+}
+
+const { label, class: className } = Astro.props;
+
+const TILES = [
+  { label: 'Published', value: '14' },
+  { label: 'Drafts', value: '2' },
+  { label: 'Unpublished', value: '1' },
+] as const;
+
+const ROWS = [
+  {
+    title: 'Renovated 3-bedroom in Mueller',
+    city: 'Austin',
+    price: '$2,950',
+    status: 'success',
+    word: 'Published',
+    views: '128',
+    saves: '9',
+  },
+  {
+    title: 'Corner loft on Harbor Street',
+    city: 'Seattle',
+    price: '$2,395',
+    status: 'warning',
+    word: 'Draft',
+    views: '—',
+    saves: '—',
+  },
+  {
+    title: 'Townhouse near Washington Park',
+    city: 'Denver',
+    price: '$3,400',
+    status: 'success',
+    word: 'Published',
+    views: '61',
+    saves: '4',
+  },
+] as const;
+---
+
+<MockFrame label={label} class={className}>
+  <div class="rounded-panel bg-surface p-4 shadow-window ring-glass sm:p-5">
+    <div class="grid grid-cols-3 gap-2 sm:gap-3">
+      {TILES.map((tile, index) => (
+        <div
+          class="anim-rise rounded-card bg-surface-2 px-3 py-2.5 sm:px-4 sm:py-3"
+          style={`--i: ${index}`}
+        >
+          <p class="text-[0.6875rem] font-medium text-muted uppercase">{tile.label}</p>
+          <p class="text-xl font-semibold text-ink tabular-nums sm:text-2xl">{tile.value}</p>
+        </div>
+      ))}
+    </div>
+    <div class="mt-4 divide-y divide-line">
+      {ROWS.map((row, index) => (
+        <div class="anim-rise flex items-center gap-3 py-2.5" style={`--i: ${index + 3}`}>
+          <span class="size-9 shrink-0 rounded-md bg-gradient-to-br from-brand-glow to-brand"></span>
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-medium text-ink">{row.title}</p>
+            <p class="text-xs text-muted">
+              {row.city} · {row.price}/mo
+            </p>
+          </div>
+          <span class="hidden text-xs text-muted tabular-nums sm:block">
+            {row.views} views · {row.saves} saves
+          </span>
+          <StatusBadge tone={row.status} label={row.word} />
+        </div>
+      ))}
+    </div>
+  </div>
+</MockFrame>

@@ -1,0 +1,74 @@
+---
+import MockFrame from './MockFrame.astro';
+import ListingCardMock from './ListingCardMock.astro';
+
+interface Props {
+  label: string;
+  class?: string | undefined;
+}
+
+const { label, class: className } = Astro.props;
+
+/** Three homes in the app's own shapes — the figures are illustrative, like the demo's. */
+const CARDS = [
+  {
+    price: '$2,450/mo',
+    title: 'Sunny 2-bedroom apartment in Capitol Hill',
+    facts: '2 beds · 1.5 baths · 940 sq ft',
+    place: 'Capitol Hill · Seattle, WA',
+    pill: 'Available Dec 1',
+    tone: 'dusk',
+    saved: true,
+  },
+  {
+    price: '$3,100/mo',
+    title: 'Quiet 3-bedroom house in Wallingford',
+    facts: '3 beds · 2 baths · 1,420 sq ft',
+    place: 'Wallingford · Seattle, WA',
+    pill: 'Available Jan 15',
+    tone: 'moss',
+  },
+  {
+    price: '$1,850/mo',
+    title: 'Bright studio near the Mueller lake',
+    facts: 'Studio · 1 bath · 520 sq ft',
+    place: 'Mueller · Austin, TX',
+    pill: 'Available now',
+    tone: 'clay',
+  },
+] as const;
+---
+
+<MockFrame label={label} class={className}>
+  <div class="rounded-panel bg-canvas/80 p-3 shadow-window ring-glass sm:p-4">
+    <div class="anim-fade mb-3 flex items-center gap-2 px-1" style="--i: 0">
+      <span class="flex h-9 flex-1 items-center gap-2 rounded-full bg-surface px-3 text-[0.8125rem] text-subtle ring-1 ring-line">
+        <svg
+          viewBox="0 0 24 24"
+          class="size-4"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+        >
+          <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4"></path>
+        </svg>
+        walingford
+      </span>
+      <span class="hidden h-9 items-center rounded-full bg-surface px-3 text-[0.8125rem] text-ink-2 ring-1 ring-line sm:flex">
+        Seattle, WA
+      </span>
+      <span class="hidden h-9 items-center gap-1.5 rounded-full bg-surface px-3 text-[0.8125rem] font-medium text-brand ring-1 ring-brand/40 sm:flex">
+        Filters
+        <span class="flex size-4.5 items-center justify-center rounded-full bg-brand text-[0.625rem] font-semibold text-on-brand">
+          2
+        </span>
+      </span>
+    </div>
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      {CARDS.map((card, index) => (
+        <ListingCardMock {...card} i={index + 1} />
+      ))}
+    </div>
+  </div>
+</MockFrame>

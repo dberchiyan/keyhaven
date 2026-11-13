@@ -1,0 +1,156 @@
+---
+import ListingGridMock from '@/components/mock/ListingGridMock.astro';
+import Container from '@/components/ui/Container.astro';
+import Icon from '@/components/ui/Icon.astro';
+import { LANDING } from '@/content/landing';
+import { CITIES, SITE } from '@/content/site';
+
+const { hero, highlights } = LANDING;
+---
+
+<!-- Pulled up under the header (transparent at the top), so the glow reaches the top edge. -->
+<section aria-labelledby="hero-title" class="relative isolate -mt-16 overflow-hidden pt-16">
+  <div class="backdrop-brand absolute inset-0 -z-10" aria-hidden="true"></div>
+  <div class="backdrop-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+
+  <Container class="pt-16 pb-4 sm:pt-24 lg:pt-28">
+    <div class="mx-auto flex max-w-4xl flex-col items-center text-center">
+      <p
+        style="--d: 0"
+        class="enter inline-flex items-center gap-2 rounded-full bg-surface/70 px-3.5 py-1.5 text-[0.8125rem] font-medium text-ink-2 ring-glass backdrop-blur"
+      >
+        <Icon name="home" class="size-4 text-brand" />
+        {hero.eyebrow}
+      </p>
+      <h1 id="hero-title" class="type-display mt-6">
+        <span style="--d: 1" class="enter block">
+          {hero.titleStart}
+        </span>
+        <span style="--d: 2" class="enter text-gradient block pb-1">
+          {hero.titleAccent}
+        </span>
+      </h1>
+      <p style="--d: 3" class="enter type-lead mt-6 max-w-2xl text-muted">
+        {hero.lead}
+      </p>
+
+      <!-- A real search: the form lands on the app's search page with the same parameters. -->
+      <form
+        method="get"
+        action={SITE.links.browse}
+        role="search"
+        style="--d: 4"
+        class="enter mt-9 flex w-full max-w-2xl flex-col gap-3 rounded-panel bg-surface p-3 shadow-float ring-glass sm:flex-row sm:items-center sm:rounded-full sm:p-2 sm:pl-3"
+      >
+        <fieldset class="flex shrink-0 rounded-full bg-surface-2 p-1">
+          <legend class="sr-only">{hero.search.legend}</legend>
+          <label class="kind-option">
+            <input type="radio" name="kind" value="rent" checked class="sr-only" />
+            <span>{hero.search.rent}</span>
+          </label>
+          <label class="kind-option">
+            <input type="radio" name="kind" value="sale" class="sr-only" />
+            <span>{hero.search.buy}</span>
+          </label>
+        </fieldset>
+        <label class="flex min-h-11 flex-1 items-center gap-2 rounded-full px-3 text-ink">
+          <Icon name="search" class="size-5 shrink-0 text-muted" />
+          <span class="sr-only">{hero.search.label}</span>
+          <input
+            type="search"
+            name="q"
+            placeholder={hero.search.placeholder}
+            autocomplete="off"
+            maxlength="100"
+            class="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-subtle"
+          />
+        </label>
+        <button
+          type="submit"
+          class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-brand px-6 font-semibold text-on-brand transition-[background-color,transform] duration-150 hover:bg-brand-strong active:scale-[0.98] motion-reduce:active:scale-100"
+        >
+          {hero.search.submit}
+        </button>
+      </form>
+      <p style="--d: 5" class="enter mt-3 text-sm text-subtle">
+        {hero.search.hint}
+      </p>
+
+      <nav aria-label={hero.citiesLabel} style="--d: 5" class="enter mt-6">
+        <ul class="flex flex-wrap justify-center gap-2">
+          {CITIES.map((city) => (
+            <li>
+              <a
+                href={`${SITE.links.browse}?city=${city.slug}`}
+                class="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-surface/70 px-3.5 text-sm font-medium text-ink-2 ring-glass backdrop-blur transition-colors hover:bg-surface hover:text-ink"
+              >
+                <Icon name="pin" class="size-4 text-brand" />
+                {city.name}, {city.state}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+
+    <div style="--d: 6" class="enter tilt-stage relative mx-auto mt-16 max-w-5xl sm:mt-20">
+      <div
+        class="absolute -inset-x-8 -top-8 -bottom-12 -z-10 rounded-[3rem] bg-gradient-to-b from-brand/15 to-transparent blur-2xl"
+        aria-hidden="true"
+      ></div>
+      <div class="tilt">
+        <ListingGridMock label={hero.mockLabel} />
+      </div>
+    </div>
+
+    <dl class="mx-auto mt-20 grid max-w-5xl grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4">
+      {highlights.map((item) => (
+        <div class="reveal flex flex-col items-center gap-1 text-center">
+          <dt class="order-2 text-sm text-muted">{item.label}</dt>
+          <dd class="order-1 text-2xl font-semibold tracking-[-0.03em] text-ink sm:text-3xl">
+            {item.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </Container>
+</section>
+
+<style>
+  /* The Rent / Buy switch: the chosen option is a raised pill, as in the app's segmented control. */
+  .kind-option {
+    cursor: pointer;
+  }
+
+  .kind-option span {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    border-radius: 999px;
+    padding-inline: 1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--c-muted);
+    transition:
+      background-color 150ms,
+      color 150ms,
+      box-shadow 150ms;
+  }
+
+  .kind-option:has(input:checked) span {
+    background: var(--c-surface);
+    color: var(--c-ink);
+    box-shadow: var(--shadow-card);
+  }
+
+  .kind-option:has(input:focus-visible) span {
+    outline: 2px solid var(--c-brand);
+    outline-offset: 2px;
+  }
+
+  @media (pointer: coarse) {
+    .kind-option span {
+      min-height: 2.75rem;
+    }
+  }
+</style>

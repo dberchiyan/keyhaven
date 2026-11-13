@@ -1,0 +1,777 @@
+@import 'tailwindcss';
+
+/*
+ * Colours are the app's own "Hearth" palette (frontend/src/theme/tokens.ts, OKLCH), copied — the
+ * two packages never import each other. A warm cream ground, paper cards, a forest-green brand,
+ * amber as the second accent, warm hairlines and a soft umber shadow. Light and dark follow the
+ * visitor's system; utilities read the semantic names below (`bg-surface`, `text-muted`,
+ * `border-line`…), never raw colours.
+ */
+:root {
+  color-scheme: light dark;
+
+  --c-canvas: oklch(96% 0.012 79.8);
+  --c-surface: oklch(99.4% 0.006 84.6);
+  --c-surface-2: oklch(93.3% 0.017 79.3);
+  --c-ink: oklch(27.2% 0.02 163);
+  --c-ink-2: oklch(33% 0.022 163);
+  --c-muted: oklch(47% 0.023 163.9);
+  --c-subtle: oklch(63% 0.018 150);
+  --c-line: oklch(90.1% 0.02 77.3);
+  --c-line-strong: oklch(84% 0.025 77);
+
+  --c-brand: oklch(43.8% 0.074 167.8);
+  --c-brand-strong: oklch(36.3% 0.062 165.5);
+  --c-brand-soft: oklch(94% 0.013 159.9);
+  --c-brand-glow: oklch(72% 0.08 165);
+  --c-accent: oklch(68.1% 0.13 72.5);
+  --c-accent-soft: oklch(95.5% 0.045 85);
+  --c-accent-glow: oklch(80% 0.1 78);
+  --c-on-brand: oklch(99.4% 0.006 84.6);
+  /* Always-dark sections (the share card, the owners' panel): deep forest with a mint accent. */
+  --c-navy: oklch(22% 0.03 165);
+  --c-sky: oklch(86% 0.065 164);
+
+  --c-success-bg: oklch(94% 0.03 160);
+  --c-success-fg: oklch(40% 0.085 162);
+  --c-success-dot: oklch(60% 0.14 160);
+  --c-warning-bg: oklch(95.5% 0.045 85);
+  --c-warning-fg: oklch(45% 0.1 62);
+  --c-warning-dot: oklch(72% 0.15 68);
+  --c-info-bg: oklch(95% 0.025 225);
+  --c-info-fg: oklch(43% 0.075 225);
+  --c-info-dot: oklch(60% 0.11 225);
+  --c-danger-bg: oklch(95% 0.028 25);
+  --c-danger-fg: oklch(46% 0.16 27);
+  --c-danger-dot: oklch(62% 0.19 27);
+
+  --c-chart-1: oklch(57.5% 0.163 255.5);
+  --c-chart-2: oklch(67.1% 0.175 40.6);
+  --c-chart-3: oklch(66.9% 0.141 162.1);
+  --c-chart-4: oklch(76.4% 0.161 75.1);
+
+  /* Avatars: forest, amber, clay, olive, teal, plum, slate, moss — cream initials ≥ 5:1 on each. */
+  --c-avatar-1: oklch(43.8% 0.074 167.8);
+  --c-avatar-2: oklch(52% 0.12 65);
+  --c-avatar-3: oklch(50% 0.12 35);
+  --c-avatar-4: oklch(48% 0.09 120);
+  --c-avatar-5: oklch(48% 0.08 200);
+  --c-avatar-6: oklch(45% 0.11 330);
+  --c-avatar-7: oklch(45% 0.04 250);
+  --c-avatar-8: oklch(42% 0.07 150);
+
+  --shadow-soft: oklch(35% 0.04 70 / 0.07);
+  --shadow-strong: oklch(35% 0.05 70 / 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-canvas: oklch(21% 0.014 160);
+    --c-surface: oklch(25.5% 0.016 160);
+    --c-surface-2: oklch(30% 0.016 140);
+    --c-ink: oklch(95% 0.012 82);
+    --c-ink-2: oklch(92% 0.012 85);
+    --c-muted: oklch(78% 0.016 100);
+    --c-subtle: oklch(62% 0.016 120);
+    --c-line: oklch(34% 0.02 160);
+    --c-line-strong: oklch(40% 0.022 160);
+
+    --c-brand: oklch(78% 0.09 165);
+    --c-brand-strong: oklch(86% 0.065 164);
+    --c-brand-soft: oklch(32% 0.04 165);
+    --c-brand-glow: oklch(55% 0.08 165);
+    --c-accent: oklch(80% 0.11 76);
+    --c-accent-soft: oklch(33% 0.05 70);
+    --c-accent-glow: oklch(55% 0.1 75);
+    --c-on-brand: oklch(21% 0.014 160);
+    --c-navy: oklch(16% 0.02 160);
+    --c-sky: oklch(86% 0.065 164);
+
+    --c-success-bg: oklch(32% 0.05 157);
+    --c-success-fg: oklch(86% 0.09 156);
+    --c-success-dot: oklch(75% 0.13 156);
+    --c-warning-bg: oklch(33% 0.05 70);
+    --c-warning-fg: oklch(88% 0.1 82);
+    --c-warning-dot: oklch(80% 0.14 75);
+    --c-info-bg: oklch(33% 0.045 225);
+    --c-info-fg: oklch(87% 0.06 220);
+    --c-info-dot: oklch(74% 0.1 225);
+    --c-danger-bg: oklch(32% 0.06 25);
+    --c-danger-fg: oklch(86% 0.07 22);
+    --c-danger-dot: oklch(72% 0.15 25);
+
+    --c-chart-1: oklch(62.2% 0.161 255.1);
+    --c-chart-2: oklch(62.2% 0.173 40.1);
+    --c-chart-3: oklch(62.1% 0.128 163.1);
+    --c-chart-4: oklch(67% 0.143 73.2);
+
+    --shadow-soft: oklch(0% 0 0 / 0.3);
+    --shadow-strong: oklch(0% 0 0 / 0.5);
+  }
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-ink: var(--c-ink);
+  --color-ink-2: var(--c-ink-2);
+  --color-muted: var(--c-muted);
+  --color-subtle: var(--c-subtle);
+  --color-line: var(--c-line);
+  --color-line-strong: var(--c-line-strong);
+  --color-brand: var(--c-brand);
+  --color-brand-strong: var(--c-brand-strong);
+  --color-brand-soft: var(--c-brand-soft);
+  --color-brand-glow: var(--c-brand-glow);
+  --color-accent: var(--c-accent);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-accent-glow: var(--c-accent-glow);
+  --color-on-brand: var(--c-on-brand);
+  --color-navy: var(--c-navy);
+  --color-sky: var(--c-sky);
+  --color-success-bg: var(--c-success-bg);
+  --color-success-fg: var(--c-success-fg);
+  --color-success-dot: var(--c-success-dot);
+  --color-warning-bg: var(--c-warning-bg);
+  --color-warning-fg: var(--c-warning-fg);
+  --color-warning-dot: var(--c-warning-dot);
+  --color-info-bg: var(--c-info-bg);
+  --color-info-fg: var(--c-info-fg);
+  --color-info-dot: var(--c-info-dot);
+  --color-danger-bg: var(--c-danger-bg);
+  --color-danger-fg: var(--c-danger-fg);
+  --color-danger-dot: var(--c-danger-dot);
+  --color-chart-1: var(--c-chart-1);
+  --color-chart-2: var(--c-chart-2);
+  --color-chart-3: var(--c-chart-3);
+  --color-chart-4: var(--c-chart-4);
+  --color-avatar-1: var(--c-avatar-1);
+  --color-avatar-2: var(--c-avatar-2);
+  --color-avatar-3: var(--c-avatar-3);
+  --color-avatar-4: var(--c-avatar-4);
+  --color-avatar-5: var(--c-avatar-5);
+  --color-avatar-6: var(--c-avatar-6);
+  --color-avatar-7: var(--c-avatar-7);
+  --color-avatar-8: var(--c-avatar-8);
+
+  /* The app's radii: controls 10 px, menus 14 px, cards 18 px; buttons are pills. */
+  --radius-card: 1.125rem;
+  --radius-panel: 1.5rem;
+  --container-page: 76rem;
+
+  /* Two-layer elevation, as in the app: a contact shadow and a soft umber one. */
+  --shadow-card: 0 1px 2px var(--shadow-soft), 0 4px 16px -4px var(--shadow-soft);
+  --shadow-float: 0 2px 6px var(--shadow-soft), 0 24px 48px -12px var(--shadow-strong);
+  --shadow-window: 0 2px 8px var(--shadow-soft), 0 40px 80px -24px var(--shadow-strong);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    /* Inter's alternates as in the app: I, l and 1 told apart; rounder quotes and commas. */
+    font-feature-settings: 'cv05', 'cv08', 'ss03';
+    font-optical-sizing: auto;
+    background: var(--c-canvas);
+    color: var(--c-ink-2);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    /* Anchored sections start right under the sticky header (h-16). */
+    scroll-padding-top: 4rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  h1,
+  h2,
+  h3 {
+    color: var(--c-ink);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-brand);
+    outline-offset: 3px;
+    border-radius: 0.375rem;
+  }
+
+  ::selection {
+    background: var(--c-brand-soft);
+    color: var(--c-ink);
+  }
+}
+
+@layer components {
+  /* Display type: large, tight, the Inter Display cut via optical sizing. */
+  .type-display {
+    font-size: clamp(2.6rem, 1.6rem + 4.4vw, 4.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 650;
+  }
+
+  .type-title {
+    font-size: clamp(2rem, 1.4rem + 2.4vw, 3.1rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    font-weight: 650;
+  }
+
+  .type-lead {
+    font-size: clamp(1.075rem, 1rem + 0.35vw, 1.25rem);
+    line-height: 1.6;
+    letter-spacing: -0.005em;
+  }
+
+  .type-eyebrow {
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  /* Gradient ink for one or two words of a heading. */
+  .text-gradient {
+    background: linear-gradient(
+      100deg,
+      var(--c-brand-strong) 0%,
+      var(--c-brand) 45%,
+      var(--c-accent-glow) 100%
+    );
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* The hero and final call to action: two brand glows over a fading dot grid. */
+  .backdrop-brand {
+    background:
+      radial-gradient(
+        48rem 28rem at 15% -10%,
+        color-mix(in oklch, var(--c-brand-glow) 38%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        40rem 26rem at 95% 0%,
+        color-mix(in oklch, var(--c-accent-glow) 22%, transparent),
+        transparent 70%
+      );
+  }
+
+  .backdrop-grid {
+    background-image: radial-gradient(
+      color-mix(in oklch, var(--c-ink) 14%, transparent) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 20%, transparent 75%);
+  }
+
+  /* A hairline that is brighter on top — glass edges on cards over the backdrop. */
+  .ring-glass {
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklch, white 55%, transparent),
+      0 0 0 1px var(--c-line);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .ring-glass {
+      box-shadow:
+        inset 0 1px 0 color-mix(in oklch, white 8%, transparent),
+        0 0 0 1px var(--c-line);
+    }
+  }
+}
+
+/*
+ * Sections rise in as they scroll into view — CSS scroll-driven animations only, no script.
+ * Browsers without them (and reduced motion) simply show everything.
+ */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+}
+
+@keyframes float {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /* Longhands only: the minifier would fold a shorthand and the timeline into one invalid value. */
+    .reveal {
+      animation-name: rise-in;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-slow {
+    animation: float 8s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+}
+
+/*
+ * Premium motion — transform and opacity (and a one-off blur on entrance) only; everything here
+ * is skipped under reduced motion, and the page reads fully without it.
+ *
+ * 1. Hero entrance: `.enter` + `--d` (step) — pieces rise in one after another on load.
+ * 2. Hero window: `.tilt` leans back and settles flat over the first 28rem of scrolling.
+ * 3. Drawings come alive once in view: `MockFrame` carries `data-animate`; a small observer
+ *    (Base.astro) sets `data-visible`. Parts use `.anim-rise | -fade | -pop | -grow-x | -grow-y |
+ *    -draw` with `--i` for the stagger and `--base` (on the frame) for an extra delay.
+ * 4. Header: a solid layer (`.site-header::before`) fades in as the page scrolls.
+ */
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+  }
+}
+
+@keyframes tilt-flat {
+  from {
+    transform: rotateX(14deg) scale(0.94);
+  }
+}
+
+@keyframes anim-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes anim-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes anim-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@keyframes anim-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes anim-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes anim-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes header-solid {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The drawn line is exactly one dash long, so it can be drawn by moving the offset. */
+.anim-draw {
+  stroke-dasharray: 1;
+}
+
+.anim-grow-x {
+  transform-origin: left center;
+}
+
+.anim-grow-y {
+  transform-origin: center bottom;
+}
+
+.anim-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/*
+ * Reading progress: a hairline at the very top that fills as the page scrolls, brightest at its
+ * leading edge. The bar slides in (transform only) inside a box that clips sideways, so the tip's
+ * glow is never squashed. Scroll-linked, not autonomous motion, so it stays under reduced motion;
+ * hidden where scroll timelines are missing.
+ */
+.scroll-progress {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    display: block;
+    position: absolute;
+    inset: 0 0 auto;
+    height: 0.5rem;
+    overflow-x: clip;
+    pointer-events: none;
+    animation-name: progress-show;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root);
+    animation-range: 0 3rem;
+  }
+
+  .scroll-progress::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    border-radius: 0 999px 999px 0;
+    background: linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--c-brand-strong) 0%, transparent) 0%,
+      var(--c-brand) 35%,
+      var(--c-brand-glow) 80%,
+      var(--c-sky) 100%
+    );
+    box-shadow:
+      0 0 10px color-mix(in oklch, var(--c-brand-glow) 70%, transparent),
+      0 0 2px color-mix(in oklch, var(--c-sky) 80%, transparent);
+    transform: translateX(-100%);
+    animation-name: progress-fill;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root);
+  }
+
+  /* The tip: a soft spark at the leading edge, moving with the bar. */
+  .scroll-progress::after {
+    content: '';
+    position: absolute;
+    inset: -3px 0 auto;
+    height: 8px;
+    background: radial-gradient(
+      3rem 4px at 100% 50%,
+      color-mix(in oklch, var(--c-sky) 90%, transparent),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation-name: progress-fill;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes progress-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes progress-fill {
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* The header's solid layer: always on where scroll timelines are missing. */
+.site-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: color-mix(in oklch, var(--c-canvas) 78%, transparent);
+  border-bottom: 1px solid var(--c-line);
+  box-shadow: 0 8px 24px -16px var(--shadow-strong);
+  backdrop-filter: blur(20px) saturate(1.5);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .enter {
+    animation: enter 800ms var(--ease-out) both;
+    animation-delay: calc(var(--d, 0) * 90ms + 60ms);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .tilt-stage {
+      perspective: 2000px;
+    }
+
+    .tilt {
+      transform-origin: 50% 0%;
+      animation-name: tilt-flat;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 0 28rem;
+    }
+
+    .site-header::before {
+      animation-name: header-solid;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 0 5rem;
+    }
+  }
+
+  /* Before the drawing is seen: hidden only when the observer runs (`.js` on <html>). */
+  .js [data-animate]:not([data-visible]) :is(.anim-rise, .anim-fade, .anim-pop) {
+    opacity: 0;
+  }
+
+  .js [data-animate]:not([data-visible]) .anim-grow-x {
+    transform: scaleX(0);
+  }
+
+  .js [data-animate]:not([data-visible]) .anim-grow-y {
+    transform: scaleY(0);
+  }
+
+  .js [data-animate]:not([data-visible]) .anim-draw {
+    stroke-dashoffset: 1;
+  }
+
+  [data-visible] :is(.anim-rise, .anim-fade, .anim-pop, .anim-grow-x, .anim-grow-y, .anim-draw) {
+    animation-duration: 700ms;
+    animation-timing-function: var(--ease-out);
+    animation-fill-mode: both;
+    animation-delay: calc(var(--base, 0ms) + var(--i, 0) * 60ms);
+  }
+
+  [data-visible] .anim-rise {
+    animation-name: anim-rise;
+  }
+
+  [data-visible] .anim-fade {
+    animation-name: anim-fade;
+  }
+
+  [data-visible] .anim-pop {
+    animation-name: anim-pop;
+  }
+
+  [data-visible] .anim-grow-x {
+    animation-name: anim-grow-x;
+  }
+
+  [data-visible] .anim-grow-y {
+    animation-name: anim-grow-y;
+  }
+
+  [data-visible] .anim-draw {
+    animation-name: anim-draw;
+    animation-duration: 1400ms;
+  }
+}
+
+/*
+ * How it works: once the steps are in view, light flows along the thread from the first step to
+ * the last and each number lights up as it arrives (1.8 s, symmetric easing, so the middle step
+ * lights at half time); afterwards a soft glint keeps travelling the same way. Without motion (or
+ * without the observer) the steps simply show lit.
+ */
+.steps {
+  --flow: 1800ms;
+  --flow-ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.steps-track {
+  position: absolute;
+  top: calc(1.5rem - 4px);
+  right: 16.6%;
+  left: 16.6%;
+  height: 9px;
+  overflow-x: clip;
+  pointer-events: none;
+}
+
+.steps-fill {
+  position: absolute;
+  inset: 4px 0 auto;
+  height: 1.5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--c-brand-strong), var(--c-brand) 55%, var(--c-sky));
+  box-shadow: 0 0 10px color-mix(in oklch, var(--c-brand-glow) 70%, transparent);
+  transform-origin: left center;
+}
+
+/* A bright head on the fill's leading edge (the box slides, so the glow is never squashed). */
+.steps-comet {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    4rem 4.5px at 100% 50%,
+    color-mix(in oklch, var(--c-sky) 95%, transparent),
+    transparent
+  );
+  opacity: 0;
+}
+
+.step-dot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(140deg, var(--c-brand), var(--c-brand-strong));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, white 30%, transparent),
+    0 0 0 4px color-mix(in oklch, var(--c-brand-glow) 22%, transparent),
+    0 8px 22px -6px color-mix(in oklch, var(--c-brand) 60%, transparent);
+}
+
+.step-dot {
+  color: var(--c-on-brand);
+}
+
+/* The ripple as a step lights up. */
+.step-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px solid var(--c-brand-glow);
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .steps:not([data-visible]) .steps-fill {
+    transform: scaleX(0);
+  }
+
+  .js .steps:not([data-visible]) .step-dot {
+    color: var(--c-brand-strong);
+  }
+
+  .js .steps:not([data-visible]) .step-dot::before {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  .steps[data-visible] .steps-fill {
+    animation: steps-fill var(--flow) var(--flow-ease) 200ms both;
+  }
+
+  /* Rides the head while it fills, then keeps glinting along the thread. */
+  .steps[data-visible] .steps-comet {
+    animation:
+      steps-head var(--flow) var(--flow-ease) 200ms both,
+      steps-glint 2600ms cubic-bezier(0.45, 0, 0.25, 1) calc(var(--flow) + 1400ms) infinite;
+  }
+
+  .steps[data-visible] .step-dot {
+    /* The number turns light once the fill behind it is mostly there. */
+    animation: step-text 300ms var(--ease-out) calc(380ms + var(--step) * var(--flow) / 2) both;
+  }
+
+  .steps[data-visible] .step-dot::before {
+    animation: step-light 600ms var(--ease-out) calc(200ms + var(--step) * var(--flow) / 2) both;
+  }
+
+  .steps[data-visible] .step-dot::after {
+    animation: step-ripple 1100ms var(--ease-out) calc(200ms + var(--step) * var(--flow) / 2) both;
+  }
+}
+
+@keyframes steps-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes steps-head {
+  from {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+  85% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+@keyframes steps-glint {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  15% {
+    opacity: 0.9;
+  }
+  60%,
+  to {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+@keyframes step-text {
+  from {
+    color: var(--c-brand-strong);
+  }
+  to {
+    color: var(--c-on-brand);
+  }
+}
+
+@keyframes step-light {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes step-ripple {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
