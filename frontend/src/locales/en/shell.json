@@ -64,5 +64,15 @@
     "rights": "© {{year}} Keyhaven. Public demo: all people and homes are fictional.",
     "signInLink": "Sign in",
     "signedInAs": "Signed in as {{name}}"
+  },
+  "tabBar": {
+    "label": "Keyhaven",
+    "rent": "Rent",
+    "buy": "Buy",
+    "saved": "Saved",
+    "saved_visitor": "Saved",
+    "dashboard": "Dashboard",
+    "account": "Account",
+    "account_visitor": "Sign in"
   }
 }

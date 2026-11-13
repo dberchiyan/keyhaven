@@ -189,6 +189,26 @@ export function FilterBar({ params, total, onChange, onClear, saveSearch }: Filt
           >
             {() => null}
           </FilterPill>
+          <div className="md:hidden">
+            <FilterPill
+              label={t('browse.sort')}
+              {...(params.sort === 'publishedAt,desc'
+                ? {}
+                : { value: t(`browse.sortOptions.${params.sort}`) })}
+            >
+              {(close) => (
+                <Options
+                  options={BROWSE_SORTS}
+                  selected={params.sort}
+                  labelOf={(option) => t(`browse.sortOptions.${option}`)}
+                  onPick={(option) => {
+                    onChange({ sort: option });
+                    close();
+                  }}
+                />
+              )}
+            </FilterPill>
+          </div>
         </div>
         <TextField
           select
@@ -201,7 +221,7 @@ export function FilterBar({ params, total, onChange, onClear, saveSearch }: Filt
             }
           }}
           slotProps={{ select: { 'aria-label': t('browse.sort') } }}
-          className="w-44 md:ml-auto"
+          className="hidden w-44 md:ml-auto md:flex"
         >
           {BROWSE_SORTS.map((option) => (
             <MenuItem key={option} value={option}>

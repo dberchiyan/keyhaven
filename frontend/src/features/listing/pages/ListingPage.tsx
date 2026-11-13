@@ -9,6 +9,7 @@ import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { usePageHeadingFocus } from '@/shared/hooks/usePageHeadingFocus';
 import { PATHS } from '@/shared/lib/paths';
 import { DetailPageFrame } from '../components/DetailPageFrame';
+import { ListingActionBar } from '../components/ListingActionBar';
 import { ListingDetailView } from '../components/ListingDetailView';
 import { ListingError } from '../components/ListingStates';
 import { SaveButton } from '../components/SaveButton';
@@ -48,6 +49,7 @@ export default function ListingPage() {
       </DetailPageFrame>
     );
   }
+  const contactHref = `mailto:${listing.data.listedBy.email}?subject=${encodeURIComponent(t('detail.contactSubject', { title: listing.data.title }))}`;
   return (
     <DetailPageFrame headingRef={headingRef} title={listing.data.title} back={back}>
       <ListingDetailView
@@ -56,7 +58,7 @@ export default function ListingPage() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Button
-                href={`mailto:${listing.data.listedBy.email}?subject=${encodeURIComponent(t('detail.contactSubject', { title: listing.data.title }))}`}
+                href={contactHref}
                 variant="contained"
                 size="large"
                 startIcon={<MailOutlined aria-hidden />}
@@ -88,6 +90,7 @@ export default function ListingPage() {
           </div>
         }
       />
+      <ListingActionBar listing={listing.data} contactHref={contactHref} />
     </DetailPageFrame>
   );
 }

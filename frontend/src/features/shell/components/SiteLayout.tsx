@@ -6,6 +6,7 @@ import { IdleSessionWarning, VerificationBanner } from '@/features/auth';
 import { TopProgressBar } from '@/shared/components/TopProgressBar';
 import { PATHS } from '@/shared/lib/paths';
 import { useIsPageLoading } from '../hooks/useIsPageLoading';
+import { MobileTabBar } from './MobileTabBar';
 import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
 
@@ -47,7 +48,10 @@ export function SiteLayout() {
           </ViewTransition>
         </div>
       </main>
+      {/* The arbitrary padding: room for the phone's bottom bar (its height plus the safe area). */}
+      <div className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:hidden" aria-hidden />
       <SiteFooter />
+      <MobileTabBar />
       {isPageLoading && <TopProgressBar />}
       <IdleSessionWarning />
     </div>

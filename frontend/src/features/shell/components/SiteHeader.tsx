@@ -69,7 +69,7 @@ export function SiteHeader() {
           className="-ml-1 flex items-center gap-2.5 rounded-sm p-1 text-inherit no-underline"
         >
           <BrandMark className="size-9" />
-          <Typography variant="h6" component="span" className="hidden sm:inline">
+          <Typography variant="h6" component="span">
             {t('common:app.name')}
           </Typography>
         </Link>
@@ -108,12 +108,6 @@ export function SiteHeader() {
           )}
         </div>
       </div>
-      <nav
-        aria-label={t('shell:site.catalogue')}
-        className="mx-auto w-full max-w-page pb-3 md:hidden"
-      >
-        <Tabs activeTab={activeTab} params={params} fullWidth />
-      </nav>
     </header>
   );
 }
@@ -121,23 +115,17 @@ export function SiteHeader() {
 interface TabsProps {
   activeTab: Tab | null;
   params: BrowseParams;
-  fullWidth?: boolean;
 }
 
 /** A segmented control of links: the same shape as the theme's toggle groups. */
-function Tabs({ activeTab, params, fullWidth = false }: TabsProps) {
+function Tabs({ activeTab, params }: TabsProps) {
   const { t } = useTranslation('shell');
   return (
-    <ul
-      className={cn(
-        'bg-background-default m-0 flex list-none gap-0.5 rounded-full border border-divider p-0.5',
-        fullWidth && 'w-full',
-      )}
-    >
+    <ul className="bg-background-default m-0 flex list-none gap-0.5 rounded-full border border-divider p-0.5">
       {TABS.map((tab) => {
         const isActive = tab === activeTab;
         return (
-          <li key={tab} className={cn('flex', fullWidth && 'flex-1')}>
+          <li key={tab} className="flex">
             <Link
               to={tabTarget(params, tab)}
               aria-current={isActive ? 'page' : undefined}

@@ -135,7 +135,9 @@
     "nearbyLink": "See them",
     "contactLandlord": "Contact the landlord",
     "contactAgency": "Contact {{name}}",
-    "contactSubject": "About \"{{title}}\" on Keyhaven"
+    "contactSubject": "About \"{{title}}\" on Keyhaven",
+    "photoCounter": "{{number}} / {{count}}",
+    "contact": "Contact"
   },
   "manage": {
     "pageTitle": "Listings · Keyhaven",

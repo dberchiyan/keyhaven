@@ -35,7 +35,7 @@ export default function BrowsePage() {
         >
           {forSale ? t('browse.titleSale') : t('browse.title')}
         </Typography>
-        <Typography variant="body2" color="textSecondary">
+        <Typography variant="body2" color="textSecondary" className="hidden sm:block">
           {t('browse.subtitle')}
         </Typography>
       </div>
