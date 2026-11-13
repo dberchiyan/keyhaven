@@ -14,7 +14,7 @@ landlords and agents list and manage; admins keep the site clean.
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![MUI](https://img.shields.io/badge/MUI-9-007FFF?logo=mui&logoColor=white)
 
-A public demo · fictional people and homes only
+**Live demo: [keyhaven.osdb.io](https://keyhaven.osdb.io)** · fictional people and homes only
 
 [Quick start](#quick-start) · [Demo accounts](#demo-accounts) · [What it does](#what-it-does) ·
 [Architecture](#architecture) · [Development](#development) · [Roadmap](#roadmap)
