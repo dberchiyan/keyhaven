@@ -13,6 +13,7 @@ export const LISTING_LIMITS = {
 } as const;
 
 export const PROPERTY_TYPES = ['APARTMENT', 'HOUSE', 'CONDO', 'TOWNHOUSE', 'STUDIO'] as const;
+export const LISTING_KINDS = ['RENT', 'SALE'] as const;
 
 const optionalText = (max: number, tooLong: string) =>
   z
@@ -30,7 +31,7 @@ const count = (max: number, message: string) =>
     .transform(Number)
     .pipe(z.number().int().max(max, message));
 
-export const listingFormSchema = z.object({
+const listingFormShape = z.object({
   title: z
     .string()
     .trim()
@@ -42,8 +43,10 @@ export const listingFormSchema = z.object({
     .min(1, 'validation:description.required')
     .max(LISTING_LIMITS.description, 'validation:description.tooLong'),
   propertyType: z.enum(PROPERTY_TYPES, { error: 'validation:propertyType.required' }),
+  /** For rent (the price is a monthly rent) or for sale (the asking price). */
+  kind: z.enum(LISTING_KINDS, { error: 'validation:kind.required' }),
   /** Money stays a string (data.md): whole dollars or two places. */
-  rent: z
+  price: z
     .string()
     .trim()
     .regex(/^\d{1,13}(\.\d{1,2})?$/, 'validation:amount.invalid')
@@ -71,8 +74,21 @@ export const listingFormSchema = z.object({
   petsAllowed: z.boolean(),
   furnished: z.boolean(),
   parking: z.boolean(),
-  availableFrom: z.iso.date('validation:availableFrom.invalid'),
+  /** The move-in day: required for a rental, ignored for a home for sale. */
+  availableFrom: z.string(),
 });
+
+/** A rental needs its move-in day — the cross-field rule mirrors the backend's superRefine. */
+export const listingFormSchema = listingFormShape.superRefine((values, context) => {
+  if (values.kind === 'RENT' && !/^\d{4}-\d{2}-\d{2}$/.test(values.availableFrom)) {
+    context.addIssue({
+      code: 'custom',
+      path: ['availableFrom'],
+      message: 'validation:availableFrom.invalid',
+    });
+  }
+});
+export const LISTING_FORM_FIELDS = Object.keys(listingFormShape.shape);
 
 export type ListingFormValues = z.input<typeof listingFormSchema>;
 export type ListingFormOutput = z.output<typeof listingFormSchema>;
@@ -84,6 +100,7 @@ const MESSAGE_SET: ReadonlySet<string> = new Set([
   'validation:description.required',
   'validation:description.tooLong',
   'validation:propertyType.required',
+  'validation:kind.required',
   'validation:amount.invalid',
   'validation:bedrooms.invalid',
   'validation:bathrooms.invalid',

@@ -12,6 +12,7 @@ export type ListingDetail = Schemas['ListingDetailResponse_Output'];
 export type ManagedListing = Schemas['ManagedListingResponse_Output'];
 export type ListingStatusCounts = Schemas['ListingStatusCountsResponse_Output'];
 export type ListingStatus = Schemas['ListingStatus_Output'];
+export type ListingKind = Schemas['ListingKind_Output'];
 export type PropertyType = Schemas['PropertyType_Output'];
 export type ListedBy = Schemas['ListedBy_Output'];
 export type ManagedPhoto = Schemas['ManagedPhoto_Output'];
@@ -35,7 +36,7 @@ export type SearchRequestParams = Omit<BrowseParams, 'page'> & { page: number };
 export interface ManagedListParams {
   status: ListingStatus | undefined;
   search: string;
-  sort: 'updatedAt,desc' | 'rent,desc' | 'rent,asc' | 'title,asc';
+  sort: 'updatedAt,desc' | 'price,desc' | 'price,asc' | 'title,asc';
   page: number;
   size: number;
 }

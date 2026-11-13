@@ -12,6 +12,7 @@ import { PATHS } from '@/shared/lib/paths';
 import { DetailPageFrame } from '../components/DetailPageFrame';
 import { ListingDetailView } from '../components/ListingDetailView';
 import { ListingError } from '../components/ListingStates';
+import { SaveButton } from '../components/SaveButton';
 import { useListing } from '../hooks/useListingQueries';
 
 /** One published home as a tenant sees it (owners and admins see the address too). */
@@ -56,14 +57,23 @@ export default function ListingPage() {
           <Card variant="outlined">
             <CardContent className="flex flex-col gap-2 p-4">
               {/* M2 brings viewing slots; until then the button says so instead of hiding. */}
-              <Button
-                variant="contained"
-                size="large"
-                disabled
-                startIcon={<CalendarMonthOutlined aria-hidden />}
-              >
-                {`${t('detail.book')} — ${t('detail.bookSoon')}`}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="contained"
+                  size="large"
+                  disabled
+                  startIcon={<CalendarMonthOutlined aria-hidden />}
+                  className="flex-1"
+                >
+                  {`${t('detail.book')} — ${t('detail.bookSoon')}`}
+                </Button>
+                <SaveButton
+                  listingId={listing.data.id}
+                  saved={listing.data.saved}
+                  title={listing.data.title}
+                  className="border border-divider"
+                />
+              </div>
               <Typography variant="caption" color="textSecondary">
                 {t('detail.bookHint')}
               </Typography>

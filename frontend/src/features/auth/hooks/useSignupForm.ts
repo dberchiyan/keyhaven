@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { isApiError } from '@/shared/api/apiError';
 import { PATHS } from '@/shared/lib/paths';
 import type { ErrorCode } from '@/shared/types';
@@ -14,6 +14,9 @@ const FIELDS: ReadonlySet<string> = new Set(['firstName', 'lastName', 'email', '
 /** Sign-up form state: validation, submit, server errors; success opens the app signed in. */
 export const useSignupForm = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // "List your home" on the landing opens sign-up with the landlord role picked.
+  const initialRole = searchParams.get('role') === 'landlord' ? 'LANDLORD' : 'TENANT';
   const register = useRegister();
   const [errorCode, setErrorCode] = useState<ErrorCode | null>(null);
   const errorRef = useRef<HTMLDivElement>(null);
@@ -28,7 +31,7 @@ export const useSignupForm = () => {
     resolver: zodResolver(signupSchema),
     mode: 'onSubmit',
     reValidateMode: 'onSubmit',
-    defaultValues: { firstName: '', lastName: '', email: '', password: '', role: 'TENANT' },
+    defaultValues: { firstName: '', lastName: '', email: '', password: '', role: initialRole },
   });
 
   const onSubmit = form.handleSubmit(async (values) => {

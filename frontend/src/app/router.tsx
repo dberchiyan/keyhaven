@@ -18,7 +18,7 @@ import {
   SavedPage,
 } from '@/features/listing';
 import { SettingsPage } from '@/features/settings';
-import { AppLayout } from '@/features/shell';
+import { AppLayout, RoleLayout, SiteLayout } from '@/features/shell';
 import { PageLoader } from '@/shared/components/PageLoader';
 import { RouteErrorBoundary } from '@/shared/components/RouteErrorBoundary';
 import { PATHS } from '@/shared/lib/paths';
@@ -36,32 +36,28 @@ export const router = createBrowserRouter([
   { path: PATHS.verifyEmail, element: route(<VerifyEmailPage />) },
   { path: PATHS.forgotPassword, element: route(<ForgotPasswordPage />) },
   { path: PATHS.resetPassword, element: route(<ResetPasswordPage />) },
+  // The catalogue is public: no account needed to browse (CONTEXT.md).
+  {
+    element: <SiteLayout />,
+    children: [
+      { path: PATHS.browse, element: route(<BrowsePage />) },
+      { path: PATHS.listing, element: route(<ListingPage />) },
+    ],
+  },
+  // Home: the dashboard for people who list homes; tenants and visitors go to Browse.
+  {
+    element: <RoleLayout />,
+    children: [{ path: PATHS.home, element: route(<HomePage />) }],
+  },
   {
     element: <RequireAuth />,
     children: [
       {
-        element: <AppLayout />,
+        element: <RoleLayout />,
         children: [
-          // Home: the listings dashboard for landlords, agents and admins; tenants go to Browse.
-          { path: PATHS.home, element: route(<HomePage />) },
-          {
-            element: <RequireAccess part="section.browse" />,
-            children: [
-              { path: PATHS.browse, element: route(<BrowsePage />) },
-              { path: PATHS.listing, element: route(<ListingPage />) },
-            ],
-          },
           {
             element: <RequireAccess part="section.saved" />,
             children: [{ path: PATHS.saved, element: route(<SavedPage />) }],
-          },
-          {
-            element: <RequireAccess part="section.listings" />,
-            children: [
-              { path: PATHS.newListing, element: route(<ListingEditorPage />) },
-              { path: PATHS.managedListing, element: route(<ManagedListingPage />) },
-              { path: PATHS.editListing, element: route(<ListingEditorPage />) },
-            ],
           },
           {
             element: <RequireAccess part="section.settings" />,
@@ -72,7 +68,20 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      {
+        element: <AppLayout />,
+        children: [
+          {
+            element: <RequireAccess part="section.listings" />,
+            children: [
+              { path: PATHS.newListing, element: route(<ListingEditorPage />) },
+              { path: PATHS.managedListing, element: route(<ManagedListingPage />) },
+              { path: PATHS.editListing, element: route(<ListingEditorPage />) },
+            ],
+          },
+        ],
+      },
     ],
   },
-  { path: '*', element: <Navigate to={PATHS.home} replace /> },
+  { path: '*', element: <Navigate to={PATHS.browse} replace /> },
 ]);

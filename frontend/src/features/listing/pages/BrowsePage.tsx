@@ -15,9 +15,10 @@ import { useListings } from '../hooks/useListingQueries';
 /** Published homes: every filter, the sort and the page in the URL, so a search can be shared. */
 export default function BrowsePage() {
   const { t } = useTranslation('listing');
-  useDocumentTitle(t('browse.pageTitle'));
-  const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
   const { params, update, clear } = useBrowseParams();
+  const forSale = params.kind === 'sale';
+  useDocumentTitle(forSale ? t('browse.pageTitleSale') : t('browse.pageTitle'));
+  const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
   const listings = useListings(params);
   const total = listings.data?.totalElements ?? 0;
   const pages = Math.ceil(total / params.size);
@@ -32,7 +33,7 @@ export default function BrowsePage() {
           component="h1"
           className="outline-none"
         >
-          {t('browse.title')}
+          {forSale ? t('browse.titleSale') : t('browse.title')}
         </Typography>
         <Typography variant="body2" color="textSecondary">
           {t('browse.subtitle')}

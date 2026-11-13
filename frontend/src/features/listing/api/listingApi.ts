@@ -1,9 +1,10 @@
 import { apiClient } from '@/shared/api/client';
+import { toApiKind } from '@/shared/lib/listingSearch';
 import type { BrowseParams, City, ListingDetail, ListingPage } from '../types';
 
 const BASE = '/api/v1';
 
-/** What a tenant sees: the cities and the published homes. */
+/** The public catalogue: the cities and the published homes (a session only adds "saved"). */
 export const listingApi = {
   cities: async (): Promise<City[]> =>
     (await apiClient.get<{ content: City[] }>(`${BASE}/cities`)).data.content,
@@ -11,9 +12,11 @@ export const listingApi = {
     (
       await apiClient.get<ListingPage>(`${BASE}/listings`, {
         params: {
+          kind: toApiKind(params.kind),
+          type: params.type,
           city: params.city,
-          rentMin: params.rentMin,
-          rentMax: params.rentMax,
+          priceMin: params.priceMin,
+          priceMax: params.priceMax,
           beds: params.beds,
           baths: params.baths,
           pets: params.pets,

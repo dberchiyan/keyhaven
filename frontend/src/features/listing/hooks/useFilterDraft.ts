@@ -4,8 +4,9 @@ import { useListingCount } from './useListingQueries';
 
 /** The filters the drawer edits; the search text and the city stay in the toolbar. */
 export const DRAWER_KEYS = [
-  'rentMin',
-  'rentMax',
+  'type',
+  'priceMin',
+  'priceMax',
   'beds',
   'baths',
   'pets',
@@ -25,8 +26,8 @@ export const drawerFiltersOf = (filters: SearchFilters): DrawerFilters =>
 
 /** How many filters are on, the rent range counting as one (it shows as one chip). */
 export const countDrawerFilters = (filters: SearchFilters): number =>
-  DRAWER_KEYS.filter((key) => key !== 'rentMax' && filters[key] !== undefined).length +
-  (filters.rentMin === undefined && filters.rentMax !== undefined ? 1 : 0);
+  DRAWER_KEYS.filter((key) => key !== 'priceMax' && filters[key] !== undefined).length +
+  (filters.priceMin === undefined && filters.priceMax !== undefined ? 1 : 0);
 
 /**
  * A draft of the drawer's filters: edits stay local until "Show homes" applies them all at once,
@@ -43,6 +44,7 @@ export const useFilterDraft = (current: SearchFilters, open: boolean) => {
   };
   const count = useListingCount(
     {
+      kind: current.kind,
       ...(current.q === undefined ? {} : { q: current.q }),
       ...(current.city === undefined ? {} : { city: current.city }),
       ...draft,
@@ -51,8 +53,9 @@ export const useFilterDraft = (current: SearchFilters, open: boolean) => {
   );
   /** Every drawer key, cleared ones as `undefined`, so applying replaces rather than merges. */
   const change = (): DrawerChange => ({
-    rentMin: draft.rentMin,
-    rentMax: draft.rentMax,
+    type: draft.type,
+    priceMin: draft.priceMin,
+    priceMax: draft.priceMax,
     beds: draft.beds,
     baths: draft.baths,
     pets: draft.pets,

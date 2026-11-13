@@ -3,8 +3,10 @@ import FavoriteOutlined from '@mui/icons-material/FavoriteOutlined';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { useTranslation } from 'react-i18next';
-import { useAccess } from '@/features/auth';
+import { useLocation, useNavigate } from 'react-router';
+import { type LoginLocationState, useAccess, useCurrentUser } from '@/features/auth';
 import { cn } from '@/shared/lib/cn';
+import { PATHS } from '@/shared/lib/paths';
 import { useToggleSaved } from '../hooks/useListingQueries';
 
 export interface SaveButtonProps {
@@ -14,22 +16,38 @@ export interface SaveButtonProps {
   className?: string;
 }
 
-/** The heart: tenants only; the accessible name says what pressing it does. */
+/**
+ * The heart: tenants save; a visitor without an account is taken to sign in and comes back
+ * here; people who list homes have no heart. The accessible name says what pressing it does.
+ */
 export function SaveButton({ listingId, saved, title, className }: SaveButtonProps) {
   const { t } = useTranslation('listing');
   const can = useAccess();
+  const { data: user } = useCurrentUser();
+  const navigate = useNavigate();
+  const location = useLocation();
   const toggle = useToggleSaved();
-  if (!can('listing.save')) {
+  if (user && !can('listing.save')) {
     return null;
   }
   const label = saved ? t('save.remove', { title }) : t('save.add', { title });
+  const signIn = (): void => {
+    const state: LoginLocationState = {
+      from: `${location.pathname}${location.search}${location.hash}`,
+    };
+    void navigate(PATHS.login, { state });
+  };
   return (
-    <Tooltip title={saved ? t('save.saved') : t('save.save')}>
+    <Tooltip title={user ? (saved ? t('save.saved') : t('save.save')) : t('save.signIn')}>
       <IconButton
-        aria-label={label}
+        aria-label={user ? label : t('save.signInTo', { title })}
         aria-pressed={saved}
         disabled={toggle.isPending}
         onClick={() => {
+          if (!user) {
+            signIn();
+            return;
+          }
           toggle.mutate({ listingId, saved });
         }}
         className={cn(

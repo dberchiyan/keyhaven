@@ -7,7 +7,7 @@ export const MANAGED_PAGE_SIZES = [10, 20, 50] as const;
 const DEFAULT_SIZE = 10;
 const DEFAULT_SORT = 'updatedAt,desc';
 
-export const MANAGED_SORTS = ['updatedAt,desc', 'rent,desc', 'rent,asc', 'title,asc'] as const;
+export const MANAGED_SORTS = ['updatedAt,desc', 'price,desc', 'price,asc', 'title,asc'] as const;
 export const LISTING_STATUSES = ['PUBLISHED', 'DRAFT', 'UNPUBLISHED', 'SUSPENDED'] as const;
 
 /** The URL is the source of truth; anything malformed falls back to the default. */

@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { managedListingPath } from '@/shared/lib/paths';
-import { formatBaths, formatBeds, formatDay, formatRent } from '../format';
+import { formatAvailability, formatBaths, formatBeds, formatPrice } from '../format';
 import type { ManagedListingCard } from '../types';
 import { ListingStatusBadge } from './ListingStatusBadge';
 
@@ -15,7 +15,7 @@ import { ListingStatusBadge } from './ListingStatusBadge';
 const COLUMNS = [
   { key: 'home', width: 'w-[30%]' },
   { key: 'city', width: 'w-[13%]' },
-  { key: 'rent', width: 'w-[10%]' },
+  { key: 'price', width: 'w-[10%]' },
   { key: 'size', width: 'w-[13%]' },
   { key: 'available', width: 'w-[12%]' },
   { key: 'interest', width: 'w-[10%]' },
@@ -77,12 +77,12 @@ export function ManagedListingTable({ listings }: ManagedListingTableProps) {
               </div>
             </TableCell>
             <TableCell className="truncate">{`${listing.city.name}, ${listing.city.state}`}</TableCell>
-            <TableCell className="app-tabular">{formatRent(listing.rent, i18n.language)}</TableCell>
+            <TableCell className="app-tabular">{formatPrice(listing, i18n.language, t)}</TableCell>
             <TableCell className="app-tabular whitespace-nowrap">
               {`${formatBeds(listing.bedrooms, t)} · ${formatBaths(listing.bathrooms, t)}`}
             </TableCell>
             <TableCell className="app-tabular whitespace-nowrap">
-              {formatDay(listing.availableFrom, i18n.language)}
+              {formatAvailability(listing, i18n.language, t)}
             </TableCell>
             <TableCell className="app-tabular whitespace-nowrap">
               {t('manage.table.interestCell', {

@@ -19,28 +19,31 @@ export function ActiveFilterChips({ filters, onRemove }: ActiveFilterChipsProps)
   const { t, i18n } = useTranslation('listing');
   const money = (amount: string): string => formatMoney({ amount, currency: 'USD' }, i18n.language);
   const chips: ActiveChip[] = [
-    ...(filters.rentMin !== undefined && filters.rentMax !== undefined
+    ...(filters.type === undefined
+      ? []
+      : [{ keys: ['type'] as const, label: t(`facts.type.${filters.type}`) }]),
+    ...(filters.priceMin !== undefined && filters.priceMax !== undefined
       ? [
           {
-            keys: ['rentMin', 'rentMax'] as const,
-            label: t('filters.chip.rentBetween', {
-              min: money(filters.rentMin),
-              max: money(filters.rentMax),
+            keys: ['priceMin', 'priceMax'] as const,
+            label: t('filters.chip.priceBetween', {
+              min: money(filters.priceMin),
+              max: money(filters.priceMax),
             }),
           },
         ]
-      : filters.rentMin !== undefined
+      : filters.priceMin !== undefined
         ? [
             {
-              keys: ['rentMin'] as const,
-              label: t('filters.chip.rentFrom', { min: money(filters.rentMin) }),
+              keys: ['priceMin'] as const,
+              label: t('filters.chip.priceFrom', { min: money(filters.priceMin) }),
             },
           ]
-        : filters.rentMax !== undefined
+        : filters.priceMax !== undefined
           ? [
               {
-                keys: ['rentMax'] as const,
-                label: t('filters.chip.rentTo', { max: money(filters.rentMax) }),
+                keys: ['priceMax'] as const,
+                label: t('filters.chip.priceTo', { max: money(filters.priceMax) }),
               },
             ]
           : []),

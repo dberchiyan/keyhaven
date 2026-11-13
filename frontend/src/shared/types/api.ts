@@ -284,7 +284,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Search published listings: city, rent range, beds, baths, pets, furnished, parking, available-by date and typo-tolerant text */
+        /** Search published homes for rent or for sale: city, type, price range, beds, baths, pets, furnished, parking, available-by date and typo-tolerant text */
         get: operations["ListingController_search"];
         put?: never;
         post?: never;
@@ -706,14 +706,15 @@ export interface components {
             id: string;
             title: string;
             propertyType: components["schemas"]["PropertyType_Output"];
-            rent: components["schemas"]["Money_Output"];
+            kind: components["schemas"]["ListingKind_Output"];
+            price: components["schemas"]["Money_Output"];
             bedrooms: number;
             bathrooms: string;
             sizeSqft: number;
             city: components["schemas"]["City_Output"];
             neighborhood: string | null;
             /** Format: date */
-            availableFrom: string;
+            availableFrom: string | null;
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
@@ -721,6 +722,8 @@ export interface components {
         };
         /** @enum {string} */
         PropertyType_Output: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
+        /** @enum {string} */
+        ListingKind_Output: "RENT" | "SALE";
         Money_Output: {
             amount: string;
             currency: string;
@@ -752,14 +755,15 @@ export interface components {
             id: string;
             title: string;
             propertyType: components["schemas"]["PropertyType_Output"];
-            rent: components["schemas"]["Money_Output"];
+            kind: components["schemas"]["ListingKind_Output"];
+            price: components["schemas"]["Money_Output"];
             bedrooms: number;
             bathrooms: string;
             sizeSqft: number;
             city: components["schemas"]["City_Output"];
             neighborhood: string | null;
             /** Format: date */
-            availableFrom: string;
+            availableFrom: string | null;
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
@@ -782,14 +786,15 @@ export interface components {
             id: string;
             title: string;
             propertyType: components["schemas"]["PropertyType_Output"];
-            rent: components["schemas"]["Money_Output"];
+            kind: components["schemas"]["ListingKind_Output"];
+            price: components["schemas"]["Money_Output"];
             bedrooms: number;
             bathrooms: string;
             sizeSqft: number;
             city: components["schemas"]["City_Output"];
             neighborhood: string | null;
             /** Format: date */
-            availableFrom: string;
+            availableFrom: string | null;
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
@@ -809,7 +814,9 @@ export interface components {
             description: string;
             /** @enum {string} */
             propertyType: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
-            rent: string;
+            /** @enum {string} */
+            kind: "RENT" | "SALE";
+            price: string;
             bedrooms: number;
             bathrooms: string;
             sizeSqft: number;
@@ -823,7 +830,7 @@ export interface components {
             furnished: boolean;
             parking: boolean;
             /** Format: date */
-            availableFrom: string;
+            availableFrom?: string | null;
         };
         ManagedPhoto_Output: {
             /** Format: uuid */
@@ -839,14 +846,15 @@ export interface components {
             id: string;
             title: string;
             propertyType: components["schemas"]["PropertyType_Output"];
-            rent: components["schemas"]["Money_Output"];
+            kind: components["schemas"]["ListingKind_Output"];
+            price: components["schemas"]["Money_Output"];
             bedrooms: number;
             bathrooms: string;
             sizeSqft: number;
             city: components["schemas"]["City_Output"];
             neighborhood: string | null;
             /** Format: date */
-            availableFrom: string;
+            availableFrom: string | null;
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
@@ -886,7 +894,9 @@ export interface components {
             description: string;
             /** @enum {string} */
             propertyType: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
-            rent: string;
+            /** @enum {string} */
+            kind: "RENT" | "SALE";
+            price: string;
             bedrooms: number;
             bathrooms: string;
             sizeSqft: number;
@@ -900,7 +910,7 @@ export interface components {
             furnished: boolean;
             parking: boolean;
             /** Format: date */
-            availableFrom: string;
+            availableFrom?: string | null;
             version: number;
         };
         PhotoIntentRequest: {
@@ -940,9 +950,13 @@ export interface components {
             version: number;
         };
         SavedSearchCriteria_Output: {
+            /** @enum {string} */
+            kind?: "RENT" | "SALE";
+            /** @enum {string} */
+            type?: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
             city?: string;
-            rentMin?: string;
-            rentMax?: string;
+            priceMin?: string;
+            priceMax?: string;
             beds?: number;
             baths?: string;
             pets?: boolean;
@@ -956,9 +970,13 @@ export interface components {
             content: components["schemas"]["SavedSearch_Output"][];
         };
         SavedSearchCriteria: {
+            /** @enum {string} */
+            kind?: "RENT" | "SALE";
+            /** @enum {string} */
+            type?: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
             city?: string;
-            rentMin?: string;
-            rentMax?: string;
+            priceMin?: string;
+            priceMax?: string;
             beds?: number;
             baths?: string;
             pets?: boolean;
@@ -1689,7 +1707,7 @@ export interface operations {
                     "application/json": components["schemas"]["CitiesResponse_Output"];
                 };
             };
-            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            /** @description SESSION_EXPIRED */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1703,9 +1721,11 @@ export interface operations {
     ListingController_search: {
         parameters: {
             query?: {
+                kind?: "RENT" | "SALE";
                 city?: string;
-                rentMin?: string;
-                rentMax?: string;
+                type?: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
+                priceMin?: string;
+                priceMax?: string;
                 beds?: number;
                 baths?: string;
                 pets?: "true" | "false";
@@ -1715,7 +1735,7 @@ export interface operations {
                 q?: string;
                 page?: number;
                 size?: number;
-                /** @description One of: publishedAt,asc|desc, rent,asc|desc */
+                /** @description One of: publishedAt,asc|desc, price,asc|desc */
                 sort?: string;
             };
             header?: never;
@@ -1741,7 +1761,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            /** @description SESSION_EXPIRED */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1778,7 +1798,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            /** @description SESSION_EXPIRED */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -1805,7 +1825,7 @@ export interface operations {
                 search?: string;
                 page?: number;
                 size?: number;
-                /** @description One of: updatedAt,asc|desc, rent,asc|desc, title,asc|desc */
+                /** @description One of: updatedAt,asc|desc, price,asc|desc, title,asc|desc */
                 sort?: string;
             };
             header?: never;

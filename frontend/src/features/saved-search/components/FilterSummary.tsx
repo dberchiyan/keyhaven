@@ -14,30 +14,32 @@ const cityName = (slug: string): string =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
 
-/** The filters in words, one chip each; "every home" when there are none. */
+/** The filters in words, one chip each; the kind (for rent / for sale) always comes first. */
 export function FilterSummary({ filters }: FilterSummaryProps) {
   const { t, i18n } = useTranslation('savedSearch');
   const money = (amount: string): string => formatMoney({ amount, currency: 'USD' }, i18n.language);
   const day = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeZone: 'UTC' });
   const rent = (): string[] => {
-    if (filters.rentMin !== undefined && filters.rentMax !== undefined) {
+    if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
       return [
-        t('summary.rentBetween', {
-          min: money(filters.rentMin),
-          max: money(filters.rentMax),
+        t('summary.priceBetween', {
+          min: money(filters.priceMin),
+          max: money(filters.priceMax),
         }),
       ];
     }
-    if (filters.rentMin !== undefined) {
-      return [t('summary.rentFrom', { min: money(filters.rentMin) })];
+    if (filters.priceMin !== undefined) {
+      return [t('summary.priceFrom', { min: money(filters.priceMin) })];
     }
-    if (filters.rentMax !== undefined) {
-      return [t('summary.rentTo', { max: money(filters.rentMax) })];
+    if (filters.priceMax !== undefined) {
+      return [t('summary.priceTo', { max: money(filters.priceMax) })];
     }
     return [];
   };
   const chips: string[] = [
+    t(filters.kind === 'sale' ? 'summary.forSale' : 'summary.forRent'),
     ...(filters.q === undefined ? [] : [t('summary.text', { text: filters.q })]),
+    ...(filters.type === undefined ? [] : [t(`summary.type.${filters.type}`)]),
     ...(filters.city === undefined ? [] : [cityName(filters.city)]),
     ...rent(),
     ...(filters.beds === undefined ? [] : [t('summary.beds', { count: filters.beds })]),
@@ -51,17 +53,11 @@ export function FilterSummary({ filters }: FilterSummaryProps) {
   ];
   return (
     <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-      {chips.length === 0 ? (
-        <li>
-          <Chip size="small" label={t('summary.everything')} />
+      {chips.map((chip) => (
+        <li key={chip}>
+          <Chip size="small" label={chip} />
         </li>
-      ) : (
-        chips.map((chip) => (
-          <li key={chip}>
-            <Chip size="small" label={chip} />
-          </li>
-        ))
-      )}
+      ))}
     </ul>
   );
 }

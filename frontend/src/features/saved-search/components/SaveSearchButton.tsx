@@ -3,23 +3,31 @@ import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAccess } from '@/features/auth';
+import { useLocation, useNavigate } from 'react-router';
+import { type LoginLocationState, useAccess, useCurrentUser } from '@/features/auth';
 import type { SearchFilters } from '@/shared/lib/listingSearch';
+import { PATHS } from '@/shared/lib/paths';
 import { SaveSearchDialog } from './SaveSearchDialog';
 
 export interface SaveSearchButtonProps {
   filters: SearchFilters;
 }
 
-/** Tenants only. The dialog remounts on each opening (a fresh key and form every time). */
+/**
+ * Tenants save; a visitor is taken to sign in and comes back to this search; people who list
+ * homes see no button. The dialog remounts on each opening (a fresh key and form every time).
+ */
 export function SaveSearchButton({ filters }: SaveSearchButtonProps) {
   const { t } = useTranslation('savedSearch');
   const can = useAccess();
+  const { data: user } = useCurrentUser();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [opening, setOpening] = useState(0);
   const [open, setOpen] = useState(false);
   const [saved, setSaved] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  if (!can('listing.save')) {
+  if (user && !can('listing.save')) {
     return null;
   }
   const close = (): void => {
@@ -34,6 +42,13 @@ export function SaveSearchButton({ filters }: SaveSearchButtonProps) {
         size="small"
         startIcon={<BookmarkAddOutlined aria-hidden />}
         onClick={() => {
+          if (!user) {
+            const state: LoginLocationState = {
+              from: `${location.pathname}${location.search}${location.hash}`,
+            };
+            void navigate(PATHS.login, { state });
+            return;
+          }
           setOpening((count) => count + 1);
           setOpen(true);
         }}

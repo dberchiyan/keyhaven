@@ -5,7 +5,7 @@ import { z } from 'zod';
  * (the page) and the saved-search feature (a search keeps exactly these). Mirrors the backend's
  * ListingFilterQuerySchema (listing/controller/dto/listing-filter.query.ts).
  */
-export const BROWSE_SORTS = ['publishedAt,desc', 'rent,asc', 'rent,desc'] as const;
+export const BROWSE_SORTS = ['publishedAt,desc', 'price,asc', 'price,desc'] as const;
 export type BrowseSort = (typeof BROWSE_SORTS)[number];
 export const DEFAULT_BROWSE_SORT: BrowseSort = 'publishedAt,desc';
 /** Cards per page of the search grid: three rows of four on a wide screen. */
@@ -15,15 +15,27 @@ export const SEARCH_TEXT_MAX_LENGTH = 100;
 const amount = z.string().regex(/^\d{1,9}(\.\d{1,2})?$/);
 const flag = z.enum(['true', 'false']).transform((value) => value === 'true');
 
+/** Homes for rent or for sale — lower-case in the URL (`?kind=sale`), the API's enum on the wire. */
+export const LISTING_KINDS = ['rent', 'sale'] as const;
+export type ListingKindParam = (typeof LISTING_KINDS)[number];
+export const DEFAULT_KIND: ListingKindParam = 'rent';
+export const PROPERTY_TYPE_PARAMS = ['APARTMENT', 'HOUSE', 'CONDO', 'TOWNHOUSE', 'STUDIO'] as const;
+export const toApiKind = (kind: ListingKindParam): 'RENT' | 'SALE' =>
+  kind === 'sale' ? 'SALE' : 'RENT';
+export const fromApiKind = (kind: 'RENT' | 'SALE'): ListingKindParam =>
+  kind === 'SALE' ? 'sale' : 'rent';
+
 /** Each field falls back to "not set" when the URL carries nonsense (data.md → Client state). */
 const filtersUrlSchema = z.object({
+  kind: z.enum(LISTING_KINDS).catch(DEFAULT_KIND),
+  type: z.enum(PROPERTY_TYPE_PARAMS).optional().catch(undefined),
   city: z
     .string()
     .regex(/^[a-z0-9-]{1,100}$/)
     .optional()
     .catch(undefined),
-  rentMin: amount.optional().catch(undefined),
-  rentMax: amount.optional().catch(undefined),
+  priceMin: amount.optional().catch(undefined),
+  priceMax: amount.optional().catch(undefined),
   beds: z.coerce.number().int().min(0).max(20).optional().catch(undefined),
   baths: z
     .string()
@@ -70,6 +82,9 @@ export const toBrowseSearchParams = (params: BrowseParams): URLSearchParams => {
   const entries: [string, string | undefined][] = [
     ...FILTER_KEYS.map((key): [string, string | undefined] => {
       const value = params[key];
+      if (key === 'kind' && value === DEFAULT_KIND) {
+        return [key, undefined];
+      }
       return [key, value === undefined || value === '' ? undefined : String(value)];
     }),
     ['sort', params.sort === DEFAULT_BROWSE_SORT ? undefined : params.sort],
@@ -84,10 +99,11 @@ export const toBrowseSearchParams = (params: BrowseParams): URLSearchParams => {
 export const filtersOf = (params: BrowseParams): SearchFilters =>
   Object.fromEntries(
     FILTER_KEYS.flatMap((key) => (params[key] === undefined ? [] : [[key, params[key]]])),
-  );
+  ) as SearchFilters;
 
+/** Something beyond the kind is set (the kind is a tab, not a filter). */
 export const hasFilters = (filters: SearchFilters): boolean =>
-  FILTER_KEYS.some((key) => filters[key] !== undefined);
+  FILTER_KEYS.some((key) => key !== 'kind' && filters[key] !== undefined);
 
 /** `/browse?…` for a set of filters — a saved search opens its results here. */
 export const browseSearch = (filters: SearchFilters): string =>

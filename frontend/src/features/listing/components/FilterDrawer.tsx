@@ -12,7 +12,8 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { type ReactNode, useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { SearchFilters } from '@/shared/lib/listingSearch';
+import MenuItem from '@mui/material/MenuItem';
+import { PROPERTY_TYPE_PARAMS, type SearchFilters } from '@/shared/lib/listingSearch';
 import { type DrawerChange, useFilterDraft } from '../hooks/useFilterDraft';
 
 const BEDS = ['0', '1', '2', '3', '4'] as const;
@@ -34,7 +35,8 @@ export function FilterDrawer({ open, filters, onClose, onApply }: FilterDrawerPr
   const titleId = useId();
   const { draft, set, clear, change, count, counting } = useFilterDraft(filters, open);
 
-  const amount = (key: 'rentMin' | 'rentMax', label: string) => (
+  const forRent = filters.kind === 'rent';
+  const amount = (key: 'priceMin' | 'priceMax', label: string) => (
     <TextField
       size="small"
       label={label}
@@ -84,11 +86,33 @@ export function FilterDrawer({ open, filters, onClose, onApply }: FilterDrawerPr
       </div>
       <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-5 py-3">
         {section(
-          t('filters.rent'),
+          forRent ? t('filters.rent') : t('filters.price'),
           <div className="flex gap-3">
-            {amount('rentMin', t('filters.rentMin'))}
-            {amount('rentMax', t('filters.rentMax'))}
+            {amount('priceMin', t('filters.priceMin'))}
+            {amount('priceMax', t('filters.priceMax'))}
           </div>,
+        )}
+        {section(
+          t('filters.type'),
+          <TextField
+            select
+            size="small"
+            value={draft.type ?? ''}
+            onChange={(event) => {
+              const type = PROPERTY_TYPE_PARAMS.find(
+                (candidate) => candidate === event.target.value,
+              );
+              set('type', type);
+            }}
+            slotProps={{ select: { displayEmpty: true, 'aria-label': t('filters.type') } }}
+          >
+            <MenuItem value="">{t('filters.anyType')}</MenuItem>
+            {PROPERTY_TYPE_PARAMS.map((type) => (
+              <MenuItem key={type} value={type}>
+                {t(`facts.type.${type}`)}
+              </MenuItem>
+            ))}
+          </TextField>,
         )}
         {section(
           t('filters.beds'),
@@ -133,7 +157,7 @@ export function FilterDrawer({ open, filters, onClose, onApply }: FilterDrawerPr
         {section(
           t('filters.amenities'),
           <div role="group" aria-label={t('filters.amenities')} className="flex flex-wrap gap-2">
-            {AMENITIES.map((key) => (
+            {AMENITIES.filter((key) => forRent || key === 'parking').map((key) => (
               <Chip
                 key={key}
                 label={t(`filters.${key}`)}
@@ -149,19 +173,20 @@ export function FilterDrawer({ open, filters, onClose, onApply }: FilterDrawerPr
             ))}
           </div>,
         )}
-        {section(
-          t('filters.availableBy'),
-          <TextField
-            type="date"
-            size="small"
-            label={t('filters.availableByLabel')}
-            value={draft.availableBy ?? ''}
-            onChange={(event) => {
-              set('availableBy', event.target.value || undefined);
-            }}
-            slotProps={{ inputLabel: { shrink: true } }}
-          />,
-        )}
+        {forRent &&
+          section(
+            t('filters.availableBy'),
+            <TextField
+              type="date"
+              size="small"
+              label={t('filters.availableByLabel')}
+              value={draft.availableBy ?? ''}
+              onChange={(event) => {
+                set('availableBy', event.target.value || undefined);
+              }}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />,
+          )}
       </div>
       <div className="flex items-center justify-between gap-3 border-t border-divider px-5 py-3">
         <Button variant="text" onClick={clear}>

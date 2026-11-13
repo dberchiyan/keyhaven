@@ -5,9 +5,11 @@ import FormGroup from '@mui/material/FormGroup';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import type { ComponentProps } from 'react';
-import { Controller, type FieldError } from 'react-hook-form';
+import { Controller, type FieldError, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router';
 import { FormErrorLine, RESERVED_LINE } from '@/features/auth';
@@ -15,6 +17,7 @@ import { useCities } from '../hooks/useListingQueries';
 import { useListingForm } from '../hooks/useListingForm';
 import {
   isListingValidationMessage,
+  LISTING_KINDS,
   LISTING_LIMITS,
   type ListingFormValues,
   PROPERTY_TYPES,
@@ -42,6 +45,8 @@ export function ListingForm({ listing, cancelTo }: ListingFormProps) {
   const { register, control, formState } = form;
   const { errors, isSubmitting } = formState;
   const cities = useCities();
+  const kind = useWatch({ control, name: 'kind' });
+  const forRent = kind === 'RENT';
 
   const message = (field: keyof ListingFormValues, error: FieldError | undefined): string =>
     error?.message
@@ -71,6 +76,30 @@ export function ListingForm({ listing, cancelTo }: ListingFormProps) {
         <Typography component="legend" variant="h6" className="mb-2 p-0">
           {t('listing:form.sections.home')}
         </Typography>
+        <Controller
+          control={control}
+          name="kind"
+          render={({ field }) => (
+            <ToggleButtonGroup
+              exclusive
+              fullWidth
+              value={field.value}
+              onChange={(_event, value: string | null) => {
+                if (LISTING_KINDS.some((candidate) => candidate === value)) {
+                  field.onChange(value);
+                }
+              }}
+              aria-label={t('listing:form.kind')}
+              className="mb-2 sm:max-w-sm"
+            >
+              {LISTING_KINDS.map((candidate) => (
+                <ToggleButton key={candidate} value={candidate}>
+                  {t(`listing:form.kinds.${candidate}`)}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          )}
+        />
         {text('title', t('listing:form.title'), { required: true })}
         {text('description', t('listing:form.description'), {
           required: true,
@@ -100,7 +129,7 @@ export function ListingForm({ listing, cancelTo }: ListingFormProps) {
               </TextField>
             )}
           />
-          {text('rent', t('listing:form.rent'), {
+          {text('price', forRent ? t('listing:form.rent') : t('listing:form.askingPrice'), {
             required: true,
             slotProps: {
               htmlInput: { inputMode: 'decimal' },
@@ -119,26 +148,30 @@ export function ListingForm({ listing, cancelTo }: ListingFormProps) {
             required: true,
             slotProps: { htmlInput: { inputMode: 'numeric' } },
           })}
-          {text('availableFrom', t('listing:form.availableFrom'), {
-            required: true,
-            type: 'date',
-            slotProps: { inputLabel: { shrink: true } },
-          })}
+          {forRent &&
+            text('availableFrom', t('listing:form.availableFrom'), {
+              required: true,
+              type: 'date',
+              slotProps: { inputLabel: { shrink: true } },
+            })}
         </div>
+        {/* Pets and furnishing are a rental's terms; a home for sale only says whether it has parking. */}
         <FormGroup row>
-          {(['petsAllowed', 'furnished', 'parking'] as const).map((flag) => (
-            <Controller
-              key={flag}
-              control={control}
-              name={flag}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={<Checkbox checked={field.value} onChange={field.onChange} />}
-                  label={t(`listing:form.${flag}`)}
-                />
-              )}
-            />
-          ))}
+          {(['petsAllowed', 'furnished', 'parking'] as const)
+            .filter((flag) => forRent || flag === 'parking')
+            .map((flag) => (
+              <Controller
+                key={flag}
+                control={control}
+                name={flag}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={<Checkbox checked={field.value} onChange={field.onChange} />}
+                    label={t(`listing:form.${flag}`)}
+                  />
+                )}
+              />
+            ))}
         </FormGroup>
       </fieldset>
       <fieldset className="m-0 flex min-w-0 flex-col gap-2 border-0 p-0">

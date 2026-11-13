@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatRent } from '../format';
+import { formatPrice } from '../format';
 import type { ListingDetail } from '../types';
 import { AddressBlock } from './AddressBlock';
 import { ListedByCard } from './ListedByCard';
@@ -30,7 +30,7 @@ export function ListingDetailView({ listing, badge, aside, addressNote }: Listin
         <div className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <Typography variant="h5" component="p" className="app-tabular">
-              {t('detail.perMonth', { rent: formatRent(listing.rent, i18n.language) })}
+              {formatPrice(listing, i18n.language, t)}
             </Typography>
             {badge}
           </div>

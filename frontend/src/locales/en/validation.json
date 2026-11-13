@@ -87,5 +87,8 @@
   "savedSearchName": {
     "required": "Name the search",
     "tooLong": "Name must be at most {{max}} characters"
+  },
+  "kind": {
+    "required": "Choose whether the home is for rent or for sale"
   }
 }

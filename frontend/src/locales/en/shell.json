@@ -3,8 +3,7 @@
     "label": "Main navigation",
     "listings": "Listings",
     "browse": "Browse homes",
-    "settings": "Settings",
-    "saved": "Saved"
+    "settings": "Settings"
   },
   "menu": {
     "open": "Open menu",
@@ -28,5 +27,18 @@
     "LANDLORD": "Landlord",
     "AGENT": "Agent",
     "ADMIN": "Administrator"
+  },
+  "site": {
+    "home": "Keyhaven home",
+    "catalogue": "Homes",
+    "tabs": {
+      "rent": "Rent",
+      "sale": "Buy",
+      "houses": "Houses"
+    },
+    "signIn": "Sign in",
+    "listHome": "List your home",
+    "saved": "Saved",
+    "dashboard": "Dashboard"
   }
 }

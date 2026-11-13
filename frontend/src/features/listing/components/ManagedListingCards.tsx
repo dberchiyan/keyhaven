@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { managedListingPath } from '@/shared/lib/paths';
-import { formatBaths, formatBeds, formatDay, formatRent } from '../format';
+import { formatAvailability, formatBaths, formatBeds, formatPrice } from '../format';
 import type { ManagedListingCard } from '../types';
 import { ListingStatusBadge } from './ListingStatusBadge';
 
@@ -43,7 +43,7 @@ export function ManagedListingCards({ listings }: ManagedListingCardsProps) {
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <Typography variant="body2" color="textSecondary" className="app-tabular">
                 {[
-                  formatRent(listing.rent, i18n.language),
+                  formatPrice(listing, i18n.language, t),
                   formatBeds(listing.bedrooms, t),
                   formatBaths(listing.bathrooms, t),
                 ].join(' · ')}
@@ -51,7 +51,7 @@ export function ManagedListingCards({ listings }: ManagedListingCardsProps) {
               <ListingStatusBadge status={listing.status} />
             </div>
             <Typography variant="caption" color="textSecondary">
-              {`${listing.city.name}, ${listing.city.state} · ${t('card.availableFrom', { date: formatDay(listing.availableFrom, i18n.language) })}`}
+              {`${listing.city.name}, ${listing.city.state} · ${formatAvailability(listing, i18n.language, t)}`}
             </Typography>
             <Typography variant="caption" color="textSecondary" className="app-tabular">
               {t('manage.table.interestCell', {

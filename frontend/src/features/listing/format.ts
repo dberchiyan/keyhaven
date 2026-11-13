@@ -1,8 +1,25 @@
 import type { TFunction } from 'i18next';
 import { formatMoney, type Money } from '@/shared/lib/money';
 
-/** "$1,850" — from the string amount, never a float (data.md → Money). */
-export const formatRent = (rent: Money, locale: string): string => formatMoney(rent, locale);
+/** "$1,850/mo" for a rental, "$425,000" for a home for sale — from the string amount (data.md → Money). */
+export const formatPrice = (
+  listing: { kind: 'RENT' | 'SALE'; price: Money },
+  locale: string,
+  t: TFunction<'listing'>,
+): string =>
+  listing.kind === 'RENT'
+    ? t('card.perMonth', { rent: formatMoney(listing.price, locale) })
+    : formatMoney(listing.price, locale);
+
+/** The availability pill: the move-in day of a rental, "For sale" otherwise. */
+export const formatAvailability = (
+  listing: { kind: 'RENT' | 'SALE'; availableFrom: string | null },
+  locale: string,
+  t: TFunction<'listing'>,
+): string =>
+  listing.kind === 'RENT' && listing.availableFrom
+    ? t('card.availableFrom', { date: formatDay(listing.availableFrom, locale) })
+    : t('card.forSale');
 
 /** "Studio", "2 beds". */
 export const formatBeds = (bedrooms: number, t: TFunction<'listing'>): string =>

@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { listingPath } from '@/shared/lib/paths';
-import { formatBaths, formatBeds, formatDay, formatRent, formatSize } from '../format';
+import { formatAvailability, formatBaths, formatBeds, formatPrice, formatSize } from '../format';
 import type { ListingCard as ListingCardData } from '../types';
 import { SaveButton } from './SaveButton';
 
@@ -12,7 +12,7 @@ export interface ListingCardProps {
   listing: ListingCardData;
 }
 
-/** One search result: the cover photo, rent, facts and where. The title is a stretched link. */
+/** One search result: the cover photo, the price, facts and where. The title is a stretched link. */
 export function ListingCard({ listing }: ListingCardProps) {
   const { t, i18n } = useTranslation('listing');
   const where = [listing.neighborhood, `${listing.city.name}, ${listing.city.state}`]
@@ -47,7 +47,7 @@ export function ListingCard({ listing }: ListingCardProps) {
       </div>
       <div className="flex flex-1 flex-col gap-1 p-4">
         <Typography variant="h6" component="p" className="app-tabular">
-          {t('card.perMonth', { rent: formatRent(listing.rent, i18n.language) })}
+          {formatPrice(listing, i18n.language, t)}
         </Typography>
         <Typography variant="subtitle2" component="h2" className="truncate">
           <Link
@@ -74,7 +74,7 @@ export function ListingCard({ listing }: ListingCardProps) {
           component="span"
           className="font-medium mt-auto self-start rounded-full bg-badge-active-background px-2.5 py-1 text-badge-active-text"
         >
-          {t('card.availableFrom', { date: formatDay(listing.availableFrom, i18n.language) })}
+          {formatAvailability(listing, i18n.language, t)}
         </Typography>
       </div>
     </Card>

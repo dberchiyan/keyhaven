@@ -6,17 +6,23 @@ import { isApiError } from '@/shared/api/apiError';
 import { managedListingPath } from '@/shared/lib/paths';
 import type { ErrorCode } from '@/shared/types';
 import { applyServerFieldErrors } from '@/features/auth';
-import { type ListingFormOutput, type ListingFormValues, listingFormSchema } from '../schemas';
+import {
+  LISTING_FORM_FIELDS,
+  type ListingFormOutput,
+  type ListingFormValues,
+  listingFormSchema,
+} from '../schemas';
 import type { CreateListingRequest, ManagedListing } from '../types';
 import { useCreateListing, useUpdateListing } from './useListingQueries';
 
-const FIELDS: ReadonlySet<string> = new Set(Object.keys(listingFormSchema.shape));
+const FIELDS: ReadonlySet<string> = new Set(LISTING_FORM_FIELDS);
 
 const toRequest = (values: ListingFormOutput): CreateListingRequest => ({
   title: values.title,
   description: values.description,
   propertyType: values.propertyType,
-  rent: values.rent,
+  kind: values.kind,
+  price: values.price,
   bedrooms: values.bedrooms,
   bathrooms: values.bathrooms,
   sizeSqft: values.sizeSqft,
@@ -28,14 +34,16 @@ const toRequest = (values: ListingFormOutput): CreateListingRequest => ({
   petsAllowed: values.petsAllowed,
   furnished: values.furnished,
   parking: values.parking,
-  availableFrom: values.availableFrom,
+  // A home for sale has no move-in day.
+  availableFrom: values.kind === 'RENT' ? values.availableFrom : null,
 });
 
 const EMPTY: ListingFormValues = {
   title: '',
   description: '',
   propertyType: 'APARTMENT',
-  rent: '',
+  kind: 'RENT',
+  price: '',
   bedrooms: '1',
   bathrooms: '1',
   sizeSqft: '',
@@ -54,7 +62,8 @@ const fromListing = (listing: ManagedListing): ListingFormValues => ({
   title: listing.title,
   description: listing.description,
   propertyType: listing.propertyType,
-  rent: trimAmount(listing.rent.amount),
+  kind: listing.kind,
+  price: trimAmount(listing.price.amount),
   bedrooms: String(listing.bedrooms),
   bathrooms: listing.bathrooms.endsWith('.0') ? listing.bathrooms.slice(0, -2) : listing.bathrooms,
   sizeSqft: String(listing.sizeSqft),
@@ -66,7 +75,7 @@ const fromListing = (listing: ManagedListing): ListingFormValues => ({
   petsAllowed: listing.petsAllowed,
   furnished: listing.furnished,
   parking: listing.parking,
-  availableFrom: listing.availableFrom,
+  availableFrom: listing.availableFrom ?? '',
 });
 
 /** "2150.0000" → "2150", "2200.5000" → "2200.50". */

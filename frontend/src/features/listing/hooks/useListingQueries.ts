@@ -67,10 +67,11 @@ export const useToggleSaved = () => {
   return useMutation<unknown, ApiError, { listingId: string; saved: boolean }>({
     mutationFn: ({ listingId, saved }) =>
       saved ? savedListingApi.unsave(listingId) : savedListingApi.save(listingId),
-    onSuccess: async () => {
+    onSuccess: async (_result, { listingId }) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: listingKeys.searches() }),
         queryClient.invalidateQueries({ queryKey: listingKeys.saved() }),
+        queryClient.invalidateQueries({ queryKey: listingKeys.detail(listingId) }),
       ]);
     },
   });

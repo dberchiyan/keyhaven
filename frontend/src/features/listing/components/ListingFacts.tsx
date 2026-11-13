@@ -18,13 +18,21 @@ export function ListingFacts({ listing }: ListingFactsProps) {
     ],
     [t('detail.size'), formatSize(listing.sizeSqft, i18n.language, t)],
     [t('detail.type'), t(`facts.type.${listing.propertyType}`)],
-    [t('detail.availableFrom'), formatDay(listing.availableFrom, i18n.language)],
+    [
+      t('detail.availableFrom'),
+      listing.availableFrom ? formatDay(listing.availableFrom, i18n.language) : t('card.forSale'),
+    ],
     [t('detail.neighborhood'), listing.neighborhood ?? '—'],
     [t('detail.zip'), listing.zip],
   ];
+  // Furnished and pets are a rental's terms; a home for sale shows only the parking.
   const chips = [
-    listing.furnished ? t('facts.furnished') : t('facts.unfurnished'),
-    listing.petsAllowed ? t('facts.pets') : t('facts.noPets'),
+    ...(listing.kind === 'RENT'
+      ? [
+          listing.furnished ? t('facts.furnished') : t('facts.unfurnished'),
+          listing.petsAllowed ? t('facts.pets') : t('facts.noPets'),
+        ]
+      : []),
     listing.parking ? t('facts.parking') : t('facts.noParking'),
   ];
   return (

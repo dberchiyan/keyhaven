@@ -8,8 +8,10 @@ export const useLogin = () => {
   const queryClient = useQueryClient();
   return useMutation<CurrentUser, ApiError, LoginRequest>({
     mutationFn: authApi.login,
-    onSuccess: (user) => {
+    onSuccess: async (user) => {
+      // What the visitor browsed signed out is read again as this person (their saved homes).
       queryClient.setQueryData(authKeys.me(), user);
+      await queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] !== 'auth' });
     },
   });
 };
