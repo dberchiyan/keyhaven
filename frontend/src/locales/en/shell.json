@@ -42,31 +42,26 @@
     "dashboard": "Dashboard"
   },
   "footer": {
-    "tagline": "Homes to rent and to buy in Austin, Denver, Seattle, Chicago, Atlanta and Phoenix. Browse without an account; sign in to save homes or to list one.",
+    "tagline": "Homes to rent and to buy in six US cities.",
     "icons": {
       "github": "Keyhaven on GitHub",
-      "readme": "How Keyhaven is built (README)",
+      "readme": "Docs (README)",
       "email": "Email Keyhaven"
     },
     "columns": {
       "browse": "Browse",
       "cities": "Cities",
-      "account": "Account"
+      "company": "Company"
     },
     "links": {
       "rent": "Rent",
       "buy": "Buy",
       "houses": "Houses",
-      "saved": "Saved homes",
-      "settings": "Settings",
-      "dashboard": "Dashboard",
-      "signIn": "Sign in",
+      "about": "About",
       "listHome": "List your home",
-      "readme": "About Keyhaven",
       "github": "Source on GitHub"
     },
-    "rights": "© {{year}} Keyhaven. A public demo — every person and home is fictional.",
-    "haveAccount": "Have an account?",
+    "rights": "© {{year}} Keyhaven. Public demo: all people and homes are fictional.",
     "signInLink": "Sign in",
     "signedInAs": "Signed in as {{name}}"
   }

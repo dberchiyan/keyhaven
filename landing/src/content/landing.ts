@@ -281,21 +281,18 @@ export const LANDING = {
     source: 'Read the source on GitHub',
   },
   footer: {
-    tagline:
-      'Homes to rent and to buy in Austin, Denver, Seattle, Chicago, Atlanta and Phoenix. Browse without an account; sign in to save homes or to list one.',
+    tagline: 'Homes to rent and to buy in six US cities.',
     product: 'Browse',
     cities: 'Cities',
-    account: 'Account',
+    company: 'Company',
+    about: 'About',
     github: 'Source on GitHub',
-    readme: 'About Keyhaven',
-    issues: 'Issues',
     icons: {
       github: 'Keyhaven on GitHub',
-      readme: 'How Keyhaven is built (README)',
+      readme: 'Docs (README)',
       email: 'Email Keyhaven',
     },
-    rights: 'A public demo — every person and home is fictional.',
-    haveAccount: 'Have an account?',
+    rights: 'Public demo: all people and homes are fictional.',
     signIn: 'Sign in',
   },
 } as const;
