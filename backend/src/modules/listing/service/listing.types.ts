@@ -1,4 +1,5 @@
 import type { Decimal, Money } from '../../../common/persistence/money';
+import type { ListingKind } from './listing-kind';
 import type { ListingStatus } from './listing-status';
 import type { PhotoContentType, PhotoStatus } from './photo-status';
 import type { PropertyType } from './property-type';
@@ -18,14 +19,17 @@ export interface ListingCard {
   id: string;
   title: string;
   propertyType: PropertyType;
-  rent: Money;
+  /** For rent (price = monthly rent) or for sale (price = asking price). */
+  kind: ListingKind;
+  price: Money;
   bedrooms: number;
   /** "1.5" — a decimal string, never a float. */
   bathrooms: string;
   sizeSqft: number;
   city: ListingCity;
   neighborhood: string | null;
-  availableFrom: Date;
+  /** Move-in day of a home for rent; null for one for sale. */
+  availableFrom: Date | null;
   publishedAt: Date | null;
   coverPhotoUrl: string | null;
 }
@@ -87,7 +91,8 @@ export interface ListingDraft {
   title: string;
   description: string;
   propertyType: PropertyType;
-  rent: Decimal;
+  kind: ListingKind;
+  price: Decimal;
   bedrooms: number;
   bathrooms: Decimal;
   sizeSqft: number;
@@ -99,8 +104,13 @@ export interface ListingDraft {
   petsAllowed: boolean;
   furnished: boolean;
   parking: boolean;
-  availableFrom: Date;
+  /** Required for a home for rent, absent for one for sale (ck_listings_available_from). */
+  availableFrom: Date | null;
 }
+
+/** Who opened a listing page: a signed-in person or a visitor known by a daily hash. */
+export type ListingViewer =
+  { kind: 'USER'; userId: string } | { kind: 'VISITOR'; visitorKey: string };
 
 export interface UpdateListingCommand extends ListingDraft {
   version: number;

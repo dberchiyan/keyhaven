@@ -19,9 +19,10 @@ const env = z
 
 const QUERIES: Record<string, string> = {
   'newest, no filters': '',
-  'city + rent range': 'city=austin&rentMin=1500&rentMax=2500',
+  'city + rent range': 'city=austin&priceMin=1500&priceMax=2500',
   'city + beds + baths + amenities': 'city=seattle&beds=2&baths=1.5&pets=true&parking=true',
-  'available by date, rent high to low': 'availableBy=2026-12-31&sort=rent,desc',
+  'available by date, rent high to low': 'availableBy=2026-12-31&sort=price,desc',
+  'homes for sale, houses, price low to high': 'kind=SALE&type=HOUSE&sort=price,asc',
   'text search, one typo': 'q=Walingford',
   'text search, two terms + filters': 'q=apartmnt+austin&pets=true&beds=1',
   'page 40 of newest': 'page=40',

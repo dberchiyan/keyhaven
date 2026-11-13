@@ -37,11 +37,13 @@ describe('Access by role', () => {
   });
 
   describe('signed out', () => {
-    it('answers 401 UNAUTHORIZED without a session', async () => {
+    it('answers 401 UNAUTHORIZED without a session — the catalogue excepted', async () => {
       const anonymous = new Client(testApp.app);
-      const response = await anonymous.get('/api/v1/listings');
+      const response = await anonymous.get('/api/v1/managed-listings');
       expect(response.status).toBe(401);
       expect(response.body).toMatchObject({ error: 'UNAUTHORIZED' });
+      // Published homes are public: visitors browse without an account (CONTEXT.md).
+      expect((await anonymous.get('/api/v1/listings')).status).toBe(200);
     });
 
     it('answers INVALID_CREDENTIALS for a wrong password and an unknown email alike', async () => {

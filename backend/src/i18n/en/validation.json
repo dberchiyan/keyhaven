@@ -45,9 +45,6 @@
   "amount": {
     "invalid": "Enter an amount like 1800 or 1800.50"
   },
-  "rent": {
-    "maxBelowMin": "The highest rent must not be below the lowest"
-  },
   "availableBy": {
     "invalid": "Enter a date"
   },
@@ -98,5 +95,11 @@
   "savedSearchName": {
     "required": "Name this search",
     "tooLong": "Name must be at most {max} characters"
+  },
+  "price": {
+    "maxBelowMin": "The highest price must not be below the lowest"
+  },
+  "kind": {
+    "required": "Choose whether the home is for rent or for sale"
   }
 }

@@ -12,6 +12,10 @@ const escapeHtml = (value: string): string =>
 const dollars = (amount: string): string =>
   `$${Number(amount).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
+/** "$1,850/mo" for a rental, "$425,000" for a home for sale. */
+const priceOf = (listing: ListingCard): string =>
+  listing.kind === 'RENT' ? `${dollars(listing.price.amount)}/mo` : dollars(listing.price.amount);
+
 const rooms = (listing: ListingCard): string =>
   listing.bedrooms === 0
     ? `Studio · ${listing.bathrooms} bath`
@@ -31,14 +35,14 @@ export const digestEmail = (
 ): EmailMessage => {
   const lines = listings.map(
     (listing) =>
-      `• ${listing.title} — ${dollars(listing.rent.amount)}/mo · ${rooms(listing)} · ${listing.city.name}, ${listing.city.state}\n  ${appUrl}/listings/${listing.id}`,
+      `• ${listing.title} — ${priceOf(listing)} · ${rooms(listing)} · ${listing.city.name}, ${listing.city.state}\n  ${appUrl}/listings/${listing.id}`,
   );
   const more = total > listings.length ? `\n…and ${total - listings.length} more.` : '';
   const items = listings
     .map(
       (listing) => `<li style="margin:0 0 12px">
 <a href="${escapeHtml(`${appUrl}/listings/${listing.id}`)}" style="font-weight:600;color:#1F5F4A">${escapeHtml(listing.title)}</a><br>
-<span style="color:#52606d">${escapeHtml(dollars(listing.rent.amount))}/mo · ${escapeHtml(rooms(listing))} · ${escapeHtml(`${listing.city.name}, ${listing.city.state}`)}</span></li>`,
+<span style="color:#52606d">${escapeHtml(priceOf(listing))} · ${escapeHtml(rooms(listing))} · ${escapeHtml(`${listing.city.name}, ${listing.city.state}`)}</span></li>`,
     )
     .join('\n');
   const moreHtml =

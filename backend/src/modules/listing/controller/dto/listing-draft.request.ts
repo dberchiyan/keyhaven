@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { AmountInputSchema } from '../../../../common/dto/money';
+import { LISTING_KINDS } from '../../service/listing-kind';
 import { PROPERTY_TYPES } from '../../service/property-type';
 
 /** Mirrors the columns of `listings` (data.md); the frontend mirrors this schema. */
@@ -35,8 +36,10 @@ export const ListingDraftSchema = z.object({
     .min(1, 'validation.description.required')
     .max(LISTING_LIMITS.description, 'validation.description.tooLong'),
   propertyType: z.enum(PROPERTY_TYPES, { error: 'validation.propertyType.required' }),
-  /** Monthly rent in USD, typed as "1850" or "1850.50". */
-  rent: AmountInputSchema,
+  /** For rent or for sale. */
+  kind: z.enum(LISTING_KINDS, { error: 'validation.kind.required' }),
+  /** Monthly rent (RENT) or the asking price (SALE) in USD, typed as "1850" or "1850.50". */
+  price: AmountInputSchema,
   bedrooms: z
     .number({ error: 'validation.bedrooms.invalid' })
     .int('validation.bedrooms.invalid')
@@ -66,13 +69,32 @@ export const ListingDraftSchema = z.object({
   petsAllowed: z.boolean({ error: 'validation.invalid' }),
   furnished: z.boolean({ error: 'validation.invalid' }),
   parking: z.boolean({ error: 'validation.invalid' }),
-  availableFrom: z.iso.date({ error: 'validation.availableFrom.invalid' }),
+  /** The move-in day — required for a home for rent, ignored for one for sale. */
+  availableFrom: z.iso.date({ error: 'validation.availableFrom.invalid' }).nullable().optional(),
 });
 
-export class CreateListingRequest extends createZodDto(ListingDraftSchema) {}
+/** A home for rent needs its move-in day (checked here, so the field gets the message). */
+const moveInDayRequired = (
+  draft: { kind: string; availableFrom?: string | null },
+  context: z.RefinementCtx,
+): void => {
+  if (draft.kind === 'RENT' && !draft.availableFrom) {
+    context.addIssue({
+      code: 'custom',
+      path: ['availableFrom'],
+      message: 'validation.availableFrom.invalid',
+    });
+  }
+};
+
+export class CreateListingRequest extends createZodDto(
+  ListingDraftSchema.superRefine(moveInDayRequired),
+) {}
 
 export const UpdateListingRequestSchema = ListingDraftSchema.extend({
   version: z.number({ error: 'validation.invalid' }).int().min(0),
 });
 
-export class UpdateListingRequest extends createZodDto(UpdateListingRequestSchema) {}
+export class UpdateListingRequest extends createZodDto(
+  UpdateListingRequestSchema.superRefine(moveInDayRequired),
+) {}

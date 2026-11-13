@@ -2,12 +2,14 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 import { MoneySchema } from '../../../../common/dto/money';
 import { pageResponseSchema } from '../../../../common/dto/page.response';
+import { LISTING_KINDS } from '../../service/listing-kind';
 import { LISTING_STATUSES } from '../../service/listing-status';
 import { PHOTO_STATUSES } from '../../service/photo-status';
 import { PROPERTY_TYPES } from '../../service/property-type';
 
 export const PropertyTypeSchema = z.enum(PROPERTY_TYPES).meta({ id: 'PropertyType' });
 export const ListingStatusSchema = z.enum(LISTING_STATUSES).meta({ id: 'ListingStatus' });
+export const ListingKindSchema = z.enum(LISTING_KINDS).meta({ id: 'ListingKind' });
 
 export const CitySchema = z
   .object({
@@ -28,15 +30,17 @@ export const ListingCardSchema = z
     id: z.uuid(),
     title: z.string().max(120),
     propertyType: PropertyTypeSchema,
-    /** Monthly rent. */
-    rent: MoneySchema,
+    /** For rent (the price is a monthly rent) or for sale (the asking price). */
+    kind: ListingKindSchema,
+    price: MoneySchema,
     bedrooms: z.number().int().min(0),
     /** "1.5" — a decimal string with one place. */
     bathrooms: z.string().regex(/^\d{1,2}\.\d$/),
     sizeSqft: z.number().int().min(1),
     city: CitySchema,
     neighborhood: z.string().max(100).nullable(),
-    availableFrom: z.iso.date(),
+    /** Move-in day of a home for rent; null for one for sale. */
+    availableFrom: z.iso.date().nullable(),
     publishedAt: z.iso.datetime().nullable(),
     coverPhotoUrl: z.string().max(500).nullable(),
     /** The viewer saved it (tenants); false for everyone else. */

@@ -1,12 +1,14 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
+import { LISTING_KINDS } from '../../service/listing-kind';
 import { LISTING_STATUSES } from '../../service/listing-status';
+import { PROPERTY_TYPES } from '../../service/property-type';
 
 const booleanParam = z
   .enum(['true', 'false'], { error: 'validation.invalid' })
   .transform((value) => value === 'true');
 
-/** A whole-dollar or two-place amount typed into the rent filter. */
+/** A whole-dollar or two-place amount typed into the price filter. */
 const amountParam = z
   .string()
   .trim()
@@ -18,6 +20,8 @@ export const SEARCH_MAX_LENGTH = 100;
 /** The search page's filters, every one optional, all kept in the URL by the client. */
 export const ListingFilterQuerySchema = z
   .object({
+    /** Homes for rent (default) or for sale. */
+    kind: z.enum(LISTING_KINDS, { error: 'validation.invalid' }).default('RENT'),
     /** A city slug from `GET /api/v1/cities`. */
     city: z
       .string()
@@ -25,8 +29,10 @@ export const ListingFilterQuerySchema = z
       .max(100, 'validation.city.invalid')
       .regex(/^[a-z0-9-]+$/, 'validation.city.invalid')
       .optional(),
-    rentMin: amountParam.optional(),
-    rentMax: amountParam.optional(),
+    type: z.enum(PROPERTY_TYPES, { error: 'validation.invalid' }).optional(),
+    /** Monthly rent (RENT) or asking price (SALE). */
+    priceMin: amountParam.optional(),
+    priceMax: amountParam.optional(),
     /** At least this many bedrooms (0 = studios too). */
     beds: z.coerce.number({ error: 'validation.invalid' }).int().min(0).max(20).optional(),
     /** At least this many bathrooms: 1, 1.5, 2 … */
@@ -44,15 +50,15 @@ export const ListingFilterQuerySchema = z
   })
   .superRefine((query, context) => {
     if (
-      query.rentMin !== undefined &&
-      query.rentMax !== undefined &&
-      Number(query.rentMin) > Number(query.rentMax)
+      query.priceMin !== undefined &&
+      query.priceMax !== undefined &&
+      Number(query.priceMin) > Number(query.priceMax)
     ) {
       // Compared as numbers only to order the two bounds; the values stay strings.
       context.addIssue({
         code: 'custom',
-        path: ['rentMax'],
-        message: 'validation.rent.maxBelowMin',
+        path: ['priceMax'],
+        message: 'validation.price.maxBelowMin',
       });
     }
   });

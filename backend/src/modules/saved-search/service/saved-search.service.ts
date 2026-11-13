@@ -31,9 +31,11 @@ export const toCriteria = (
   criteria: SavedSearchCriteria,
   publishedAfter?: Date,
 ): ListingCriteria => ({
+  kind: criteria.kind ?? 'RENT',
   ...(criteria.city === undefined ? {} : { citySlug: criteria.city }),
-  ...(criteria.rentMin === undefined ? {} : { rentMin: toDecimal(criteria.rentMin) }),
-  ...(criteria.rentMax === undefined ? {} : { rentMax: toDecimal(criteria.rentMax) }),
+  ...(criteria.type === undefined ? {} : { propertyType: criteria.type }),
+  ...(criteria.priceMin === undefined ? {} : { priceMin: toDecimal(criteria.priceMin) }),
+  ...(criteria.priceMax === undefined ? {} : { priceMax: toDecimal(criteria.priceMax) }),
   ...(criteria.beds === undefined ? {} : { bedroomsMin: criteria.beds }),
   ...(criteria.baths === undefined ? {} : { bathroomsMin: toDecimal(criteria.baths) }),
   ...(criteria.pets === undefined ? {} : { petsAllowed: criteria.pets }),

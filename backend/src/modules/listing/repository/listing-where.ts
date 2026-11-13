@@ -17,15 +17,21 @@ const toDay = (date: Date): string => date.toISOString().slice(0, 10);
  * similarity, index-backed on the listing text).
  */
 export const publishedListingSql = (criteria: ListingCriteria): Prisma.Sql => {
-  const conditions: Prisma.Sql[] = [Prisma.sql`l.status = ${ListingStatus.PUBLISHED}`];
+  const conditions: Prisma.Sql[] = [
+    Prisma.sql`l.status = ${ListingStatus.PUBLISHED}`,
+    Prisma.sql`l.kind = ${criteria.kind}`,
+  ];
   if (criteria.citySlug !== undefined) {
     conditions.push(Prisma.sql`c.slug = ${criteria.citySlug}`);
   }
-  if (criteria.rentMin !== undefined) {
-    conditions.push(Prisma.sql`l.rent >= ${criteria.rentMin.toFixed(4)}::numeric`);
+  if (criteria.propertyType !== undefined) {
+    conditions.push(Prisma.sql`l.property_type = ${criteria.propertyType}`);
   }
-  if (criteria.rentMax !== undefined) {
-    conditions.push(Prisma.sql`l.rent <= ${criteria.rentMax.toFixed(4)}::numeric`);
+  if (criteria.priceMin !== undefined) {
+    conditions.push(Prisma.sql`l.price >= ${criteria.priceMin.toFixed(4)}::numeric`);
+  }
+  if (criteria.priceMax !== undefined) {
+    conditions.push(Prisma.sql`l.price <= ${criteria.priceMax.toFixed(4)}::numeric`);
   }
   if (criteria.bedroomsMin !== undefined) {
     conditions.push(Prisma.sql`l.bedrooms >= ${criteria.bedroomsMin}`);

@@ -58,6 +58,9 @@ export class RateLimitGuard implements CanActivate {
     }
     if (principal) {
       await this.rateLimitService.consumeSession(principal.sessionId);
+    } else {
+      // Public routes (the catalogue): the same ceiling, keyed by the visitor's address.
+      await this.rateLimitService.consumeVisitor(clientIp(request));
     }
     return true;
   }

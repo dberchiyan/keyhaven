@@ -35,15 +35,17 @@ export class AuthorizationGuard implements CanActivate {
     if (!requiredPolicy) {
       return false;
     }
-    const principal = this.cls.get('principal');
-    if (!principal) {
-      throw this.cls.get('sessionState') === SessionState.EXPIRED
-        ? new SessionExpiredException()
-        : new NotAuthenticatedException();
-    }
-    if (requiredPolicy.scope === 'verified' && !principal.isEmailVerified) {
-      // Actions other people rely on wait for a verified address (policy.ts → PolicyScope).
-      throw new EmailNotVerifiedException();
+    const principal = this.cls.get('principal') ?? null;
+    if (requiredPolicy.scope !== 'public') {
+      if (!principal) {
+        throw this.cls.get('sessionState') === SessionState.EXPIRED
+          ? new SessionExpiredException()
+          : new NotAuthenticatedException();
+      }
+      if (requiredPolicy.scope === 'verified' && !principal.isEmailVerified) {
+        // Actions other people rely on wait for a verified address (policy.ts → PolicyScope).
+        throw new EmailNotVerifiedException();
+      }
     }
     const request = context.switchToHttp().getRequest<Request>();
     // Policy params are path ids: anything but a UUID is 400 before a policy queries with it.
@@ -56,6 +58,12 @@ export class AuthorizationGuard implements CanActivate {
         return [name, value.toLowerCase()];
       }),
     );
+    if (requiredPolicy.scope === 'public') {
+      return requiredPolicy.check(principal, args, this.permissions);
+    }
+    if (!principal) {
+      throw new NotAuthenticatedException();
+    }
     return requiredPolicy.check(principal, args, this.permissions);
   }
 }

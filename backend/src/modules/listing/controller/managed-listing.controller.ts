@@ -42,7 +42,8 @@ const toDraft = (request: CreateListingRequest): ListingDraft => ({
   title: request.title,
   description: request.description,
   propertyType: request.propertyType,
-  rent: toDecimal(request.rent),
+  kind: request.kind,
+  price: toDecimal(request.price),
   bedrooms: request.bedrooms,
   bathrooms: toDecimal(request.bathrooms),
   sizeSqft: request.sizeSqft,
@@ -54,7 +55,11 @@ const toDraft = (request: CreateListingRequest): ListingDraft => ({
   petsAllowed: request.petsAllowed,
   furnished: request.furnished,
   parking: request.parking,
-  availableFrom: new Date(`${request.availableFrom}T00:00:00Z`),
+  // A home for sale has no move-in day, whatever the form sent.
+  availableFrom:
+    request.kind === 'RENT' && request.availableFrom
+      ? new Date(`${request.availableFrom}T00:00:00Z`)
+      : null,
 });
 
 const MUTATION_ERRORS = [

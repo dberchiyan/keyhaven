@@ -44,6 +44,7 @@ import type {
   ListingDetail,
   ListingDraft,
   ListingScope,
+  ListingViewer,
   ManagedListing,
   ManagedListingCard,
   ManagedPhoto,
@@ -51,6 +52,7 @@ import type {
   PhotoUploadIntent,
   UpdateListingCommand,
 } from './listing.types';
+import { isListingKind, type ListingKind } from './listing-kind';
 import { isPhotoStatus, MAX_PHOTOS, PHOTO_MAX_BYTES, PhotoStatus } from './photo-status';
 import { sniffImageType } from './photo-type';
 import { isPropertyType, type PropertyType } from './property-type';
@@ -87,7 +89,7 @@ export class ListingService {
     return (await this.listingRepository.findCities()).map(toCity);
   }
 
-  /** Search (every signed-in user): published listings only; `saved` is the viewer's. */
+  /** Search (everyone, signed in or not): published listings only; `saved` is the viewer's. */
   async search(
     criteria: ListingCriteria,
     pageable: Pageable<ListingSortField>,
@@ -103,13 +105,21 @@ export class ListingService {
   /**
    * One listing for a viewer (the policy admitted them: published, or theirs, or an admin). The
    * exact address is shown only to the owner, the agency's agents and admins — M2 adds a tenant
-   * whose viewing was confirmed. A tenant's visit counts as a view (once per day).
+   * whose viewing was confirmed. Anyone else's visit counts as a view (once per viewer and day;
+   * a visitor without an account is known by a daily hash).
    */
-  async findForViewer(principal: Principal, listingId: string): Promise<ListingDetail> {
+  async findForViewer(
+    principal: Principal | null,
+    listingId: string,
+    visitorKey: string,
+  ): Promise<ListingDetail> {
     const listing = await this.findDetail(listingId);
-    const owns = this.ownsOrAdministers(principal, listing);
+    const owns = principal ? this.ownsOrAdministers(principal, listing) : false;
     if (!owns) {
-      await this.listingRepository.recordView(listingId, principal.userId, utcToday());
+      const viewer: ListingViewer = principal
+        ? { kind: 'USER', userId: principal.userId }
+        : { kind: 'VISITOR', visitorKey };
+      await this.listingRepository.recordView(listingId, viewer, utcToday());
     }
     return this.toDetail(
       listing,
@@ -448,7 +458,8 @@ export class ListingService {
       id: listing.id,
       title: listing.title,
       propertyType: toPropertyType(listing.propertyType),
-      rent: toMoney(listing.rent, listing.currency),
+      kind: toKind(listing.kind),
+      price: toMoney(listing.price, listing.currency),
       bedrooms: listing.bedrooms,
       bathrooms: listing.bathrooms.toFixed(1),
       sizeSqft: listing.sizeSqft,
@@ -553,6 +564,14 @@ const toCity = (city: CityRecord): ListingCity => ({
   slug: city.slug,
   timeZone: city.timeZone,
 });
+
+const toKind = (value: string): ListingKind => {
+  if (!isListingKind(value)) {
+    // Guarded by ck_listings_kind.
+    throw new Error('Unknown listing kind in database');
+  }
+  return value;
+};
 
 const toPropertyType = (value: string): PropertyType => {
   if (!isPropertyType(value)) {

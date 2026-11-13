@@ -1,5 +1,5 @@
 import { ResourceNotFoundException } from '../exception/api.exception';
-import { policy } from './policy';
+import { policy, publicPolicy } from './policy';
 import type { Principal } from './principal';
 
 /**
@@ -32,15 +32,19 @@ export const can = {
   ),
   /** Keyhaven staff: `/metrics` and anything else that is not tied to a listing. */
   admin: policy([], isAdmin),
-  /** Anyone signed in (every role, verified or not): published homes and the cities. */
-  browseListings: policy([], () => true),
+  /** Everyone, signed in or not: published homes and the cities (the public catalogue). */
+  browseListings: publicPolicy([], () => true),
   /**
-   * One listing: published ones are open to everyone signed in; a draft, unpublished or
+   * One listing: published ones are open to everyone, visitors included; a draft, unpublished or
    * suspended one only to its owner (landlord / the agency's agents) and admins — anyone else
    * gets 404, exactly like an unknown id.
    */
-  viewListing: policy(['listingId'], async (principal, args, permissions) =>
-    orNotFound(await permissions.isVisibleListing(principal, args.listingId ?? '')),
+  viewListing: publicPolicy(['listingId'], async (principal, args, permissions) =>
+    orNotFound(
+      principal
+        ? await permissions.isVisibleListing(principal, args.listingId ?? '')
+        : await permissions.isPublishedListing(args.listingId ?? ''),
+    ),
   ),
   /** The listings dashboard: landlords (their own), agents (the agency's), admins (all). */
   manageListings: policy([], (principal) => isAdmin(principal) || isLister(principal)),

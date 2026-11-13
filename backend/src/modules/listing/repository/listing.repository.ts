@@ -8,7 +8,7 @@ import type { PrismaService } from '../../../common/persistence/prisma.service';
 import { Prisma } from '../../../generated/prisma/client';
 import type { ListingCriteria, ManagedListingCriteria } from '../service/filter/listing.criteria';
 import type { ListingSortField, ManagedListingSortField } from '../service/listing-sort';
-import type { ListingDraft, ListingScope } from '../service/listing.types';
+import type { ListingDraft, ListingScope, ListingViewer } from '../service/listing.types';
 import { managedListingWhere, publishedListingSql } from './listing-where';
 import {
   type CityRecord,
@@ -29,10 +29,10 @@ import {
 const MAX_CITIES = 100;
 
 const searchOrderBy = (field: ListingSortField, direction: Prisma.SortOrder): Prisma.Sql =>
-  field === 'rent'
+  field === 'price'
     ? direction === 'asc'
-      ? Prisma.sql`l.rent ASC, l.id ASC`
-      : Prisma.sql`l.rent DESC, l.id DESC`
+      ? Prisma.sql`l.price ASC, l.id ASC`
+      : Prisma.sql`l.price DESC, l.id DESC`
     : direction === 'asc'
       ? Prisma.sql`l.published_at ASC NULLS LAST, l.id ASC`
       : Prisma.sql`l.published_at DESC NULLS LAST, l.id DESC`;
@@ -199,10 +199,17 @@ export class ListingRepository {
     return count > 0;
   }
 
-  /** A page view, counted once per person and UTC day (the primary key makes repeats no-ops). */
-  async recordView(listingId: string, userId: string, viewedOn: Date): Promise<void> {
+  /**
+   * A page view, counted once per viewer and UTC day: a person by id, a visitor without an
+   * account by a daily hash (the partial unique indexes make repeats no-ops).
+   */
+  async recordView(listingId: string, viewer: ListingViewer, viewedOn: Date): Promise<void> {
     await this.txHost.tx.listingView.createMany({
-      data: [{ listingId, userId, viewedOn }],
+      data: [
+        viewer.kind === 'USER'
+          ? { listingId, userId: viewer.userId, visitorKey: null, viewedOn }
+          : { listingId, userId: null, visitorKey: viewer.visitorKey, viewedOn },
+      ],
       skipDuplicates: true,
     });
   }
@@ -213,7 +220,8 @@ const toColumns = (draft: ListingDraft) => ({
   title: draft.title,
   description: draft.description,
   propertyType: draft.propertyType,
-  rent: draft.rent,
+  kind: draft.kind,
+  price: draft.price,
   bedrooms: draft.bedrooms,
   bathrooms: draft.bathrooms,
   sizeSqft: draft.sizeSqft,

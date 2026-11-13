@@ -5,17 +5,20 @@ import { z } from 'zod';
  * this schema on write and on read (data.md → JSON). The same shape as the search page's query.
  */
 export const SavedSearchCriteriaSchema = z.object({
+  /** Homes for rent (the default) or for sale. */
+  kind: z.enum(['RENT', 'SALE']).optional(),
+  type: z.enum(['APARTMENT', 'HOUSE', 'CONDO', 'TOWNHOUSE', 'STUDIO']).optional(),
   city: z
     .string()
     .max(100)
     .regex(/^[a-z0-9-]+$/)
     .optional(),
-  rentMin: z
+  priceMin: z
     .string()
     .max(16)
     .regex(/^\d{1,9}(\.\d{1,2})?$/)
     .optional(),
-  rentMax: z
+  priceMax: z
     .string()
     .max(16)
     .regex(/^\d{1,9}(\.\d{1,2})?$/)

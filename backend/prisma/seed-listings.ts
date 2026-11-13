@@ -3,8 +3,13 @@ import { ListingStatus } from '../src/modules/listing/service/listing-status';
 import { PropertyType } from '../src/modules/listing/service/property-type';
 import { CITIES, type SeedCity } from './seed-data';
 
-/** ~1,000 homes across the six cities (TASK → M0 seed). */
+import { ListingKind } from '../src/modules/listing/service/listing-kind';
+
+/** ~1,000 homes for rent across the six cities (TASK → M0 seed), plus homes for sale. */
 export const LISTING_COUNT = 1000;
+export const SALE_LISTING_COUNT = 300;
+/** Homes for sale take the ids after the rentals, so a re-run stays idempotent. */
+const SALE_INDEX_FROM = LISTING_COUNT;
 
 const DAY_MS = 86_400_000;
 /** Rows per createMany statement — a comfortable size for one round trip. */
@@ -185,142 +190,177 @@ export const seedListings = async (
   });
   let listings = 0;
   let photos = 0;
-  for (let start = 0; start < LISTING_COUNT; start += BATCH) {
-    const rows = [];
-    const photoRows = [];
-    for (let index = start; index < Math.min(start + BATCH, LISTING_COUNT); index += 1) {
-      const city = pick(CITIES, roll());
-      const cityId = cityIds.get(city.slug);
-      if (!cityId) {
-        throw new Error(`Seed city not found: ${city.slug}`);
-      }
-      const type = pick(PROPERTY_TYPES, roll());
-      const bedrooms =
-        type === PropertyType.STUDIO
-          ? 0
-          : type === PropertyType.HOUSE
-            ? 2 + Math.floor(roll() * 3)
-            : 1 + Math.floor(roll() * 3);
-      const bathrooms = bedrooms <= 1 ? 1 : pick([1, 1.5, 2, 2, 2.5], roll());
-      const sizeSqft = Math.round(
-        (type === PropertyType.STUDIO ? 420 : 520 + bedrooms * 260) * (0.85 + roll() * 0.4),
+  const ranges: { kind: ListingKind; from: number; to: number }[] = [
+    { kind: ListingKind.RENT, from: 0, to: LISTING_COUNT },
+    { kind: ListingKind.SALE, from: SALE_INDEX_FROM, to: SALE_INDEX_FROM + SALE_LISTING_COUNT },
+  ];
+  for (const { kind, from, to } of ranges) {
+    for (let start = from; start < to; start += BATCH) {
+      const rows = [];
+      const photoRows = [];
+      // Idempotent re-runs: rows that exist are left alone, photos included. ON CONFLICT cannot
+      // arbitrate on the deferrable photo-position unique, so the check happens here instead.
+      // Every roll() below still happens for a skipped row, so the catalogue stays the same.
+      const end = Math.min(start + BATCH, to);
+      const batchIds = Array.from({ length: end - start }, (_, offset) =>
+        listingId(start + offset),
       );
-      const rent =
-        Math.round(
-          (city.baseRent *
-            (type === PropertyType.STUDIO ? 0.8 : 0.75 + bedrooms * 0.35) *
-            (0.9 + roll() * 0.3)) /
-            25,
-        ) * 25;
-      const neighborhood = pick(city.neighborhoods, roll());
-      const feature = pick(FEATURES, roll());
-      const secondFeature = pick(FEATURES, roll());
-      const petsAllowed = roll() < 0.55;
-      const furnished = roll() < 0.3;
-      const parking = roll() < 0.5;
-      // Who owns it: ~38 % the agency, ~1.5 % the showcase landlord, the rest spread over landlords.
-      const ownerRoll = roll();
-      const owner =
-        ownerRoll < 0.38
-          ? {
-              agencyId: owners.agencyId,
-              landlordId: null,
-              createdBy: pick(owners.agentIds, roll()),
-            }
-          : ownerRoll < 0.395
+      const existing = new Set(
+        (
+          await prisma.listing.findMany({ where: { id: { in: batchIds } }, select: { id: true } })
+        ).map((row) => row.id),
+      );
+      for (let index = start; index < end; index += 1) {
+        const city = pick(CITIES, roll());
+        const cityId = cityIds.get(city.slug);
+        if (!cityId) {
+          throw new Error(`Seed city not found: ${city.slug}`);
+        }
+        const type = pick(PROPERTY_TYPES, roll());
+        const bedrooms =
+          type === PropertyType.STUDIO
+            ? 0
+            : type === PropertyType.HOUSE
+              ? 2 + Math.floor(roll() * 3)
+              : 1 + Math.floor(roll() * 3);
+        const bathrooms = bedrooms <= 1 ? 1 : pick([1, 1.5, 2, 2, 2.5], roll());
+        const sizeSqft = Math.round(
+          (type === PropertyType.STUDIO ? 420 : 520 + bedrooms * 260) * (0.85 + roll() * 0.4),
+        );
+        // Rent to the nearest $25; an asking price to the nearest $5,000.
+        const price =
+          kind === ListingKind.RENT
+            ? Math.round(
+                (city.baseRent *
+                  (type === PropertyType.STUDIO ? 0.8 : 0.75 + bedrooms * 0.35) *
+                  (0.9 + roll() * 0.3)) /
+                  25,
+              ) * 25
+            : Math.round(
+                (city.baseSalePrice *
+                  (type === PropertyType.STUDIO ? 0.55 : 0.6 + bedrooms * 0.2) *
+                  (type === PropertyType.HOUSE ? 1.25 : 1) *
+                  (0.85 + roll() * 0.4)) /
+                  5000,
+              ) * 5000;
+        const neighborhood = pick(city.neighborhoods, roll());
+        const feature = pick(FEATURES, roll());
+        const secondFeature = pick(FEATURES, roll());
+        const petsAllowed = roll() < 0.55;
+        const furnished = roll() < 0.3;
+        const parking = roll() < 0.5;
+        // Who owns it: ~38 % the agency, ~1.5 % the showcase landlord, the rest spread over landlords.
+        const ownerRoll = roll();
+        const owner =
+          ownerRoll < 0.38
             ? {
-                agencyId: null,
-                landlordId: owners.demoLandlordId,
-                createdBy: owners.demoLandlordId,
+                agencyId: owners.agencyId,
+                landlordId: null,
+                createdBy: pick(owners.agentIds, roll()),
               }
-            : {
-                agencyId: null,
-                landlordId: pick(owners.landlordIds, roll()),
-                createdBy: null as string | null,
-              };
-      if (owner.createdBy === null) {
-        owner.createdBy = owner.landlordId;
-      }
-      const statusRoll = roll();
-      const status =
-        statusRoll < 0.82
-          ? ListingStatus.PUBLISHED
-          : statusRoll < 0.88
-            ? ListingStatus.DRAFT
-            : statusRoll < 0.96
-              ? ListingStatus.UNPUBLISHED
-              : ListingStatus.SUSPENDED;
-      const publishedDaysAgo = Math.floor(roll() * 120);
-      const publishedAt =
-        status === ListingStatus.DRAFT
-          ? null
-          : new Date(today.getTime() - publishedDaysAgo * DAY_MS);
-      const availableFrom = new Date(today.getTime() + Math.floor(roll() * 100 - 10) * DAY_MS);
-      const streetNumber = 100 + Math.floor(roll() * 4800);
-      const unit =
-        type === PropertyType.HOUSE || type === PropertyType.TOWNHOUSE
-          ? null
-          : `Unit ${1 + Math.floor(roll() * 40)}${pick(['A', 'B', 'C', ''], roll())}`;
-      rows.push({
-        id: listingId(index),
-        landlordId: owner.landlordId,
-        agencyId: owner.agencyId,
-        title: `${pick(ADJECTIVES, roll())} ${type === PropertyType.STUDIO ? 'studio' : `${bedrooms}-bedroom ${type.toLowerCase()}`} in ${neighborhood}`,
-        description: describe(
-          type,
+            : ownerRoll < 0.395
+              ? {
+                  agencyId: null,
+                  landlordId: owners.demoLandlordId,
+                  createdBy: owners.demoLandlordId,
+                }
+              : {
+                  agencyId: null,
+                  landlordId: pick(owners.landlordIds, roll()),
+                  createdBy: null as string | null,
+                };
+        if (owner.createdBy === null) {
+          owner.createdBy = owner.landlordId;
+        }
+        const statusRoll = roll();
+        const status =
+          statusRoll < 0.82
+            ? ListingStatus.PUBLISHED
+            : statusRoll < 0.88
+              ? ListingStatus.DRAFT
+              : statusRoll < 0.96
+                ? ListingStatus.UNPUBLISHED
+                : ListingStatus.SUSPENDED;
+        const publishedDaysAgo = Math.floor(roll() * 120);
+        const publishedAt =
+          status === ListingStatus.DRAFT
+            ? null
+            : new Date(today.getTime() - publishedDaysAgo * DAY_MS);
+        const availableFrom = new Date(today.getTime() + Math.floor(roll() * 100 - 10) * DAY_MS);
+        const streetNumber = 100 + Math.floor(roll() * 4800);
+        const unit =
+          type === PropertyType.HOUSE || type === PropertyType.TOWNHOUSE
+            ? null
+            : `Unit ${1 + Math.floor(roll() * 40)}${pick(['A', 'B', 'C', ''], roll())}`;
+        const photoCount = 3 + Math.floor(roll() * 4);
+        if (existing.has(listingId(index))) {
+          continue;
+        }
+        rows.push({
+          id: listingId(index),
+          landlordId: owner.landlordId,
+          agencyId: owner.agencyId,
+          title: `${pick(ADJECTIVES, roll())} ${type === PropertyType.STUDIO ? 'studio' : `${bedrooms}-bedroom ${type.toLowerCase()}`} in ${neighborhood}${kind === ListingKind.SALE ? ' for sale' : ''}`,
+          description: describe(
+            type,
+            bedrooms,
+            bathrooms,
+            city,
+            neighborhood,
+            feature,
+            secondFeature,
+            petsAllowed,
+            furnished,
+            parking,
+          ),
+          propertyType: type,
+          kind,
+          price,
+          currency: 'USD',
           bedrooms,
           bathrooms,
-          city,
+          sizeSqft,
+          addressLine1: `${streetNumber} ${pick(city.streets, roll())}`,
+          addressLine2: unit,
+          cityId,
           neighborhood,
-          feature,
-          secondFeature,
+          zip: `${city.zipPrefix}${String(Math.floor(roll() * 90) + 10).padStart(2, '0')}`,
           petsAllowed,
           furnished,
           parking,
-        ),
-        propertyType: type,
-        rent,
-        currency: 'USD',
-        bedrooms,
-        bathrooms,
-        sizeSqft,
-        addressLine1: `${streetNumber} ${pick(city.streets, roll())}`,
-        addressLine2: unit,
-        cityId,
-        neighborhood,
-        zip: `${city.zipPrefix}${String(Math.floor(roll() * 90) + 10).padStart(2, '0')}`,
-        petsAllowed,
-        furnished,
-        parking,
-        availableFrom: new Date(
-          Date.UTC(
-            availableFrom.getUTCFullYear(),
-            availableFrom.getUTCMonth(),
-            availableFrom.getUTCDate(),
-          ),
-        ),
-        status,
-        publishedAt,
-        createdBy: owner.createdBy,
-      });
-      const photoCount = 3 + Math.floor(roll() * 4);
-      const isHouse = type === PropertyType.HOUSE || type === PropertyType.TOWNHOUSE;
-      for (let photoIndex = 0; photoIndex < photoCount; photoIndex += 1) {
-        photoRows.push({
-          id: photoId(index, photoIndex),
-          listingId: listingId(index),
-          url: photoUrl(index, photoIndex, isHouse),
-          position: photoIndex,
+          // A home for sale has no move-in day (ck_listings_available_from).
+          availableFrom:
+            kind === ListingKind.RENT
+              ? new Date(
+                  Date.UTC(
+                    availableFrom.getUTCFullYear(),
+                    availableFrom.getUTCMonth(),
+                    availableFrom.getUTCDate(),
+                  ),
+                )
+              : null,
+          status,
+          publishedAt,
+          createdBy: owner.createdBy,
         });
+        const isHouse = type === PropertyType.HOUSE || type === PropertyType.TOWNHOUSE;
+        for (let photoIndex = 0; photoIndex < photoCount; photoIndex += 1) {
+          photoRows.push({
+            id: photoId(index, photoIndex),
+            listingId: listingId(index),
+            url: photoUrl(index, photoIndex, isHouse),
+            position: photoIndex,
+          });
+        }
       }
+      if (rows.length === 0) {
+        continue;
+      }
+      const created = await prisma.listing.createMany({ data: rows });
+      listings += created.count;
+      const createdPhotos = await prisma.listingPhoto.createMany({ data: photoRows });
+      photos += createdPhotos.count;
     }
-    const created = await prisma.listing.createMany({ data: rows, skipDuplicates: true });
-    listings += created.count;
-    const createdPhotos = await prisma.listingPhoto.createMany({
-      data: photoRows,
-      skipDuplicates: true,
-    });
-    photos += createdPhotos.count;
   }
   return { listings, photos, retired: retired.count };
 };

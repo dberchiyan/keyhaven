@@ -27,8 +27,10 @@ model Listing {
   title        String         @db.VarChar(120)
   description  String         @db.VarChar(4000)
   propertyType String         @map("property_type") @db.VarChar(32) // APARTMENT | HOUSE | CONDO | TOWNHOUSE | STUDIO — CHECK in migration
-  /// Monthly rent (money: Decimal + currency, data.md).
-  rent         Decimal        @db.Decimal(19, 4)
+  /// For rent or for sale — RENT | SALE (CHECK in migration).
+  kind         String         @db.VarChar(8)
+  /// Monthly rent (RENT) or the asking price (SALE) — money: Decimal + currency, data.md.
+  price        Decimal        @db.Decimal(19, 4)
   currency     String         @db.Char(3)
   /// 0 = studio.
   bedrooms     Int            @db.SmallInt
@@ -46,8 +48,8 @@ model Listing {
   petsAllowed  Boolean        @map("pets_allowed")
   furnished    Boolean
   parking      Boolean
-  /// First day a tenant can move in (a calendar day, data.md → Time).
-  availableFrom DateTime      @map("available_from") @db.Date
+  /// First day a tenant can move in (a calendar day, data.md → Time); null for homes for sale.
+  availableFrom DateTime?     @map("available_from") @db.Date
   status       String         @db.VarChar(16) // DRAFT | PUBLISHED | UNPUBLISHED | SUSPENDED — CHECK in migration
   /// When it was last published; null while it never was.
   publishedAt  DateTime?      @map("published_at") @db.Timestamptz(3)
@@ -63,8 +65,6 @@ model Listing {
   @@index([landlordId, status], map: "idx_listings_landlord_id_status")
   @@index([agencyId, status], map: "idx_listings_agency_id_status")
   @@index([status, cityId], map: "idx_listings_status_city_id")
-  @@index([status, publishedAt], map: "idx_listings_status_published_at")
-  @@index([status, rent], map: "idx_listings_status_rent")
   @@index([cityId], map: "idx_listings_city_id")
   @@map("listings")
 }
@@ -110,15 +110,18 @@ model SavedListing {
 }
 
 /// One person opening a listing page, counted once per UTC day (the owner's "views"). Immutable.
+/// Who opened a listing page: a person (once per day) or an anonymous visitor (a daily hash).
 model ListingView {
-  listingId String   @map("listing_id") @db.Uuid
-  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_listing_views_listing_id")
-  userId    String   @map("user_id") @db.Uuid
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_listing_views_user_id")
-  viewedOn  DateTime @map("viewed_on") @db.Date
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  id         String   @id(map: "pk_listing_views") @default(dbgenerated("uuidv7()")) @db.Uuid
+  listingId  String   @map("listing_id") @db.Uuid
+  listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_listing_views_listing_id")
+  userId     String?  @map("user_id") @db.Uuid
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "fk_listing_views_user_id")
+  /// SHA-256 of the day, address and user agent of a visitor without an account.
+  visitorKey String?  @map("visitor_key") @db.Char(64)
+  viewedOn   DateTime @map("viewed_on") @db.Date
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  @@id([listingId, userId, viewedOn], map: "pk_listing_views")
   @@index([userId], map: "idx_listing_views_user_id")
   @@map("listing_views")
 }

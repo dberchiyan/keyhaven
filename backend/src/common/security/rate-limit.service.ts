@@ -9,7 +9,8 @@ import { RateLimitName } from './rate-limit';
 
 const TABLE_NAME = 'rate_limits';
 const SESSION_LIMIT = 'SESSION';
-type LimiterName = RateLimitName | typeof SESSION_LIMIT;
+const VISITOR_LIMIT = 'VISITOR';
+type LimiterName = RateLimitName | typeof SESSION_LIMIT | typeof VISITOR_LIMIT;
 
 const LIMITS: Readonly<Record<LimiterName, { points: number; durationSeconds: number }>> = {
   // security.md: login 5 / 15 min keyed by IP and email.
@@ -26,6 +27,8 @@ const LIMITS: Readonly<Record<LimiterName, { points: number; durationSeconds: nu
   [RateLimitName.TOKEN_REDEMPTION]: { points: 10, durationSeconds: 15 * 60 },
   // Per-session ceiling on everything else.
   [SESSION_LIMIT]: { points: 300, durationSeconds: 60 },
+  // The same ceiling for visitors without a session (the public catalogue), per address.
+  [VISITOR_LIMIT]: { points: 300, durationSeconds: 60 },
 };
 
 /** Keys are hashed so no IP or email is stored in the limiter table. */
@@ -64,6 +67,10 @@ export class RateLimitService {
 
   consumeSession(sessionId: string): Promise<void> {
     return this.consumeLimiter(SESSION_LIMIT, sessionId);
+  }
+
+  consumeVisitor(ip: string): Promise<void> {
+    return this.consumeLimiter(VISITOR_LIMIT, toKey([ip]));
   }
 
   /** Has this key used up its budget (the next attempt will be refused)? */

@@ -27,7 +27,8 @@ describe('Listings and search (M1)', () => {
     title: 'Sunlit 2-bedroom loft in Testville Heights',
     description: 'A bright loft with a long balcony and a quiet street.',
     propertyType: 'APARTMENT',
-    rent: '2150',
+    kind: 'RENT',
+    price: '2150',
     bedrooms: 2,
     bathrooms: '1.5',
     sizeSqft: 980,
@@ -74,35 +75,55 @@ describe('Listings and search (M1)', () => {
       expect(ids).not.toContain(f.landlordDraft);
       expect(ids).not.toContain(f.otherLandlordUnpublished);
 
-      const none = await tenant.get('/api/v1/listings?city=testville&rentMax=100');
+      const none = await tenant.get('/api/v1/listings?city=testville&priceMax=100');
       expect(none.body).toMatchObject({ totalElements: 0, content: [] });
       const beds = await tenant.get('/api/v1/listings?city=testville&beds=3');
       expect(beds.body).toMatchObject({ totalElements: 0 });
       const twoBeds = await tenant.get(
-        '/api/v1/listings?city=testville&beds=2&baths=1&pets=true&parking=true&furnished=false&rentMin=1000&rentMax=2000&availableBy=2026-12-01&size=50',
+        '/api/v1/listings?city=testville&beds=2&baths=1&pets=true&parking=true&furnished=false&priceMin=1000&priceMax=2000&availableBy=2026-12-01&size=50',
       );
       expect(bodyOf(twoBeds).totalElements).toBeGreaterThanOrEqual(2);
       const late = await tenant.get('/api/v1/listings?city=testville&availableBy=2026-11-01');
       expect(late.body).toMatchObject({ totalElements: 0 });
+      // The kind leads every search: the fixtures are rentals, so "for sale" finds none.
+      const forSale = await tenant.get('/api/v1/listings?city=testville&kind=SALE');
+      expect(forSale.body).toMatchObject({ totalElements: 0 });
+      const houses = await tenant.get('/api/v1/listings?city=testville&type=HOUSE');
+      expect(houses.body).toMatchObject({ totalElements: 0 });
     });
 
-    it('tolerates typos in the text search and sorts by rent', async () => {
+    it('is open to visitors without an account; "saved" is false for them', async () => {
+      const visitor = new Client(testApp.app);
+      expect((await visitor.get('/api/v1/cities')).status).toBe(200);
+      const open = await visitor.get('/api/v1/listings?city=testville&size=50');
+      expect(open.status).toBe(200);
+      expect(rows(open).map((row) => row.id)).toContain(f.landlordPublished);
+      expect(rows(open).every((row) => row.saved === false)).toBe(true);
+      // A published page opens; a draft answers 404 to a visitor, exactly like an unknown id.
+      expect((await visitor.get(`/api/v1/listings/${f.landlordPublished}`)).status).toBe(200);
+      expect((await visitor.get(`/api/v1/listings/${f.landlordDraft}`)).status).toBe(404);
+      // Saving needs an account.
+      expect((await visitor.put(`/api/v1/saved-listings/${f.landlordPublished}`)).status).toBe(401);
+    });
+
+    it('tolerates typos in the text search and sorts by price', async () => {
       const typo = await tenant.get(`/api/v1/listings?q=${encodeURIComponent('Testvile')}&size=50`);
       expect(bodyOf(typo).totalElements).toBeGreaterThanOrEqual(2);
       const nonsense = await tenant.get('/api/v1/listings?q=zzqqxxyy&size=5');
       expect(nonsense.body).toMatchObject({ totalElements: 0 });
-      const byRent = await tenant.get('/api/v1/listings?city=testville&sort=rent,asc&size=50');
-      const rents = rows(byRent).map((row) => Number((row.rent as { amount: string }).amount));
-      expect(rents).toEqual([...rents].sort((a, b) => a - b));
+      const byPrice = await tenant.get('/api/v1/listings?city=testville&sort=price,asc&size=50');
+      const prices = rows(byPrice).map((row) => Number((row.price as { amount: string }).amount));
+      expect(prices).toEqual([...prices].sort((a, b) => a - b));
     });
 
-    it('refuses a rent range upside down and an unknown sort', async () => {
-      const upsideDown = await tenant.get('/api/v1/listings?rentMin=3000&rentMax=1000');
+    it('refuses a price range upside down and an unknown sort', async () => {
+      const upsideDown = await tenant.get('/api/v1/listings?priceMin=3000&priceMax=1000');
       expect(upsideDown.status).toBe(400);
       expect(upsideDown.body).toMatchObject({
         error: 'VALIDATION_FAILED',
-        details: [{ field: 'rentMax' }],
+        details: [{ field: 'priceMax' }],
       });
+      expect((await tenant.get('/api/v1/listings?kind=LEASE')).status).toBe(400);
       expect((await tenant.get('/api/v1/listings?sort=title,asc')).status).toBe(400);
     });
   });
@@ -171,6 +192,24 @@ describe('Listings and search (M1)', () => {
       );
       expect(badCity.status).toBe(422);
       expect(badCity.body).toMatchObject({ details: [{ field: 'cityId' }] });
+
+      // A rental needs its move-in day; a home for sale has none, whatever the form sent.
+      const noDay = await landlord.postIdempotent(
+        '/api/v1/managed-listings',
+        draft({ availableFrom: null }),
+      );
+      expect(noDay.status).toBe(400);
+      expect(noDay.body).toMatchObject({ details: [{ field: 'availableFrom' }] });
+      const forSale = await landlord.postIdempotent(
+        '/api/v1/managed-listings',
+        draft({ kind: 'SALE', price: '425000', title: 'Corner house for sale' }),
+      );
+      expect(forSale.status).toBe(200);
+      expect(forSale.body).toMatchObject({
+        kind: 'SALE',
+        price: { amount: '425000.0000' },
+        availableFrom: null,
+      });
     });
 
     it('a retried create with the same Idempotency-Key does not create twice', async () => {
@@ -191,11 +230,11 @@ describe('Listings and search (M1)', () => {
     it('edits with an optimistic lock; the agent of another owner is refused', async () => {
       const before = bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`));
       const edited = await landlord.put(`/api/v1/managed-listings/${listingId}`, {
-        ...draft({ title: 'Renamed loft', rent: '2200.50' }),
+        ...draft({ title: 'Renamed loft', price: '2200.50' }),
         version: before.version,
       });
       expect(edited.status).toBe(200);
-      expect(edited.body).toMatchObject({ title: 'Renamed loft', rent: { amount: '2200.5000' } });
+      expect(edited.body).toMatchObject({ title: 'Renamed loft', price: { amount: '2200.5000' } });
       const stale = await landlord.put(`/api/v1/managed-listings/${listingId}`, {
         ...draft(),
         version: before.version,
@@ -345,6 +384,13 @@ describe('Listings and search (M1)', () => {
       expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`))).toMatchObject({
         viewCount: 1,
       });
+      // A visitor without an account counts too — once a day, however often they come back.
+      const visitor = new Client(testApp.app);
+      await visitor.get(`/api/v1/listings/${listingId}`);
+      await visitor.get(`/api/v1/listings/${listingId}`);
+      expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`))).toMatchObject({
+        viewCount: 2,
+      });
 
       // The digest: admins may run it now; the scheduler runs it daily.
       expect((await tenant.post('/api/v1/saved-search-digests')).status).toBe(403);
@@ -377,10 +423,11 @@ describe('Listings and search (M1)', () => {
     });
   });
 
-  it('a signed-out visitor sees nothing', async () => {
+  it('a signed-out visitor browses but has no saved homes or dashboard', async () => {
     const anonymous = new Client(testApp.app);
-    expect((await anonymous.get('/api/v1/listings')).status).toBe(401);
+    expect((await anonymous.get('/api/v1/listings')).status).toBe(200);
     expect((await anonymous.get('/api/v1/saved-listings')).status).toBe(401);
+    expect((await anonymous.get('/api/v1/managed-listings')).status).toBe(401);
   });
 
   it('the fake mail transport keeps every link', () => {

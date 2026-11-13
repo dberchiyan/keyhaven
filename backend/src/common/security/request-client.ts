@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { Request } from 'express';
 
 const MAX_USER_AGENT_LENGTH = 512;
@@ -21,3 +22,14 @@ export const readCookie = (request: Request, name: string): string | undefined =
     ? value
     : undefined;
 };
+
+/**
+ * A visitor without an account, for counting views once per day: SHA-256 of the UTC day, the
+ * client address and the user agent — never stored in the clear, never tied to a person.
+ */
+export const visitorKey = (request: Request): string =>
+  createHash('sha256')
+    .update(
+      `${new Date().toISOString().slice(0, 10)}|${clientIp(request)}|${clientUserAgent(request) ?? ''}`,
+    )
+    .digest('hex');

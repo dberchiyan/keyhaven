@@ -174,6 +174,8 @@ export interface SeedCity {
   timeZone: string;
   /** Typical monthly rent of a one-bedroom, USD — the generator scales from it. */
   baseRent: number;
+  /** Typical asking price of a two-bedroom home, USD — the generator scales from it. */
+  baseSalePrice: number;
   zipPrefix: string;
   neighborhoods: readonly string[];
   streets: readonly string[];
@@ -187,6 +189,7 @@ export const CITIES: readonly SeedCity[] = [
     slug: 'austin',
     timeZone: 'America/Chicago',
     baseRent: 1650,
+    baseSalePrice: 430_000,
     zipPrefix: '787',
     neighborhoods: [
       'South Congress',
@@ -214,6 +217,7 @@ export const CITIES: readonly SeedCity[] = [
     slug: 'denver',
     timeZone: 'America/Denver',
     baseRent: 1700,
+    baseSalePrice: 540_000,
     zipPrefix: '802',
     neighborhoods: [
       'Capitol Hill',
@@ -241,6 +245,7 @@ export const CITIES: readonly SeedCity[] = [
     slug: 'seattle',
     timeZone: 'America/Los_Angeles',
     baseRent: 2050,
+    baseSalePrice: 790_000,
     zipPrefix: '981',
     neighborhoods: [
       'Capitol Hill',
@@ -268,6 +273,7 @@ export const CITIES: readonly SeedCity[] = [
     slug: 'chicago',
     timeZone: 'America/Chicago',
     baseRent: 1800,
+    baseSalePrice: 360_000,
     zipPrefix: '606',
     neighborhoods: [
       'Logan Square',
@@ -295,6 +301,7 @@ export const CITIES: readonly SeedCity[] = [
     slug: 'atlanta',
     timeZone: 'America/New_York',
     baseRent: 1550,
+    baseSalePrice: 390_000,
     zipPrefix: '303',
     neighborhoods: [
       'Midtown',
@@ -322,6 +329,7 @@ export const CITIES: readonly SeedCity[] = [
     slug: 'phoenix',
     timeZone: 'America/Phoenix',
     baseRent: 1400,
+    baseSalePrice: 440_000,
     zipPrefix: '850',
     neighborhoods: [
       'Arcadia',

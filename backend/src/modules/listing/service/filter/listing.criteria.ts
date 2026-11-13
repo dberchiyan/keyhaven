@@ -1,15 +1,21 @@
 import type { Decimal } from '../../../../common/persistence/money';
+import type { ListingKind } from '../listing-kind';
 import type { ListingStatus } from '../listing-status';
+import type { PropertyType } from '../property-type';
 
 /**
  * Resolved search filters (tenant side): published listings only. Every value is already
  * parsed (money as Decimal, days as UTC instants); the repository turns them into the query.
  */
 export interface ListingCriteria {
+  /** For rent or for sale — every search is one of the two. */
+  kind: ListingKind;
   /** A city slug (`austin`); absent = every city. */
   citySlug?: string;
-  rentMin?: Decimal;
-  rentMax?: Decimal;
+  propertyType?: PropertyType;
+  /** Monthly rent (RENT) or asking price (SALE). */
+  priceMin?: Decimal;
+  priceMax?: Decimal;
   /** At least this many bedrooms (0 = studios included). */
   bedroomsMin?: number;
   /** At least this many bathrooms ("1.5"). */
