@@ -1,0 +1,71 @@
+import { ResourceNotFoundException } from '../exception/api.exception';
+import { policy } from './policy';
+import type { Principal } from './principal';
+
+/**
+ * An unknown id — or one the caller may not know about — answers 404, once the authority passed
+ * (no authority → 403). Used by admin-style policies (security.md → Authorisation).
+ */
+const orNotFound = (exists: boolean): true => {
+  if (!exists) {
+    throw new ResourceNotFoundException();
+  }
+  return true;
+};
+
+const isAdmin = (principal: Principal): boolean => principal.hasAuthority('ADMIN');
+/** Landlords and agents list homes; the agent's agency owns theirs. */
+const isLister = (principal: Principal): boolean =>
+  principal.hasAuthority('LANDLORD') || principal.hasAuthority('AGENT');
+
+/** Declared constants, never built inline. The product's access matrix. */
+export const can = {
+  /** The caller's own account (sign-out, password, sessions, verification email) — any state. */
+  ownAccount: policy([], () => true, 'account'),
+  /** One's own sessions only (Settings → Sessions). */
+  endOwnSession: policy(
+    ['sessionId'],
+    (principal, args, permissions) =>
+      permissions.isOwnSession(principal.userId, args.sessionId ?? ''),
+    'account',
+  ),
+  /** Keyhaven staff: `/metrics` and anything else that is not tied to a listing. */
+  admin: policy([], isAdmin),
+  /** Anyone signed in (every role, verified or not): published homes and the cities. */
+  browseListings: policy([], () => true),
+  /**
+   * One listing: published ones are open to everyone signed in; a draft, unpublished or
+   * suspended one only to its owner (landlord / the agency's agents) and admins — anyone else
+   * gets 404, exactly like an unknown id.
+   */
+  viewListing: policy(['listingId'], async (principal, args, permissions) =>
+    orNotFound(await permissions.isVisibleListing(principal, args.listingId ?? '')),
+  ),
+  /** The listings dashboard: landlords (their own), agents (the agency's), admins (all). */
+  manageListings: policy([], (principal) => isAdmin(principal) || isLister(principal)),
+  /**
+   * One listing in the dashboard: an admin for any listing (404 when unknown), a landlord for
+   * their own, an agent for their agency's — someone else's answers 403 (ownership policy).
+   */
+  manageListing: policy(['listingId'], async (principal, args, permissions) =>
+    isAdmin(principal)
+      ? orNotFound(await permissions.listingExists(args.listingId ?? ''))
+      : isLister(principal) && (await permissions.isOwnListing(principal, args.listingId ?? '')),
+  ),
+  /**
+   * Publishing and unpublishing: the owner (landlord / agency agent) only, with a verified email —
+   * admins take listings down through suspension instead.
+   */
+  publishListing: policy(
+    ['listingId'],
+    async (principal, args, permissions) =>
+      isLister(principal) && (await permissions.isOwnListing(principal, args.listingId ?? '')),
+    'verified',
+  ),
+  /** Taking a listing off the site: admins only; an unknown id is 404. */
+  suspendListing: policy(
+    ['listingId'],
+    async (principal, args, permissions) =>
+      isAdmin(principal) && orNotFound(await permissions.listingExists(args.listingId ?? '')),
+  ),
+} as const;

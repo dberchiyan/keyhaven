@@ -1,0 +1,47 @@
+{
+  "invalid": "Invalid value",
+  "email": {
+    "required": "Enter your email",
+    "invalid": "Enter a valid email address",
+    "tooLong": "Email must be at most {max} characters"
+  },
+  "password": {
+    "required": "Enter your password",
+    "tooLong": "Password must be at most {max} characters"
+  },
+  "currentPassword": {
+    "required": "Enter your current password"
+  },
+  "newPassword": {
+    "required": "Enter a new password",
+    "tooShort": "Use at least {min} characters",
+    "needsUppercase": "Add an upper-case letter",
+    "needsLowercase": "Add a lower-case letter",
+    "needsDigit": "Add a digit",
+    "needsSymbol": "Add a symbol, such as ! or #"
+  },
+  "firstName": {
+    "required": "Enter a first name",
+    "tooLong": "First name must be at most {max} characters"
+  },
+  "lastName": {
+    "required": "Enter a last name",
+    "tooLong": "Last name must be at most {max} characters"
+  },
+  "role": {
+    "invalid": "Choose whether you are looking for a home or listing one"
+  },
+  "token": {
+    "required": "The link is incomplete — open it from the email again",
+    "invalid": "The link is not valid"
+  },
+  "search": {
+    "tooLong": "Search must be at most {max} characters"
+  },
+  "city": {
+    "invalid": "Choose a city from the list"
+  },
+  "amount": {
+    "invalid": "Enter an amount like 1800 or 1800.50"
+  }
+}
