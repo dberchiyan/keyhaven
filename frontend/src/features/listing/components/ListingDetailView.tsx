@@ -44,10 +44,9 @@ export function ListingDetailView({
           </Typography>
           <Card variant="outlined">
             <CardContent className="p-4">
-              <Typography
-                variant="body1"
-                className="max-w-[var(--app-measure)] whitespace-pre-line"
-              >
+              {/* The card already bounds the line length (the page's two-column grid), so the text
+                  runs to its edges instead of stopping at the prose measure. */}
+              <Typography variant="body1" className="whitespace-pre-line">
                 {listing.description}
               </Typography>
             </CardContent>
