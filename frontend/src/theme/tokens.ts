@@ -114,6 +114,14 @@ export const TOKENS = {
         border: 'oklch(90.1% 0.020 77.3)',
         title: 'oklch(27.2% 0.020 163.0)',
       },
+      /** The site footer: a deep forest band, the same in both schemes (it is dark by design). */
+      footer: {
+        background: 'oklch(23.0% 0.030 165.0)',
+        text: 'oklch(97.0% 0.010 84.0)',
+        muted: 'oklch(78.0% 0.020 150.0)',
+        line: 'oklch(32.0% 0.030 165.0)',
+        tile: 'oklch(29.0% 0.030 165.0)',
+      },
     },
     dark: {
       primary: {
@@ -201,6 +209,13 @@ export const TOKENS = {
         indicator: 'oklch(78.0% 0.090 165.0)',
         border: 'oklch(30.0% 0.018 160.0)',
         title: 'oklch(95.0% 0.012 82.0)',
+      },
+      footer: {
+        background: 'oklch(17.0% 0.022 160.0)',
+        text: 'oklch(97.0% 0.010 84.0)',
+        muted: 'oklch(76.0% 0.020 150.0)',
+        line: 'oklch(27.0% 0.025 162.0)',
+        tile: 'oklch(23.0% 0.025 162.0)',
       },
     },
   },

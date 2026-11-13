@@ -6,6 +6,7 @@ import { IdleSessionWarning, VerificationBanner } from '@/features/auth';
 import { TopProgressBar } from '@/shared/components/TopProgressBar';
 import { PATHS } from '@/shared/lib/paths';
 import { useIsPageLoading } from '../hooks/useIsPageLoading';
+import { SiteFooter } from './SiteFooter';
 import { SiteHeader } from './SiteHeader';
 
 /** One key per page: Settings' sections (`/settings/<section>`) are one page with its own menu. */
@@ -46,6 +47,7 @@ export function SiteLayout() {
           </ViewTransition>
         </div>
       </main>
+      <SiteFooter />
       {isPageLoading && <TopProgressBar />}
       <IdleSessionWarning />
     </div>

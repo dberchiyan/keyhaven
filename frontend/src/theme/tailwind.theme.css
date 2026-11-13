@@ -87,4 +87,9 @@
   --color-sidebar-indicator: var(--mui-palette-sidebar-indicator);
   --color-sidebar-border: var(--mui-palette-sidebar-border);
   --color-sidebar-title: var(--mui-palette-sidebar-title);
+  --color-footer-background: var(--mui-palette-footer-background);
+  --color-footer-text: var(--mui-palette-footer-text);
+  --color-footer-muted: var(--mui-palette-footer-muted);
+  --color-footer-line: var(--mui-palette-footer-line);
+  --color-footer-tile: var(--mui-palette-footer-tile);
 }

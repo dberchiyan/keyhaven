@@ -30,6 +30,12 @@
   --c-on-brand: oklch(99.4% 0.006 84.6);
   /* Always-dark sections (the share card, the owners' panel): deep forest with a mint accent. */
   --c-navy: oklch(22% 0.03 165);
+  /* The footer band, the same tones as the app's `footer` palette (tokens.ts). */
+  --c-footer: oklch(23% 0.03 165);
+  --c-footer-line: oklch(32% 0.03 165);
+  --c-footer-tile: oklch(29% 0.03 165);
+  --c-footer-text: oklch(97% 0.01 84);
+  --c-footer-muted: oklch(78% 0.02 150);
   --c-sky: oklch(86% 0.065 164);
 
   --c-success-bg: oklch(94% 0.03 160);
@@ -85,6 +91,11 @@
     --c-accent-glow: oklch(55% 0.1 75);
     --c-on-brand: oklch(21% 0.014 160);
     --c-navy: oklch(16% 0.02 160);
+    --c-footer: oklch(17% 0.022 160);
+    --c-footer-line: oklch(27% 0.025 162);
+    --c-footer-tile: oklch(23% 0.025 162);
+    --c-footer-text: oklch(97% 0.01 84);
+    --c-footer-muted: oklch(76% 0.02 150);
     --c-sky: oklch(86% 0.065 164);
 
     --c-success-bg: oklch(32% 0.05 157);
