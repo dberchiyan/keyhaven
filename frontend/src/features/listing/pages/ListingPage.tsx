@@ -3,6 +3,7 @@ import MailOutlined from '@mui/icons-material/MailOutlined';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
@@ -12,8 +13,10 @@ import { DetailPageFrame } from '../components/DetailPageFrame';
 import { ListingActionBar } from '../components/ListingActionBar';
 import { ListingDetailView } from '../components/ListingDetailView';
 import { ListingError } from '../components/ListingStates';
+import { SimilarHomes } from '../components/SimilarHomes';
 import { SaveButton } from '../components/SaveButton';
 import { useListing } from '../hooks/useListingQueries';
+import { rememberViewed } from '../lib/recentlyViewed';
 
 /** One published home as a tenant sees it (owners and admins see the address too). */
 export default function ListingPage() {
@@ -21,6 +24,12 @@ export default function ListingPage() {
   const { listingId = '' } = useParams();
   const listing = useListing(listingId);
   const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
+  // The browser's own "recently viewed" (a signed-in person's also comes from the server).
+  useEffect(() => {
+    if (listing.data) {
+      rememberViewed(listing.data.id);
+    }
+  }, [listing.data]);
   useDocumentTitle(
     listing.data ? t('detail.pageTitle', { title: listing.data.title }) : t('browse.pageTitle'),
   );
@@ -90,6 +99,7 @@ export default function ListingPage() {
           </div>
         }
       />
+      <SimilarHomes listing={listing.data} />
       <ListingActionBar listing={listing.data} contactHref={contactHref} />
     </DetailPageFrame>
   );

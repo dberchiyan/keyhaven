@@ -48,6 +48,26 @@ export const useListingCount = (filters: SearchFilters, enabled: boolean) =>
     enabled,
   });
 
+export const useSimilarListings = (listingId: string) =>
+  useQuery({
+    queryKey: listingKeys.similar(listingId),
+    queryFn: () => listingApi.similar(listingId),
+  });
+
+/**
+ * Recently viewed: a signed-in person's come from the server (their view rows); a visitor's from
+ * the ids their browser kept. `enabled` waits for "who am I" and skips an empty list.
+ */
+export const useRecentlyViewed = (
+  user: { id: string } | null | undefined,
+  localIds: readonly string[],
+) =>
+  useQuery({
+    queryKey: user ? listingKeys.recent() : listingKeys.cards(localIds),
+    queryFn: () => (user ? listingApi.recent() : listingApi.cards(localIds)),
+    enabled: user !== undefined && (user !== null || localIds.length > 0),
+  });
+
 export const useListing = (listingId: string) =>
   useQuery({ queryKey: listingKeys.detail(listingId), queryFn: () => listingApi.find(listingId) });
 

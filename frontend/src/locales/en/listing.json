@@ -25,7 +25,8 @@
       "sale": "Buy"
     },
     "titleSale": "Find a home to buy",
-    "pageTitleSale": "Homes for sale · Keyhaven"
+    "pageTitleSale": "Homes for sale · Keyhaven",
+    "recent": "Recently viewed"
   },
   "card": {
     "perMonth": "{{rent}}/mo",
@@ -137,7 +138,10 @@
     "contactAgency": "Contact {{name}}",
     "contactSubject": "About \"{{title}}\" on Keyhaven",
     "photoCounter": "{{number}} / {{count}}",
-    "contact": "Contact"
+    "contact": "Contact",
+    "similar": "Similar homes",
+    "similarNoteRent": "For rent in {{place}}, about the same size and rent",
+    "similarNoteSale": "For sale in {{place}}, about the same size and price"
   },
   "manage": {
     "pageTitle": "Listings · Keyhaven",

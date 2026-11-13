@@ -1,6 +1,6 @@
 import { apiClient } from '@/shared/api/client';
 import { toApiKind } from '@/shared/lib/listingSearch';
-import type { BrowseParams, City, ListingDetail, ListingPage } from '../types';
+import type { BrowseParams, City, ListingCard, ListingDetail, ListingPage } from '../types';
 
 const BASE = '/api/v1';
 
@@ -32,4 +32,20 @@ export const listingApi = {
     ).data,
   find: async (listingId: string): Promise<ListingDetail> =>
     (await apiClient.get<ListingDetail>(`${BASE}/listings/${encodeURIComponent(listingId)}`)).data,
+  similar: async (listingId: string): Promise<ListingCard[]> =>
+    (
+      await apiClient.get<{ content: ListingCard[] }>(
+        `${BASE}/listings/${encodeURIComponent(listingId)}/similar`,
+      )
+    ).data.content,
+  /** Cards for a visitor's own list of ids, in that order. */
+  cards: async (ids: readonly string[]): Promise<ListingCard[]> =>
+    (
+      await apiClient.get<{ content: ListingCard[] }>(`${BASE}/listing-cards`, {
+        params: { ids: ids.join(',') },
+      })
+    ).data.content,
+  /** A signed-in person's recently opened homes (from their views on the server). */
+  recent: async (): Promise<ListingCard[]> =>
+    (await apiClient.get<{ content: ListingCard[] }>(`${BASE}/recent-listings`)).data.content,
 };

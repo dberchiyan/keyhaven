@@ -7,10 +7,11 @@ import { SaveSearchButton } from '@/features/saved-search';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { usePageHeadingFocus } from '@/shared/hooks/usePageHeadingFocus';
 import { cn } from '@/shared/lib/cn';
-import { filtersOf } from '@/shared/lib/listingSearch';
+import { filtersOf, hasFilters } from '@/shared/lib/listingSearch';
 import { FilterBar } from '../components/FilterBar';
 import { ListingCard } from '../components/ListingCard';
 import { ListingEmpty, ListingError, ListingGridLoading } from '../components/ListingStates';
+import { RecentlyViewed } from '../components/RecentlyViewed';
 import { useBrowseParams } from '../hooks/useBrowseParams';
 import { useListings } from '../hooks/useListingQueries';
 
@@ -50,6 +51,7 @@ export default function BrowsePage() {
         onClear={clear}
         saveSearch={<SaveSearchButton filters={filtersOf(params)} />}
       />
+      {params.page === 1 && !hasFilters(filtersOf(params)) && <RecentlyViewed />}
       <section aria-label={t('browse.results')} aria-busy={listings.isFetching}>
         {listings.isPending ? (
           <ListingGridLoading />

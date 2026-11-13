@@ -15,6 +15,7 @@ export const PropertyType_Output = /* @__PURE__ */ z.enum(["APARTMENT", "HOUSE",
 export const ListingKind_Output = /* @__PURE__ */ z.enum(["RENT", "SALE"]);
 export const Money_Output = /* @__PURE__ */ z.object({ "amount": z.string(), "currency": z.string() });
 export const ListingCard_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "propertyType": PropertyType_Output, "kind": ListingKind_Output, "price": Money_Output, "bedrooms": z.number().int(), "bathrooms": z.string(), "sizeSqft": z.number().int(), "city": City_Output, "neighborhood": z.string().nullable(), "availableFrom": z.string().nullable(), "publishedAt": z.string().nullable(), "coverPhotoUrl": z.string().nullable(), "saved": z.boolean() });
+export const ListingCardsResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(ListingCard_Output) });
 export const ListingDetailResponse_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "propertyType": PropertyType_Output, "kind": ListingKind_Output, "price": Money_Output, "bedrooms": z.number().int(), "bathrooms": z.string(), "sizeSqft": z.number().int(), "city": City_Output, "neighborhood": z.string().nullable(), "availableFrom": z.string().nullable(), "publishedAt": z.string().nullable(), "coverPhotoUrl": z.string().nullable(), "saved": z.boolean(), "description": z.string(), "furnished": z.boolean(), "petsAllowed": z.boolean(), "parking": z.boolean(), "zip": z.string(), "photos": z.array(z.object({ "id": z.string(), "url": z.string() })), "listedBy": ListedBy_Output, "address": ListingAddress_Output.nullable() });
 export const ListingPageResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(ListingCard_Output), "totalElements": z.number().int() });
 export const ListingStatusCountsResponse_Output = /* @__PURE__ */ z.object({ "DRAFT": z.number().int(), "PUBLISHED": z.number().int(), "UNPUBLISHED": z.number().int(), "SUSPENDED": z.number().int() });
@@ -47,6 +48,7 @@ export const RESPONSE_SCHEMAS: readonly { method: string; pattern: RegExp; schem
   { method: 'get', pattern: /^\/api\/v1\/auth\/sessions$/, schema: SessionsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings\/status-counts$/, schema: ListingStatusCountsResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/photos\/[^/]+\/confirmation$/, schema: ManagedListingResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/listings\/[^/]+\/similar$/, schema: ListingCardsResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/photo-intents$/, schema: PhotoIntentResponse_Output },
   { method: 'put', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/photos$/, schema: ManagedListingResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/publication$/, schema: ManagedListingResponse_Output },
@@ -58,9 +60,11 @@ export const RESPONSE_SCHEMAS: readonly { method: string; pattern: RegExp; schem
   { method: 'put', pattern: /^\/api\/v1\/saved-listings\/[^/]+$/, schema: SavedListingResponse_Output },
   { method: 'put', pattern: /^\/api\/v1\/saved-searches\/[^/]+$/, schema: SavedSearchResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/cities$/, schema: CitiesResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/listing-cards$/, schema: ListingCardsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/listings$/, schema: ListingPageResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings$/, schema: ManagedListingPageResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings$/, schema: ManagedListingResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/recent-listings$/, schema: ListingCardsResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/registrations$/, schema: CurrentUserResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/saved-listings$/, schema: ListingPageResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/saved-search-digests$/, schema: DigestSummaryResponse_Output },
