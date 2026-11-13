@@ -1,0 +1,39 @@
+{
+  "app": {
+    "name": "Keyhaven",
+    "tagline": "Find your next home",
+    "home": "Keyhaven home page"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content"
+  },
+  "theme": {
+    "switchToDark": "Switch to dark theme",
+    "switchToLight": "Switch to light theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "status": {
+    "loading": "Loading…"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "This page failed to load. Try again — if it keeps happening, contact support.",
+    "retry": "Try again"
+  },
+  "password": {
+    "show": "Show password",
+    "hide": "Hide password",
+    "rules": {
+      "title": "Your password needs",
+      "length": "{{min}} to {{max}} characters",
+      "uppercase": "An upper-case letter (A–Z)",
+      "lowercase": "A lower-case letter (a–z)",
+      "digit": "A digit (0–9)",
+      "symbol": "A symbol, such as ! # % or -",
+      "met": "— done",
+      "notMet": "— not yet"
+    }
+  }
+}
