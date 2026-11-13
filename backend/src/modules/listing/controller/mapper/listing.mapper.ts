@@ -1,0 +1,82 @@
+import type {
+  ListingCard,
+  ListingCity,
+  ListingDetail,
+  ManagedListing,
+  ManagedListingCard,
+} from '../../service/listing.types';
+import type {
+  CitiesResponse,
+  ListingDetailBody,
+  ListingPageResponse,
+  ManagedListingBody,
+  ManagedListingPageResponse,
+} from '../dto/listing.response';
+
+type CityItem = CitiesResponse['content'][number];
+type CardItem = ListingPageResponse['content'][number];
+
+const toDay = (date: Date): string => date.toISOString().slice(0, 10);
+
+export const toCityResponse = (city: ListingCity): CityItem => ({
+  id: city.id,
+  name: city.name,
+  state: city.state,
+  slug: city.slug,
+  timeZone: city.timeZone,
+});
+
+export const toListingCardResponse = (listing: ListingCard): CardItem => ({
+  id: listing.id,
+  title: listing.title,
+  propertyType: listing.propertyType,
+  rent: listing.rent,
+  bedrooms: listing.bedrooms,
+  bathrooms: listing.bathrooms,
+  sizeSqft: listing.sizeSqft,
+  city: toCityResponse(listing.city),
+  neighborhood: listing.neighborhood,
+  availableFrom: toDay(listing.availableFrom),
+  publishedAt: listing.publishedAt?.toISOString() ?? null,
+  coverPhotoUrl: listing.coverPhotoUrl,
+});
+
+export const toListingPageResponse = (page: {
+  content: ListingCard[];
+  totalElements: number;
+}): ListingPageResponse => ({
+  content: page.content.map(toListingCardResponse),
+  totalElements: page.totalElements,
+});
+
+export const toManagedListingPageResponse = (page: {
+  content: ManagedListingCard[];
+  totalElements: number;
+}): ManagedListingPageResponse => ({
+  content: page.content.map((listing) => ({
+    ...toListingCardResponse(listing),
+    status: listing.status,
+  })),
+  totalElements: page.totalElements,
+});
+
+export const toListingDetailResponse = (listing: ListingDetail): ListingDetailBody => ({
+  ...toListingCardResponse(listing),
+  description: listing.description,
+  furnished: listing.furnished,
+  petsAllowed: listing.petsAllowed,
+  parking: listing.parking,
+  zip: listing.zip,
+  photos: listing.photos,
+  listedBy: listing.listedBy,
+  address: listing.address,
+});
+
+export const toManagedListingResponse = (listing: ManagedListing): ManagedListingBody => ({
+  ...toListingDetailResponse(listing),
+  status: listing.status,
+  address: listing.address,
+  createdAt: listing.createdAt.toISOString(),
+  updatedAt: listing.updatedAt.toISOString(),
+  version: listing.version,
+});

@@ -1,0 +1,2807 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health/live": {
+      "get": {
+        "operationId": "HealthController_live",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse_Output"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Report that the process is running",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "HealthController_ready",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse_Output"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "UPSTREAM_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Report whether the service can take traffic",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED | MALFORMED_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CREDENTIALS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMIT_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sign in with email and password and start a session",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Session ended; cookies cleared"
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "End the current session",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponse_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Return the signed-in user",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password": {
+      "put": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN | DEMO_RESTRICTED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "BUSINESS_RULE_VIOLATION",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMIT_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Change own password; every session ends and this browser gets a new one",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/profile": {
+      "put": {
+        "operationId": "AuthController_updateOwnName",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOwnNameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Change own first and last name",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "operationId": "AuthController_sessions",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "One of: lastSeenAt,asc|desc",
+            "schema": {
+              "type": "string",
+              "default": "lastSeenAt,desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionsResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The caller's current session and a page of their other live sessions",
+        "tags": [
+          "Auth"
+        ]
+      },
+      "delete": {
+        "operationId": "AuthController_endOtherSessions",
+        "parameters": [],
+        "responses": {
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN | DEMO_RESTRICTED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Sign out everywhere except this session",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/{sessionId}": {
+      "delete": {
+        "operationId": "AuthController_endSession",
+        "parameters": [],
+        "responses": {
+          "400": {
+            "description": "INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN | DEMO_RESTRICTED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "End one of own sessions (this one signs out here)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/security-log": {
+      "get": {
+        "operationId": "AuthController_securityLog",
+        "parameters": [
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SIGN_INS",
+                "FAILED",
+                "PASSWORD",
+                "SESSIONS"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "One of: occurredAt,asc|desc",
+            "schema": {
+              "type": "string",
+              "default": "occurredAt,desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityLogResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The caller's security log: sign-ins, failed sign-ins, password changes, ended sessions",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/registrations": {
+      "post": {
+        "operationId": "RegistrationController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED | MALFORMED_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CONFLICT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMIT_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a tenant or landlord account, sign it in and send the email verification link",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/email-verifications": {
+      "post": {
+        "operationId": "AccountRecoveryController_verifyEmail",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailVerificationResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED | MALFORMED_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "BUSINESS_RULE_VIOLATION",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMIT_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verify an email address with the token from the verification email",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/email-verification-requests": {
+      "post": {
+        "operationId": "AccountRecoveryController_resendVerification",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "A new verification email is on its way"
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "BUSINESS_RULE_VIOLATION",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMIT_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Send the signed-in user a new verification email",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset-requests": {
+      "post": {
+        "operationId": "AccountRecoveryController_requestPasswordReset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetRequestResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED | MALFORMED_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMIT_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Email a password reset link; answers the same whether the address has an account",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password-resets": {
+      "post": {
+        "operationId": "AccountRecoveryController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED | MALFORMED_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "BUSINESS_RULE_VIOLATION",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMIT_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Set a new password with the token from the reset email; every session ends and this browser is signed in",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/cities": {
+      "get": {
+        "operationId": "ListingController_cities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CitiesResponse_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The cities Keyhaven serves (search filter values)",
+        "tags": [
+          "Listings"
+        ]
+      }
+    },
+    "/api/v1/listings": {
+      "get": {
+        "operationId": "ListingController_search",
+        "parameters": [
+          {
+            "name": "city",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "pattern": "^[a-z0-9-]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "One of: publishedAt,asc|desc, rent,asc|desc",
+            "schema": {
+              "type": "string",
+              "default": "publishedAt,desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingPageResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED | INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "A page of published listings, newest first",
+        "tags": [
+          "Listings"
+        ]
+      }
+    },
+    "/api/v1/listings/{listingId}": {
+      "get": {
+        "operationId": "ListingController_findOne",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingDetailResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RESOURCE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "One listing; the exact address is included only for its owner and admins",
+        "tags": [
+          "Listings"
+        ]
+      }
+    },
+    "/api/v1/managed-listings": {
+      "get": {
+        "operationId": "ManagedListingController_findPage",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DRAFT",
+                "PUBLISHED",
+                "UNPUBLISHED",
+                "SUSPENDED"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "description": "One of: updatedAt,asc|desc, rent,asc|desc, title,asc|desc",
+            "schema": {
+              "type": "string",
+              "default": "updatedAt,desc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedListingPageResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED | INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "A page of the listings the caller manages, last changed first",
+        "tags": [
+          "Managed listings"
+        ]
+      }
+    },
+    "/api/v1/managed-listings/status-counts": {
+      "get": {
+        "operationId": "ManagedListingController_statusCounts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingStatusCountsResponse_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "How many listings the caller manages in each status",
+        "tags": [
+          "Managed listings"
+        ]
+      }
+    },
+    "/api/v1/managed-listings/{listingId}": {
+      "get": {
+        "operationId": "ManagedListingController_findOne",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedListingResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RESOURCE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "One of the listings the caller manages, with its exact address",
+        "tags": [
+          "Managed listings"
+        ]
+      }
+    },
+    "/api/v1/managed-listings/{listingId}/publication": {
+      "post": {
+        "operationId": "ManagedListingController_publish",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedListingResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN | EMAIL_NOT_VERIFIED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RESOURCE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CONCURRENT_MODIFICATION",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "BUSINESS_RULE_VIOLATION",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Publish a draft or unpublished listing (owner, verified email)",
+        "tags": [
+          "Managed listings"
+        ]
+      }
+    },
+    "/api/v1/managed-listings/{listingId}/unpublication": {
+      "post": {
+        "operationId": "ManagedListingController_unpublish",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedListingResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN | EMAIL_NOT_VERIFIED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RESOURCE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CONCURRENT_MODIFICATION",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "BUSINESS_RULE_VIOLATION",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Take a published listing off the site (owner, verified email)",
+        "tags": [
+          "Managed listings"
+        ]
+      }
+    },
+    "/api/v1/managed-listings/{listingId}/suspension": {
+      "post": {
+        "operationId": "ManagedListingController_suspend",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedListingResponse_Output"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_PARAMETER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "RESOURCE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CONCURRENT_MODIFICATION",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Take a listing off the site as an admin; its owner cannot publish it again",
+        "tags": [
+          "Managed listings"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Keyhaven API",
+    "description": "",
+    "version": "1",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "keyhaven_session"
+      }
+    },
+    "schemas": {
+      "HealthResponse_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorCode": {
+        "type": "string",
+        "enum": [
+          "VALIDATION_FAILED",
+          "MALFORMED_REQUEST",
+          "INVALID_PARAMETER",
+          "UNAUTHORIZED",
+          "INVALID_CREDENTIALS",
+          "SESSION_EXPIRED",
+          "FORBIDDEN",
+          "EMAIL_NOT_VERIFIED",
+          "DEMO_RESTRICTED",
+          "RESOURCE_NOT_FOUND",
+          "CONFLICT",
+          "CONCURRENT_MODIFICATION",
+          "IDEMPOTENCY_KEY_REUSED",
+          "BUSINESS_RULE_VIOLATION",
+          "PAYLOAD_TOO_LARGE",
+          "UNSUPPORTED_MEDIA_TYPE",
+          "RATE_LIMIT_EXCEEDED",
+          "UPSTREAM_UNAVAILABLE",
+          "INTERNAL_ERROR"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "error": {
+            "$ref": "#/components/schemas/ErrorCode"
+          },
+          "message": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "message"
+              ]
+            }
+          }
+        },
+        "required": [
+          "timestamp",
+          "status",
+          "error",
+          "message",
+          "path",
+          "traceId"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UserRole_Output": {
+        "type": "string",
+        "enum": [
+          "TENANT",
+          "LANDLORD",
+          "AGENT",
+          "ADMIN"
+        ]
+      },
+      "CurrentUserResponse_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "firstName": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 32,
+            "nullable": true
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole_Output"
+          },
+          "emailVerifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "nullable": true
+          },
+          "agency": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 120
+              }
+            },
+            "required": [
+              "id",
+              "name"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "idleTimeoutMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "demoRestricted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "firstName",
+          "lastName",
+          "phone",
+          "role",
+          "emailVerifiedAt",
+          "agency",
+          "idleTimeoutMinutes",
+          "demoRestricted"
+        ],
+        "additionalProperties": false
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "newPassword": {
+            "minLength": 12,
+            "maxLength": 128,
+            "allOf": [
+              {
+                "pattern": "\\p{Lu}"
+              },
+              {
+                "pattern": "\\p{Ll}"
+              },
+              {
+                "pattern": "\\p{Nd}"
+              },
+              {
+                "pattern": "[^\\p{L}\\p{Nd}\\s]"
+              }
+            ]
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "UpdateOwnNameRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName"
+        ]
+      },
+      "Session_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "clientType": {
+            "type": "string",
+            "enum": [
+              "WEB",
+              "MOBILE"
+            ]
+          },
+          "ip": {
+            "type": "string",
+            "nullable": true
+          },
+          "userAgent": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "clientType",
+          "ip",
+          "userAgent",
+          "createdAt",
+          "lastSeenAt"
+        ],
+        "additionalProperties": false
+      },
+      "SessionsResponse_Output": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Session_Output"
+              }
+            ],
+            "nullable": true
+          },
+          "others": {
+            "type": "object",
+            "properties": {
+              "content": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Session_Output"
+                }
+              },
+              "totalElements": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "content",
+              "totalElements"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "current",
+          "others"
+        ],
+        "additionalProperties": false
+      },
+      "SecurityEvent_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "auth.signed_in",
+              "auth.sign_in_failed",
+              "auth.signed_out",
+              "auth.email_verified",
+              "auth.password_changed",
+              "auth.password_reset",
+              "auth.session_ended",
+              "auth.other_sessions_ended",
+              "auth.session_evicted",
+              "auth.sign_in_locked"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "ip": {
+            "type": "string",
+            "nullable": true
+          },
+          "userAgent": {
+            "type": "string",
+            "nullable": true
+          },
+          "newDevice": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "occurredAt",
+          "ip",
+          "userAgent",
+          "newDevice"
+        ],
+        "additionalProperties": false
+      },
+      "SecurityLogResponse_Output": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SecurityEvent_Output"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "content",
+          "totalElements"
+        ],
+        "additionalProperties": false
+      },
+      "SignupRole": {
+        "type": "string",
+        "enum": [
+          "TENANT",
+          "LANDLORD"
+        ]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "minLength": 12,
+            "maxLength": 128,
+            "allOf": [
+              {
+                "pattern": "\\p{Lu}"
+              },
+              {
+                "pattern": "\\p{Ll}"
+              },
+              {
+                "pattern": "\\p{Nd}"
+              },
+              {
+                "pattern": "[^\\p{L}\\p{Nd}\\s]"
+              }
+            ]
+          },
+          "role": {
+            "$ref": "#/components/schemas/SignupRole"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "password",
+          "role"
+        ]
+      },
+      "VerifyEmailRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "EmailVerificationResponse_Output": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "email",
+          "verifiedAt"
+        ],
+        "additionalProperties": false
+      },
+      "PasswordResetRequestRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "PasswordResetRequestResponse_Output": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "newPassword": {
+            "minLength": 12,
+            "maxLength": 128,
+            "allOf": [
+              {
+                "pattern": "\\p{Lu}"
+              },
+              {
+                "pattern": "\\p{Ll}"
+              },
+              {
+                "pattern": "\\p{Nd}"
+              },
+              {
+                "pattern": "[^\\p{L}\\p{Nd}\\s]"
+              }
+            ]
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ]
+      },
+      "City_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "state": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "timeZone": {
+            "type": "string",
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "state",
+          "slug",
+          "timeZone"
+        ],
+        "additionalProperties": false
+      },
+      "CitiesResponse_Output": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/City_Output"
+            }
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "ListingCard_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "propertyType": {
+            "$ref": "#/components/schemas/PropertyType_Output"
+          },
+          "rent": {
+            "$ref": "#/components/schemas/Money_Output"
+          },
+          "bedrooms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "bathrooms": {
+            "type": "string",
+            "pattern": "^\\d{1,2}\\.\\d$"
+          },
+          "sizeSqft": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "city": {
+            "$ref": "#/components/schemas/City_Output"
+          },
+          "neighborhood": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "nullable": true
+          },
+          "coverPhotoUrl": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "propertyType",
+          "rent",
+          "bedrooms",
+          "bathrooms",
+          "sizeSqft",
+          "city",
+          "neighborhood",
+          "availableFrom",
+          "publishedAt",
+          "coverPhotoUrl"
+        ],
+        "additionalProperties": false
+      },
+      "PropertyType_Output": {
+        "type": "string",
+        "enum": [
+          "APARTMENT",
+          "HOUSE",
+          "CONDO",
+          "TOWNHOUSE",
+          "STUDIO"
+        ]
+      },
+      "Money_Output": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "string",
+            "pattern": "^-?\\d{1,15}\\.\\d{4}$"
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          }
+        },
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "additionalProperties": false
+      },
+      "ListingPageResponse_Output": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListingCard_Output"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "content",
+          "totalElements"
+        ],
+        "additionalProperties": false
+      },
+      "ListedBy_Output": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "LANDLORD"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 201
+              },
+              "phone": {
+                "type": "string",
+                "maxLength": 32,
+                "nullable": true
+              },
+              "email": {
+                "type": "string",
+                "maxLength": 254
+              }
+            },
+            "required": [
+              "kind",
+              "name",
+              "phone",
+              "email"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "AGENCY"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "phone": {
+                "type": "string",
+                "maxLength": 32
+              },
+              "email": {
+                "type": "string",
+                "maxLength": 254
+              },
+              "website": {
+                "type": "string",
+                "maxLength": 255,
+                "nullable": true
+              }
+            },
+            "required": [
+              "kind",
+              "name",
+              "phone",
+              "email",
+              "website"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ListingAddress_Output": {
+        "type": "object",
+        "properties": {
+          "line1": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "line2": {
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          }
+        },
+        "required": [
+          "line1",
+          "line2"
+        ],
+        "additionalProperties": false
+      },
+      "ListingDetailResponse_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "propertyType": {
+            "$ref": "#/components/schemas/PropertyType_Output"
+          },
+          "rent": {
+            "$ref": "#/components/schemas/Money_Output"
+          },
+          "bedrooms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "bathrooms": {
+            "type": "string",
+            "pattern": "^\\d{1,2}\\.\\d$"
+          },
+          "sizeSqft": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "city": {
+            "$ref": "#/components/schemas/City_Output"
+          },
+          "neighborhood": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "nullable": true
+          },
+          "coverPhotoUrl": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "petsAllowed": {
+            "type": "boolean"
+          },
+          "parking": {
+            "type": "boolean"
+          },
+          "zip": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "photos": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "url": {
+                  "type": "string",
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "id",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "listedBy": {
+            "$ref": "#/components/schemas/ListedBy_Output"
+          },
+          "address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ListingAddress_Output"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "propertyType",
+          "rent",
+          "bedrooms",
+          "bathrooms",
+          "sizeSqft",
+          "city",
+          "neighborhood",
+          "availableFrom",
+          "publishedAt",
+          "coverPhotoUrl",
+          "description",
+          "furnished",
+          "petsAllowed",
+          "parking",
+          "zip",
+          "photos",
+          "listedBy",
+          "address"
+        ],
+        "additionalProperties": false
+      },
+      "ManagedListingCard_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "propertyType": {
+            "$ref": "#/components/schemas/PropertyType_Output"
+          },
+          "rent": {
+            "$ref": "#/components/schemas/Money_Output"
+          },
+          "bedrooms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "bathrooms": {
+            "type": "string",
+            "pattern": "^\\d{1,2}\\.\\d$"
+          },
+          "sizeSqft": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "city": {
+            "$ref": "#/components/schemas/City_Output"
+          },
+          "neighborhood": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "nullable": true
+          },
+          "coverPhotoUrl": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/ListingStatus_Output"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "propertyType",
+          "rent",
+          "bedrooms",
+          "bathrooms",
+          "sizeSqft",
+          "city",
+          "neighborhood",
+          "availableFrom",
+          "publishedAt",
+          "coverPhotoUrl",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "ListingStatus_Output": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "PUBLISHED",
+          "UNPUBLISHED",
+          "SUSPENDED"
+        ]
+      },
+      "ManagedListingPageResponse_Output": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManagedListingCard_Output"
+            }
+          },
+          "totalElements": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "content",
+          "totalElements"
+        ],
+        "additionalProperties": false
+      },
+      "ListingStatusCountsResponse_Output": {
+        "type": "object",
+        "properties": {
+          "DRAFT": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "PUBLISHED": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "UNPUBLISHED": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "SUSPENDED": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "DRAFT",
+          "PUBLISHED",
+          "UNPUBLISHED",
+          "SUSPENDED"
+        ],
+        "additionalProperties": false
+      },
+      "ManagedListingResponse_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "propertyType": {
+            "$ref": "#/components/schemas/PropertyType_Output"
+          },
+          "rent": {
+            "$ref": "#/components/schemas/Money_Output"
+          },
+          "bedrooms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "bathrooms": {
+            "type": "string",
+            "pattern": "^\\d{1,2}\\.\\d$"
+          },
+          "sizeSqft": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "city": {
+            "$ref": "#/components/schemas/City_Output"
+          },
+          "neighborhood": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "availableFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "nullable": true
+          },
+          "coverPhotoUrl": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "furnished": {
+            "type": "boolean"
+          },
+          "petsAllowed": {
+            "type": "boolean"
+          },
+          "parking": {
+            "type": "boolean"
+          },
+          "zip": {
+            "type": "string",
+            "maxLength": 10
+          },
+          "photos": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "url": {
+                  "type": "string",
+                  "maxLength": 500
+                }
+              },
+              "required": [
+                "id",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "listedBy": {
+            "$ref": "#/components/schemas/ListedBy_Output"
+          },
+          "address": {
+            "$ref": "#/components/schemas/ListingAddress_Output"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ListingStatus_Output"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "propertyType",
+          "rent",
+          "bedrooms",
+          "bathrooms",
+          "sizeSqft",
+          "city",
+          "neighborhood",
+          "availableFrom",
+          "publishedAt",
+          "coverPhotoUrl",
+          "description",
+          "furnished",
+          "petsAllowed",
+          "parking",
+          "zip",
+          "photos",
+          "listedBy",
+          "address",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "version"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

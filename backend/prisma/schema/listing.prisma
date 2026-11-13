@@ -1,0 +1,82 @@
+/// One of the US cities Keyhaven serves. Reference data: listings and their time zone (viewing
+/// times are shown in the listing's local time) point here.
+model City {
+  id        String    @id(map: "pk_cities") @default(dbgenerated("uuidv7()")) @db.Uuid
+  name      String    @db.VarChar(100)
+  state     String    @db.Char(2) // USPS state code
+  /// URL-safe name used in search filters (`?city=austin`).
+  slug      String    @db.VarChar(100)
+  /// IANA time zone of the city (America/Chicago).
+  timeZone  String    @map("time_zone") @db.VarChar(64)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  listings  Listing[]
+
+  @@unique([slug], map: "uq_cities_slug")
+  @@map("cities")
+}
+
+/// A home for rent. Owned by a landlord (their own) or by an agency (every agent of the agency
+/// manages it) — exactly one of the two, CHECK in migration. The exact address is private: it
+/// is shown to the owner, admins and (M2) a tenant whose viewing was confirmed.
+model Listing {
+  id           String         @id(map: "pk_listings") @default(dbgenerated("uuidv7()")) @db.Uuid
+  landlordId   String?        @map("landlord_id") @db.Uuid
+  landlord     User?          @relation("ListingLandlord", fields: [landlordId], references: [id], onDelete: Restrict, map: "fk_listings_landlord_id")
+  agencyId     String?        @map("agency_id") @db.Uuid
+  agency       Agency?        @relation(fields: [agencyId], references: [id], onDelete: Restrict, map: "fk_listings_agency_id")
+  title        String         @db.VarChar(120)
+  description  String         @db.VarChar(4000)
+  propertyType String         @map("property_type") @db.VarChar(32) // APARTMENT | HOUSE | CONDO | TOWNHOUSE | STUDIO — CHECK in migration
+  /// Monthly rent (money: Decimal + currency, data.md).
+  rent         Decimal        @db.Decimal(19, 4)
+  currency     String         @db.Char(3)
+  /// 0 = studio.
+  bedrooms     Int            @db.SmallInt
+  /// Half baths count: 1.5.
+  bathrooms    Decimal        @db.Decimal(3, 1)
+  sizeSqft     Int            @map("size_sqft")
+  /// Private part of the address (see the model comment).
+  addressLine1 String         @map("address_line1") @db.VarChar(255)
+  addressLine2 String?        @map("address_line2") @db.VarChar(255)
+  /// Public part of the address.
+  cityId       String         @map("city_id") @db.Uuid
+  city         City           @relation(fields: [cityId], references: [id], onDelete: Restrict, map: "fk_listings_city_id")
+  neighborhood String?        @db.VarChar(100)
+  zip          String         @db.VarChar(10)
+  petsAllowed  Boolean        @map("pets_allowed")
+  furnished    Boolean
+  parking      Boolean
+  /// First day a tenant can move in (a calendar day, data.md → Time).
+  availableFrom DateTime      @map("available_from") @db.Date
+  status       String         @db.VarChar(16) // DRAFT | PUBLISHED | UNPUBLISHED | SUSPENDED — CHECK in migration
+  /// When it was last published; null while it never was.
+  publishedAt  DateTime?      @map("published_at") @db.Timestamptz(3)
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy    String?        @map("created_by") @db.Uuid
+  updatedBy    String?        @map("updated_by") @db.Uuid
+  version      Int            @default(0)
+  photos       ListingPhoto[]
+
+  @@index([landlordId, status], map: "idx_listings_landlord_id_status")
+  @@index([agencyId, status], map: "idx_listings_agency_id_status")
+  @@index([status, cityId], map: "idx_listings_status_city_id")
+  @@index([status, publishedAt], map: "idx_listings_status_published_at")
+  @@index([status, rent], map: "idx_listings_status_rent")
+  @@index([cityId], map: "idx_listings_city_id")
+  @@map("listings")
+}
+
+/// A photo of a listing, in display order. Immutable apart from reordering (M1).
+model ListingPhoto {
+  id        String   @id(map: "pk_listing_photos") @default(dbgenerated("uuidv7()")) @db.Uuid
+  listingId String   @map("listing_id") @db.Uuid
+  // A photo means nothing without its listing.
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_listing_photos_listing_id")
+  url       String   @db.VarChar(500)
+  position  Int      @db.SmallInt
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([listingId, position], map: "uq_listing_photos_listing_id_position")
+  @@map("listing_photos")
+}
