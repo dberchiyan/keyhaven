@@ -97,8 +97,8 @@ backend/   NestJS 11 · Prisma 7 · PostgreSQL 18 · Zod 4 · pino · argon2id �
   (a session only adds "saved"); foreign ids answer 403 or 404 — see `backend/test/access.spec.ts`.
 - `backend/openapi.json` is generated from the Zod DTOs; the frontend generates its types and
   runtime response schemas from it.
-- Ports with one adapter each: `EmailSender` (log / SMTP), `ObjectStorage` (S3: RustFS locally,
-  Cloudflare R2 in production). Emails and uploads happen outside database transactions.
+- Ports with one adapter each: `EmailSender` (log / SMTP), `ObjectStorage` (any S3 store: RustFS locally and on the
+  demo server, Cloudflare R2 works too). Emails and uploads happen outside database transactions.
 
 ## Development
 
