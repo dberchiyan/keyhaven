@@ -1,0 +1,31 @@
+{
+  "nav": {
+    "label": "Main navigation",
+    "listings": "Listings",
+    "browse": "Browse homes",
+    "settings": "Settings"
+  },
+  "menu": {
+    "open": "Open menu",
+    "close": "Close menu",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu"
+  },
+  "account": {
+    "open": "Account menu for {{name}}",
+    "signOut": "Sign out",
+    "signingOut": "Signing out…",
+    "title": "Account",
+    "theme": "Theme",
+    "profile": "Account",
+    "securityDevices": "Security & devices",
+    "settings": "Settings",
+    "roleAt": "{{role}} · {{agency}}"
+  },
+  "role": {
+    "TENANT": "Tenant",
+    "LANDLORD": "Landlord",
+    "AGENT": "Agent",
+    "ADMIN": "Administrator"
+  }
+}
