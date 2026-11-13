@@ -3,7 +3,7 @@ import Container from '@/components/ui/Container.astro';
 import Icon from '@/components/ui/Icon.astro';
 import SectionHeading from '@/components/ui/SectionHeading.astro';
 import { LANDING } from '@/content/landing';
-import { CITIES, SITE } from '@/content/site';
+import { CITIES } from '@/content/site';
 
 const { cities } = LANDING;
 /** Each tile's "sky": a gradient in the page's tones, so the six read as different places. */
@@ -51,13 +51,13 @@ const TONES = [
               <p class="text-sm leading-relaxed text-muted">{cities.tagline[city.slug]}</p>
               <div class="mt-auto flex gap-2 pt-2">
                 <a
-                  href={`${SITE.links.browse}?kind=rent&city=${city.slug}`}
+                  href={`/rent/${city.slug}`}
                   class="inline-flex min-h-9 items-center rounded-full bg-brand-soft px-3.5 text-sm font-semibold text-brand-strong transition-colors hover:bg-brand hover:text-on-brand"
                 >
                   {cities.rent}
                 </a>
                 <a
-                  href={`${SITE.links.browse}?kind=sale&city=${city.slug}`}
+                  href={`/buy/${city.slug}`}
                   class="inline-flex min-h-9 items-center rounded-full bg-surface-2 px-3.5 text-sm font-semibold text-ink-2 ring-1 ring-line transition-colors hover:bg-brand hover:text-on-brand"
                 >
                   {cities.buy}

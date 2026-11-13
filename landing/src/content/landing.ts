@@ -280,6 +280,38 @@ export const LANDING = {
     secondary: 'List your home',
     source: 'Read the source on GitHub',
   },
+  cityPage: {
+    metaTitleRent: 'Homes for rent in {city} · Keyhaven',
+    metaTitleSale: 'Homes for sale in {city} · Keyhaven',
+    metaDescriptionRent:
+      '{count} apartments, houses, condos and studios for rent in {city}, median rent {median} a month. Filter by neighborhood, price, beds and move-in date — no account needed.',
+    metaDescriptionSale:
+      '{count} houses, condos, townhouses and apartments for sale in {city}, median asking price {median}. Filter by neighborhood, price, beds and type — no account needed.',
+    breadcrumb: 'You are here',
+    home: 'Keyhaven',
+    rent: 'Rent',
+    buy: 'Buy',
+    titleRent: 'Homes for rent in {city}',
+    titleSale: 'Homes for sale in {city}',
+    leadRent:
+      'Every published rental in {city}, with the monthly rent, the move-in date and the terms up front. Open the catalogue to filter by neighborhood, price, beds, baths, pets and furnishing.',
+    leadSale:
+      'Every home for sale in {city}, with the asking price and what it works out to per square foot. Open the catalogue to filter by neighborhood, price, beds, baths and type.',
+    statHomesRent: 'Homes for rent',
+    statHomesSale: 'Homes for sale',
+    statMedianRent: 'Median rent',
+    statMedianPrice: 'Median asking price',
+    statTypes: 'By type',
+    asOf: 'Figures from the catalogue on {date}; the app shows the live ones.',
+    openAll: 'See all {count} homes',
+    switchToBuy: 'Homes for sale instead',
+    switchToRent: 'Homes for rent instead',
+    neighborhoods: 'Neighborhoods in {city}',
+    newestRent: 'Newest rentals in {city}',
+    newestSale: 'Newest homes for sale in {city}',
+    seeAll: 'See them all in the catalogue',
+    available: 'Available {date}',
+  },
   footer: {
     tagline: 'Homes to rent and to buy in six US cities.',
     product: 'Browse',

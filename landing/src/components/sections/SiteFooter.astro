@@ -15,7 +15,7 @@ const COLUMNS = [
     // Alphabetical, in two columns.
     links: [...CITIES]
       .sort((a, b) => a.name.localeCompare(b.name))
-      .map((city) => ({ href: `${SITE.links.browse}?city=${city.slug}`, label: city.name })),
+      .map((city) => ({ href: `/rent/${city.slug}`, label: city.name })),
     twoColumns: true,
   },
   {

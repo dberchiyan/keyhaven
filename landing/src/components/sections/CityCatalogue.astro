@@ -1,0 +1,199 @@
+---
+import Container from '@/components/ui/Container.astro';
+import Icon from '@/components/ui/Icon.astro';
+import { type CityKind, dollars, type Kind, TYPE_LABELS } from '@/content/catalogue';
+import { LANDING } from '@/content/landing';
+import { SITE } from '@/content/site';
+import type { CITIES } from '@/content/site';
+
+interface Props {
+  city: (typeof CITIES)[number];
+  kind: Kind;
+  data: CityKind;
+  takenAt: string;
+}
+
+const { city, kind, data, takenAt } = Astro.props;
+const { cityPage } = LANDING;
+const forRent = kind === 'RENT';
+const kindParam = forRent ? 'rent' : 'sale';
+const browse = `${SITE.links.browse}?kind=${kindParam}&city=${city.slug}`;
+const title = forRent ? cityPage.titleRent : cityPage.titleSale;
+const otherKind = forRent ? `/buy/${city.slug}` : `/rent/${city.slug}`;
+const neighborhoods = Object.entries(data.neighborhoods);
+const types = Object.entries(data.types);
+const date = (day: string): string =>
+  new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeZone: 'UTC' }).format(
+    new Date(`${day}T00:00:00Z`),
+  );
+---
+
+<section aria-labelledby="city-title" class="relative isolate -mt-16 overflow-hidden pt-16">
+  <div class="backdrop-brand absolute inset-0 -z-10" aria-hidden="true"></div>
+  <div class="backdrop-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+  <Container class="pt-12 pb-10 sm:pt-16">
+    <nav aria-label={cityPage.breadcrumb} class="text-sm text-muted">
+      <ol class="m-0 flex list-none flex-wrap items-center gap-2 p-0">
+        <li>
+          <a href="/" class="hover:text-ink">
+            {cityPage.home}
+          </a>
+        </li>
+        <li aria-hidden="true">·</li>
+        <li>
+          <a href={forRent ? SITE.links.rent : SITE.links.buy} class="hover:text-ink">
+            {forRent ? cityPage.rent : cityPage.buy}
+          </a>
+        </li>
+        <li aria-hidden="true">·</li>
+        <li aria-current="page">
+          {city.name}, {city.state}
+        </li>
+      </ol>
+    </nav>
+    <h1 id="city-title" class="type-title mt-6 max-w-3xl">
+      {title.replace('{city}', `${city.name}, ${city.state}`)}
+    </h1>
+    <p class="type-lead mt-4 max-w-2xl text-muted">
+      {(forRent ? cityPage.leadRent : cityPage.leadSale).replace('{city}', city.name)}
+    </p>
+    <dl class="mt-8 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-3">
+      <div class="rounded-card bg-surface p-4 shadow-card ring-glass">
+        <dt class="text-sm text-muted">
+          {forRent ? cityPage.statHomesRent : cityPage.statHomesSale}
+        </dt>
+        <dd class="mt-1 text-2xl font-semibold text-ink tabular-nums">
+          {data.total.toLocaleString('en-US')}
+        </dd>
+      </div>
+      <div class="rounded-card bg-surface p-4 shadow-card ring-glass">
+        <dt class="text-sm text-muted">
+          {forRent ? cityPage.statMedianRent : cityPage.statMedianPrice}
+        </dt>
+        <dd class="mt-1 text-2xl font-semibold text-ink tabular-nums">
+          {data.medianPrice ? dollars(data.medianPrice) : '—'}
+          {forRent && data.medianPrice ? (
+            <span class="text-base font-medium text-muted">/mo</span>
+          ) : (
+            ''
+          )}
+        </dd>
+      </div>
+      <div class="col-span-2 rounded-card bg-surface p-4 shadow-card ring-glass sm:col-span-1">
+        <dt class="text-sm text-muted">{cityPage.statTypes}</dt>
+        <dd class="mt-1 text-sm font-medium text-ink">
+          {types.map(([type, n]) => `${TYPE_LABELS[type] ?? type} ${n}`).join(' · ')}
+        </dd>
+      </div>
+    </dl>
+    <p class="mt-3 text-xs text-subtle">{cityPage.asOf.replace('{date}', date(takenAt))}</p>
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+      <a
+        href={browse}
+        class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand px-6 text-base font-semibold text-on-brand transition-colors hover:bg-brand-strong"
+      >
+        {cityPage.openAll.replace('{count}', data.total.toLocaleString('en-US'))}
+        <Icon name="arrowRight" class="size-4.5" />
+      </a>
+      <a
+        href={otherKind}
+        class="inline-flex min-h-12 items-center justify-center rounded-full bg-surface px-6 text-base font-semibold text-ink ring-glass transition-colors hover:bg-surface-2"
+      >
+        {forRent ? cityPage.switchToBuy : cityPage.switchToRent}
+      </a>
+    </div>
+  </Container>
+</section>
+
+<section
+  aria-labelledby="neighborhoods-title"
+  class="border-y border-line bg-surface py-12 sm:py-16"
+>
+  <Container>
+    <h2 id="neighborhoods-title" class="text-2xl font-semibold tracking-[-0.02em] text-ink">
+      {cityPage.neighborhoods.replace('{city}', city.name)}
+    </h2>
+    <ul class="m-0 mt-6 flex list-none flex-wrap gap-2 p-0">
+      {neighborhoods.map(([name, n]) => (
+        <li>
+          <a
+            href={`${browse}&q=${encodeURIComponent(name)}`}
+            class="inline-flex min-h-10 items-center gap-2 rounded-full bg-canvas px-4 text-sm font-medium text-ink-2 ring-glass transition-colors hover:text-ink"
+          >
+            <Icon name="pin" class="size-4 text-brand" />
+            {name}
+            <span class="text-subtle tabular-nums">{n}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </Container>
+</section>
+
+<section aria-labelledby="newest-title" class="py-12 sm:py-16">
+  <Container>
+    <div class="flex items-end justify-between gap-4">
+      <h2 id="newest-title" class="text-2xl font-semibold tracking-[-0.02em] text-ink">
+        {(forRent ? cityPage.newestRent : cityPage.newestSale).replace('{city}', city.name)}
+      </h2>
+      <a
+        href={browse}
+        class="hidden items-center gap-1.5 text-sm font-medium text-brand hover:underline sm:inline-flex"
+      >
+        {cityPage.seeAll}
+        <Icon name="arrowRight" class="size-4" />
+      </a>
+    </div>
+    <ul class="m-0 mt-6 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
+      {data.newest.map((home) => (
+        <li>
+          <article class="flex h-full flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass">
+            <a href={`/listings/${home.id}`} class="block aspect-[4/3] bg-surface-2">
+              {home.coverPhotoUrl && (
+                <img
+                  src={home.coverPhotoUrl}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  width="1200"
+                  height="800"
+                  class="size-full object-cover"
+                />
+              )}
+            </a>
+            <div class="flex flex-1 flex-col gap-1 p-4">
+              <p class="text-lg font-semibold text-ink tabular-nums">
+                {dollars(home.price)}
+                {forRent ? <span class="text-sm font-medium text-muted">/mo</span> : ''}
+              </p>
+              <h3 class="text-sm font-medium text-ink-2">
+                <a href={`/listings/${home.id}`} class="hover:underline">
+                  {home.title}
+                </a>
+              </h3>
+              <p class="text-[0.8125rem] text-muted">
+                {home.bedrooms === 0 ? 'Studio' : `${home.bedrooms} bd`} · {home.bathrooms} ba ·{' '}
+                {home.sizeSqft.toLocaleString('en-US')} sq ft
+              </p>
+              <p class="text-[0.8125rem] text-muted">
+                {[home.neighborhood, `${city.name}, ${city.state}`].filter(Boolean).join(' · ')}
+              </p>
+              {home.availableFrom && (
+                <span class="mt-1.5 inline-flex w-fit items-center rounded-full bg-success-bg px-2 py-0.5 text-[0.6875rem] font-medium text-success-fg">
+                  {cityPage.available.replace('{date}', date(home.availableFrom))}
+                </span>
+              )}
+            </div>
+          </article>
+        </li>
+      ))}
+    </ul>
+    <a
+      href={browse}
+      class="mt-6 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-brand hover:underline sm:hidden"
+    >
+      {cityPage.seeAll}
+      <Icon name="arrowRight" class="size-4" />
+    </a>
+  </Container>
+</section>
