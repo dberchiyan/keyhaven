@@ -87,6 +87,18 @@ export class ListingRepository {
   }
 
   /**
+   * Row lock on the listing for the rest of the transaction (data.md): the photo pipeline counts
+   * the gallery and takes the next position in separate statements, so two concurrent
+   * confirmations (or intents) would both read the same count under READ COMMITTED — one would
+   * pass the limit it should fail, or both would take the same position and one would die on
+   * the deferred unique at commit with a bare 409. Serialising per listing prevents that.
+   */
+  async lock(listingId: string): Promise<void> {
+    await this.txHost.tx
+      .$queryRaw`SELECT id FROM listings WHERE id = ${listingId}::uuid FOR UPDATE`;
+  }
+
+  /**
    * Search: the matching page of ids and the total come from one raw statement (the trigram
    * operators have no Prisma equivalent); the cards are then loaded by id and put back in order.
    * Two statements for any page, never one per row.
