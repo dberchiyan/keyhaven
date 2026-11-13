@@ -54,10 +54,10 @@ Password for all: **`Keyhaven-Demo-2026!`**. Browsing needs no account.
 
 | Role | Account | Sees |
 |---|---|---|
-| Tenant | `maya.lopez@keyhaven.example` | Saved homes and searches, the daily email |
-| Landlord | `daniel.reyes@keyhaven.example` | Their own listings |
-| Agent (Harborline Realty) | `priya.nair@harborline.example` | The agency's listings |
-| Admin | `alex.morgan@keyhaven.example` | Every listing; can suspend one |
+| Tenant | `maya.lopez@keyhaven.example` | Saved homes, saved searches |
+| Landlord | `daniel.reyes@keyhaven.example` | Own listings |
+| Agent | `priya.nair@harborline.example` | Agency listings |
+| Admin | `alex.morgan@keyhaven.example` | All listings, suspend |
 
 Anyone can sign up as a tenant or a landlord; the verification link is in the backend log.
 
