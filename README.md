@@ -59,7 +59,10 @@ Password for all: **`Keyhaven-Demo-2026!`**. Browsing needs no account.
 | Agent | `priya.nair@harborline.example` | Agency listings |
 | Admin | `alex.morgan@keyhaven.example` | All listings, suspend |
 
-Anyone can sign up as a tenant or a landlord; the verification link is in the backend log.
+The seeded homes are **showcase listings**: read-only for every account, admins included. Add a
+listing of your own under any lister account to edit, publish and upload photos. The demo is
+wiped and seeded afresh every day at 00:00 Kyiv time. Sign-up works, but the verification link
+only reaches the backend log, so a new account cannot publish yet.
 
 ## What it does
 
