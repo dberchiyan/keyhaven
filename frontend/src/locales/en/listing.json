@@ -1,0 +1,174 @@
+{
+  "browse": {
+    "pageTitle": "Browse homes · Keyhaven",
+    "title": "Find your next home",
+    "subtitle": "Published homes across six US cities. Filters stay in the link, so a search can be shared.",
+    "city": "City",
+    "allCities": "All cities",
+    "sort": "Sort by",
+    "sortOptions": {
+      "publishedAt,desc": "Newest",
+      "rent,asc": "Rent: low to high",
+      "rent,desc": "Rent: high to low"
+    },
+    "count_one": "{{formatted}} home",
+    "count_other": "{{formatted}} homes",
+    "pages": "Result pages",
+    "empty": "No homes match",
+    "emptyHint": "Try another city.",
+    "clear": "Show all cities",
+    "error": "The homes could not be loaded.",
+    "retry": "Try again",
+    "results": "Homes"
+  },
+  "card": {
+    "perMonth": "{{rent}}/mo",
+    "availableFrom": "Available {{date}}",
+    "open": "Open {{title}}",
+    "noPhoto": "No photo yet"
+  },
+  "facts": {
+    "studio": "Studio",
+    "beds_one": "{{count}} bed",
+    "beds_other": "{{count}} beds",
+    "baths_one": "{{count}} bath",
+    "baths_other": "{{count}} baths",
+    "sqft": "{{formatted}} sq ft",
+    "type": {
+      "APARTMENT": "Apartment",
+      "HOUSE": "House",
+      "CONDO": "Condo",
+      "TOWNHOUSE": "Townhouse",
+      "STUDIO": "Studio"
+    },
+    "furnished": "Furnished",
+    "unfurnished": "Unfurnished",
+    "pets": "Pets welcome",
+    "noPets": "No pets",
+    "parking": "Parking included",
+    "noParking": "Street parking"
+  },
+  "status": {
+    "DRAFT": "Draft",
+    "PUBLISHED": "Published",
+    "UNPUBLISHED": "Unpublished",
+    "SUSPENDED": "Suspended"
+  },
+  "detail": {
+    "pageTitle": "{{title}} · Keyhaven",
+    "back": "Back to homes",
+    "photos": "Photos of {{title}}",
+    "photo": "Photo {{number}} of {{count}}",
+    "showPhoto": "Show photo {{number}}",
+    "about": "About this home",
+    "details": "Details",
+    "availableFrom": "Available from",
+    "neighborhood": "Neighborhood",
+    "zip": "ZIP",
+    "listedBy": "Listed by",
+    "landlord": "Private landlord",
+    "agency": "Agency",
+    "phone": "Phone",
+    "email": "Email",
+    "website": "Website",
+    "address": "Exact address",
+    "addressHidden": "The exact address is shared once a viewing is confirmed.",
+    "book": "Book a viewing",
+    "bookSoon": "Coming soon",
+    "bookHint": "Booking a viewing arrives in the next release.",
+    "error": "This home could not be loaded.",
+    "retry": "Try again",
+    "rooms": "Rooms",
+    "size": "Size",
+    "type": "Type",
+    "listedByHint": "Questions about this home go to them.",
+    "perMonth": "{{rent}} per month"
+  },
+  "manage": {
+    "pageTitle": "Listings · Keyhaven",
+    "titleOwn": "Your listings",
+    "titleAgency": "{{agency}} listings",
+    "titleAll": "All listings",
+    "subtitleOwn": "Publish homes, take them off the site and keep them up to date.",
+    "subtitleAll": "Every listing on Keyhaven. Suspend one to take it off the site.",
+    "counts": {
+      "PUBLISHED": "Published",
+      "DRAFT": "Drafts",
+      "UNPUBLISHED": "Unpublished",
+      "SUSPENDED": "Suspended"
+    },
+    "filters": {
+      "status": "Status",
+      "all": "All",
+      "search": "Search by title or city",
+      "sort": "Sort by",
+      "sortOptions": {
+        "updatedAt,desc": "Last changed",
+        "rent,desc": "Rent: high to low",
+        "rent,asc": "Rent: low to high",
+        "title,asc": "Title A–Z"
+      }
+    },
+    "count_one": "{{formatted}} listing",
+    "count_other": "{{formatted}} listings",
+    "table": {
+      "caption": "Listings you manage",
+      "home": "Home",
+      "city": "City",
+      "rent": "Rent",
+      "size": "Beds · baths",
+      "available": "Available",
+      "status": "Status",
+      "updated": "Last changed"
+    },
+    "open": "Open {{title}}",
+    "empty": "No listings here",
+    "emptyHint": "Change the status filter or clear the search.",
+    "clear": "Clear filters",
+    "error": "The listings could not be loaded.",
+    "retry": "Try again",
+    "pagination": {
+      "rowsPerPage": "Per page",
+      "displayed": "{{from}}–{{to}} of {{count}}"
+    },
+    "pages": "Listing pages",
+    "scope": {
+      "own": "Only your own listings are listed here.",
+      "agency": "Every agent of {{agency}} manages these listings together.",
+      "all": "Listings of every landlord and agency."
+    }
+  },
+  "managed": {
+    "pageTitle": "{{title}} · Keyhaven",
+    "back": "Back to listings",
+    "status": "Status",
+    "updated": "Last changed {{date}}",
+    "created": "Created {{date}}",
+    "actions": "Actions",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "suspend": "Suspend listing",
+    "publishedHint": "Tenants find this home in search.",
+    "draftHint": "Only you can see this listing. Publish it to show it to tenants.",
+    "unpublishedHint": "Off the site. Publish it again when it is ready.",
+    "suspendedHint": "Taken off the site by Keyhaven. Its owner cannot publish it again.",
+    "verifyToPublish": "Verify your email address to publish — ask for a new link in",
+    "verifyLink": "Settings → Account",
+    "done": {
+      "published": "Published — tenants can now find it.",
+      "unpublished": "Taken off the site.",
+      "suspended": "Suspended — the owner cannot publish it again."
+    },
+    "dismiss": "Dismiss",
+    "confirmSuspend": {
+      "title": "Suspend this listing?",
+      "text": "“{{title}}” leaves the site at once and its owner cannot publish it again. This cannot be undone here.",
+      "cancel": "Keep it published",
+      "confirm": "Suspend listing"
+    },
+    "error": "This listing could not be loaded.",
+    "retry": "Try again",
+    "addressNote": "Only you, your colleagues and Keyhaven staff see the exact address; tenants get it once a viewing is confirmed.",
+    "publicView": "View as a tenant"
+  }
+}
