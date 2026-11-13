@@ -3,9 +3,12 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '../format';
 import type { ListingDetail } from '../types';
-import { AddressBlock } from './AddressBlock';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import { ListedByCard } from './ListedByCard';
-import { ListingFacts } from './ListingFacts';
+import { ListingAmenities } from './ListingAmenities';
+import { ListingDetails } from './ListingDetails';
+import { ListingLocation } from './ListingLocation';
 import { PhotoGallery } from './PhotoGallery';
 
 export interface ListingDetailViewProps {
@@ -17,7 +20,7 @@ export interface ListingDetailViewProps {
   addressNote?: string;
 }
 
-/** Gallery and facts on the left, the contact card and the actions on the right. */
+/** Gallery and the blocks (details, amenities, about, location) on the left; contact and actions on the right. */
 export function ListingDetailView({ listing, badge, aside, addressNote }: ListingDetailViewProps) {
   const { t, i18n } = useTranslation('listing');
   const where = [listing.neighborhood, `${listing.city.name}, ${listing.city.state}`]
@@ -38,16 +41,25 @@ export function ListingDetailView({ listing, badge, aside, addressNote }: Listin
             {where}
           </Typography>
         </div>
-        <ListingFacts listing={listing} />
-        <section aria-labelledby="about-heading" className="flex flex-col gap-2">
+        {/* The page reads as blocks: a heading, a note, a card of rows — one per subject. */}
+        <ListingDetails listing={listing} />
+        <ListingAmenities listing={listing} />
+        <section aria-labelledby="about-heading" className="flex flex-col gap-3">
           <Typography id="about-heading" variant="h6" component="h2">
             {t('detail.about')}
           </Typography>
-          <Typography variant="body1" className="max-w-[var(--app-measure)] whitespace-pre-line">
-            {listing.description}
-          </Typography>
+          <Card variant="outlined">
+            <CardContent className="p-4">
+              <Typography
+                variant="body1"
+                className="max-w-[var(--app-measure)] whitespace-pre-line"
+              >
+                {listing.description}
+              </Typography>
+            </CardContent>
+          </Card>
         </section>
-        <AddressBlock
+        <ListingLocation
           listing={listing}
           {...(addressNote === undefined ? {} : { note: addressNote })}
         />
