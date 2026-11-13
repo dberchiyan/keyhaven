@@ -1,0 +1,20 @@
+/// A real-estate agency: its agents manage the agency's listings together.
+model Agency {
+  id          String    @id(map: "pk_agencies") @default(dbgenerated("uuidv7()")) @db.Uuid
+  name        String    @db.VarChar(120)
+  /// Public contact details, shown on the agency card of its listings.
+  email       String    @db.VarChar(254)
+  phone       String    @db.VarChar(32)
+  website     String?   @db.VarChar(255)
+  description String?   @db.VarChar(1000)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy   String?   @map("created_by") @db.Uuid
+  updatedBy   String?   @map("updated_by") @db.Uuid
+  version     Int       @default(0)
+  agents      User[]
+  listings    Listing[]
+
+  @@unique([name], map: "uq_agencies_name")
+  @@map("agencies")
+}

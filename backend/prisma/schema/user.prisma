@@ -1,0 +1,32 @@
+/// A person with an account: a tenant looking for a home, a landlord, an agent of an agency or a
+/// Keyhaven admin. The role is global (there is no organisation tenant — Keyhaven is a
+/// marketplace; ownership is per landlord or per agency).
+model User {
+  id              String         @id(map: "pk_users") @default(dbgenerated("uuidv7()")) @db.Uuid
+  email           String         @db.VarChar(254) // stored lower-case
+  passwordHash    String         @map("password_hash") @db.VarChar(255)
+  firstName       String         @map("first_name") @db.VarChar(100)
+  lastName        String         @map("last_name") @db.VarChar(100)
+  /// Shown on a landlord's contact card; personal data, never logged with its value.
+  phone           String?        @db.VarChar(32)
+  role            String         @db.VarChar(32) // TENANT | LANDLORD | AGENT | ADMIN — CHECK in migration
+  /// Agents belong to exactly one agency; nobody else has one — CHECK in migration.
+  agencyId        String?        @map("agency_id") @db.Uuid
+  agency          Agency?        @relation(fields: [agencyId], references: [id], onDelete: Restrict, map: "fk_users_agency_id")
+  /// Null until the person opened the link from the verification email (or reset the password).
+  emailVerifiedAt DateTime?      @map("email_verified_at") @db.Timestamptz(3)
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy       String?        @map("created_by") @db.Uuid
+  updatedBy       String?        @map("updated_by") @db.Uuid
+  version         Int            @default(0)
+  sessions        Session[]
+  accountTokens   AccountToken[]
+  idempotencyKeys IdempotencyKey[]
+  auditEvents     AuditEvent[]   @relation("AuditEventActor")
+  listings        Listing[]      @relation("ListingLandlord")
+
+  @@unique([email], map: "uq_users_email")
+  @@index([agencyId], map: "idx_users_agency_id")
+  @@map("users")
+}

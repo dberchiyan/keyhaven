@@ -1,0 +1,23 @@
+/// Append-only log of security events (sign-ins, password changes, ended sessions) and admin
+/// actions (data.md → Audit log). No UPDATE/DELETE: a trigger rejects both. Targets are
+/// referenced by type + id without a FK — a deleted listing keeps its history.
+model AuditEvent {
+  id          String   @id(map: "pk_audit_events") @default(dbgenerated("uuidv7()")) @db.Uuid
+  occurredAt  DateTime @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  action      String   @db.VarChar(64) // <resource>.<past_tense> — CHECK in migration
+  actorUserId String?  @map("actor_user_id") @db.Uuid // null = the system (a job)
+  actor       User?    @relation("AuditEventActor", fields: [actorUserId], references: [id], onDelete: Restrict, map: "fk_audit_events_actor_user_id")
+  targetType  String   @map("target_type") @db.VarChar(32) // user | listing — CHECK in migration
+  targetId    String   @map("target_id") @db.Uuid
+  /// Name of the target at the time (a listing title, "account").
+  targetLabel String   @map("target_label") @db.VarChar(255)
+  /// Minimal before/after summary: [{ field, from, to }] — never secrets or personal values.
+  changes     Json     @db.JsonB
+  ipAddress   String?  @map("ip_address") @db.VarChar(64)
+  userAgent   String?  @map("user_agent") @db.VarChar(512)
+  traceId     String?  @map("trace_id") @db.VarChar(64)
+
+  @@index([actorUserId], map: "idx_audit_events_actor_user_id")
+  @@index([targetId, occurredAt], map: "idx_audit_events_target_id_occurred_at")
+  @@map("audit_events")
+}

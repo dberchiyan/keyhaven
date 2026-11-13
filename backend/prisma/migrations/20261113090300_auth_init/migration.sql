@@ -1,0 +1,46 @@
+-- Server-side sessions (security.md → Sessions): only the token hash is stored.
+CREATE TABLE "sessions" (
+    "id" UUID NOT NULL DEFAULT uuidv7(),
+    "user_id" UUID NOT NULL,
+    "token_hash" CHAR(64) NOT NULL,
+    "csrf_token_hash" CHAR(64) NOT NULL,
+    "authorities" VARCHAR(32)[],
+    "client_type" VARCHAR(16) NOT NULL,
+    "ip" VARCHAR(45),
+    "user_agent" VARCHAR(512),
+    "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "last_seen_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "idle_expires_at" TIMESTAMPTZ(3) NOT NULL,
+    "absolute_expires_at" TIMESTAMPTZ(3) NOT NULL,
+
+    CONSTRAINT "pk_sessions" PRIMARY KEY ("id"),
+    CONSTRAINT "ck_sessions_client_type" CHECK ("client_type" IN ('web', 'mobile'))
+);
+
+CREATE UNIQUE INDEX "uq_sessions_token_hash" ON "sessions"("token_hash");
+CREATE INDEX "idx_sessions_user_id" ON "sessions"("user_id");
+CREATE INDEX "idx_sessions_absolute_expires_at" ON "sessions"("absolute_expires_at");
+CREATE INDEX "idx_sessions_idle_expires_at" ON "sessions"("idle_expires_at");
+
+-- Sessions belong to their user and have no meaning without it.
+ALTER TABLE "sessions" ADD CONSTRAINT "fk_sessions_user_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- One-time links sent by email (verification, password reset): only the token hash is stored.
+CREATE TABLE "account_tokens" (
+    "id" UUID NOT NULL DEFAULT uuidv7(),
+    "user_id" UUID NOT NULL,
+    "purpose" VARCHAR(32) NOT NULL,
+    "token_hash" CHAR(64) NOT NULL,
+    "expires_at" TIMESTAMPTZ(3) NOT NULL,
+    "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "pk_account_tokens" PRIMARY KEY ("id"),
+    CONSTRAINT "ck_account_tokens_purpose" CHECK ("purpose" IN ('EMAIL_VERIFICATION', 'PASSWORD_RESET'))
+);
+
+CREATE UNIQUE INDEX "uq_account_tokens_token_hash" ON "account_tokens"("token_hash");
+CREATE INDEX "idx_account_tokens_user_id_purpose" ON "account_tokens"("user_id", "purpose");
+CREATE INDEX "idx_account_tokens_expires_at" ON "account_tokens"("expires_at");
+
+-- A token means nothing without its account.
+ALTER TABLE "account_tokens" ADD CONSTRAINT "fk_account_tokens_user_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
