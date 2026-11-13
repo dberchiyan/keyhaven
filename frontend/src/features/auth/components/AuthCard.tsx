@@ -1,6 +1,7 @@
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import { cn } from '@/shared/lib/cn';
 import type { ReactNode, Ref } from 'react';
 import { BrandLogo } from './BrandLogo';
 import { PageShell } from './PageShell';
@@ -15,14 +16,29 @@ export interface AuthCardProps {
   footer?: ReactNode;
   /** Something beside the card on wide screens (the sign-in page's preview). */
   aside?: ReactNode;
+  /** `wide`: half as wide again — the sign-up form has two columns and the password rules. */
+  width?: 'default' | 'wide';
 }
 
 /** The signed-out screens' frame: brand, one card, a footer line. */
-export function AuthCard({ headingRef, title, subtitle, children, footer, aside }: AuthCardProps) {
+export function AuthCard({
+  headingRef,
+  title,
+  subtitle,
+  children,
+  footer,
+  aside,
+  width = 'default',
+}: AuthCardProps) {
   return (
     <PageShell className="items-center justify-center px-4 py-8 md:px-8">
       <div className="flex w-full max-w-7xl items-center justify-center gap-12 lg:items-stretch xl:gap-20">
-        <div className="flex w-full max-w-md shrink-0 flex-col gap-8">
+        <div
+          className={cn(
+            'flex w-full shrink-0 flex-col gap-8',
+            width === 'wide' ? 'max-w-2xl' : 'max-w-md',
+          )}
+        >
           <BrandLogo />
           <Card variant="outlined">
             <CardContent className="flex flex-col gap-6 p-6 sm:p-8">

@@ -25,6 +25,7 @@ export default function SignupPage() {
 
   return (
     <AuthCard
+      width="wide"
       headingRef={headingRef}
       title={t('signup.title')}
       subtitle={t('signup.subtitle')}
