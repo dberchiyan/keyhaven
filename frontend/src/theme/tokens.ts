@@ -121,6 +121,7 @@ export const TOKENS = {
         muted: 'oklch(78.0% 0.020 150.0)',
         line: 'oklch(32.0% 0.030 165.0)',
         tile: 'oklch(29.0% 0.030 165.0)',
+        accent: 'oklch(86.0% 0.065 164.0)',
       },
     },
     dark: {
@@ -216,6 +217,7 @@ export const TOKENS = {
         muted: 'oklch(76.0% 0.020 150.0)',
         line: 'oklch(27.0% 0.025 162.0)',
         tile: 'oklch(23.0% 0.025 162.0)',
+        accent: 'oklch(86.0% 0.065 164.0)',
       },
     },
   },

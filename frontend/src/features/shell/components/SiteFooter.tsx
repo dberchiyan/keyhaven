@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useAccess, useCurrentUser } from '@/features/auth';
 import { BrandMark } from '@/shared/components/BrandMark';
+import { useCities } from '@/features/listing';
 import { browseSearch } from '@/shared/lib/listingSearch';
 import { PATHS, settingsPath } from '@/shared/lib/paths';
 
@@ -15,6 +16,7 @@ const GITHUB_URL = 'https://github.com/dberchiyan/keyhaven';
 const README_URL = `${GITHUB_URL}#readme`;
 const CONTACT_EMAIL = 'hello@keyhaven.example';
 
+type ColumnKey = 'browse' | 'cities' | 'account';
 type LinkKey =
   | 'rent'
   | 'buy'
@@ -26,48 +28,63 @@ type LinkKey =
   | 'listHome'
   | 'readme'
   | 'github';
-type ColumnKey = 'browse' | 'account';
 type CircleKey = 'github' | 'readme' | 'email';
 
 interface FooterLink {
-  key: LinkKey;
+  key: string;
+  label: string;
   to: string;
   external?: boolean;
 }
 
+const linkClass =
+  'inline-flex min-h-9 items-center text-footer-text no-underline transition-colors hover:text-footer-accent focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-footer-text';
+
 /**
- * The public site's footer: a deep forest band with the brand and a line about the site, three
- * round icon links, two columns of links, then the fine print and a sign-in nudge.
+ * The public site's footer, the same as the landing's: a deep forest band with the brand block
+ * (mark, name, a line about the site, three round icon links), three titled columns — Browse,
+ * Cities, Account (which changes with the session) — then the fine print and a sign-in nudge.
  */
 export function SiteFooter() {
   const { t } = useTranslation(['shell', 'common']);
   const { data: user } = useCurrentUser();
+  const { data: cities } = useCities();
   const can = useAccess();
   const year = new Date().getUTCFullYear();
+  const link = (key: LinkKey, to: string): FooterLink => ({
+    key,
+    label: t(`shell:footer.links.${key}`),
+    to,
+  });
   const columns: { key: ColumnKey; links: FooterLink[] }[] = [
     {
       key: 'browse',
       links: [
-        { key: 'rent', to: `${PATHS.browse}?${browseSearch({ kind: 'rent' })}` },
-        { key: 'buy', to: `${PATHS.browse}?${browseSearch({ kind: 'sale' })}` },
-        { key: 'houses', to: `${PATHS.browse}?${browseSearch({ kind: 'rent', type: 'HOUSE' })}` },
-        ...(user && can('section.saved') ? [{ key: 'saved' as const, to: PATHS.saved }] : []),
+        link('rent', `${PATHS.browse}?${browseSearch({ kind: 'rent' })}`),
+        link('buy', `${PATHS.browse}?${browseSearch({ kind: 'sale' })}`),
+        link('houses', `${PATHS.browse}?${browseSearch({ kind: 'rent', type: 'HOUSE' })}`),
+        ...(user && can('section.saved') ? [link('saved', PATHS.saved)] : []),
       ],
+    },
+    {
+      key: 'cities',
+      links: (cities ?? []).map((city) => ({
+        key: city.slug,
+        label: `${city.name}, ${city.state}`,
+        to: `${PATHS.browse}?${browseSearch({ kind: 'rent', city: city.slug })}`,
+      })),
     },
     {
       key: 'account',
       links: [
         ...(user
           ? [
-              { key: 'settings' as const, to: settingsPath('account') },
-              ...(can('home.manage') ? [{ key: 'dashboard' as const, to: PATHS.home }] : []),
+              link('settings', settingsPath('account')),
+              ...(can('home.manage') ? [link('dashboard', PATHS.home)] : []),
             ]
-          : [
-              { key: 'signIn' as const, to: PATHS.login },
-              { key: 'listHome' as const, to: `${PATHS.signup}?role=landlord` },
-            ]),
-        { key: 'readme', to: README_URL, external: true },
-        { key: 'github', to: GITHUB_URL, external: true },
+          : [link('signIn', PATHS.login), link('listHome', `${PATHS.signup}?role=landlord`)]),
+        { ...link('readme', README_URL), external: true },
+        { ...link('github', GITHUB_URL), external: true },
       ],
     },
   ];
@@ -76,14 +93,12 @@ export function SiteFooter() {
     { key: 'readme', href: README_URL, icon: <MenuBookOutlined fontSize="small" /> },
     { key: 'email', href: `mailto:${CONTACT_EMAIL}`, icon: <MailOutlined fontSize="small" /> },
   ];
-  const linkClass =
-    'inline-flex min-h-9 items-center text-footer-text no-underline hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-footer-text';
 
   return (
     <footer className="mt-10 bg-footer-background px-4 text-footer-text md:px-8">
-      <div className="mx-auto flex w-full max-w-page flex-col gap-10 pt-12 pb-8">
-        <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_1fr_1fr]">
-          <div className="flex max-w-md flex-col gap-4">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-12 pt-14 pb-8">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))] md:gap-8">
+          <div className="col-span-2 flex max-w-sm flex-col gap-5 md:col-span-1">
             <div className="flex items-center gap-2.5">
               <BrandMark className="size-9" />
               <Typography variant="h6" component="p">
@@ -99,7 +114,7 @@ export function SiteFooter() {
                   <a
                     href={circle.href}
                     aria-label={t(`shell:footer.icons.${circle.key}`)}
-                    className="flex size-11 items-center justify-center rounded-full border border-footer-line bg-footer-tile text-footer-text transition-colors hover:border-footer-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-footer-text"
+                    className="flex size-11 items-center justify-center rounded-full border border-footer-line bg-footer-tile text-footer-text transition-colors hover:border-footer-accent hover:text-footer-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-footer-text"
                     {...(circle.href.startsWith('http')
                       ? { target: '_blank', rel: 'noreferrer' }
                       : {})}
@@ -111,20 +126,32 @@ export function SiteFooter() {
             </ul>
           </div>
           {columns.map((column) => (
-            <nav key={column.key} aria-label={t(`shell:footer.columns.${column.key}`)}>
-              <ul className="m-0 flex list-none flex-col gap-1 p-0">
-                {column.links.map((link) => (
-                  <li key={link.key}>
-                    {link.external ? (
-                      <a href={link.to} target="_blank" rel="noreferrer" className={linkClass}>
+            <nav
+              key={column.key}
+              aria-labelledby={`footer-${column.key}`}
+              className="flex flex-col gap-3"
+            >
+              <Typography
+                id={`footer-${column.key}`}
+                variant="overline"
+                component="h2"
+                className="text-footer-muted"
+              >
+                {t(`shell:footer.columns.${column.key}`)}
+              </Typography>
+              <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
+                {column.links.map((item) => (
+                  <li key={item.key}>
+                    {item.external ? (
+                      <a href={item.to} target="_blank" rel="noreferrer" className={linkClass}>
                         <Typography variant="subtitle2" component="span">
-                          {t(`shell:footer.links.${link.key}`)}
+                          {item.label}
                         </Typography>
                       </a>
                     ) : (
-                      <Link to={link.to} className={linkClass}>
+                      <Link to={item.to} className={linkClass}>
                         <Typography variant="subtitle2" component="span">
-                          {t(`shell:footer.links.${link.key}`)}
+                          {item.label}
                         </Typography>
                       </Link>
                     )}
@@ -146,7 +173,7 @@ export function SiteFooter() {
                 {t('shell:footer.haveAccount')}{' '}
                 <Link
                   to={PATHS.login}
-                  className="text-footer-text underline-offset-4 hover:underline"
+                  className="font-medium text-footer-text underline-offset-4 hover:underline"
                 >
                   {t('shell:footer.signInLink')}
                 </Link>

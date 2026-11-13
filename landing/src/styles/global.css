@@ -225,6 +225,36 @@
 }
 
 @layer components {
+  /* The footer: a deep forest band with its own fixed tones (dark in both schemes, by design). */
+  .footer-band {
+    background: var(--c-footer);
+    color: var(--c-footer-text);
+  }
+  .footer-text {
+    color: var(--c-footer-text);
+  }
+  .footer-muted {
+    color: var(--c-footer-muted);
+  }
+  .footer-line {
+    border-color: var(--c-footer-line);
+  }
+  .footer-circle {
+    background: var(--c-footer-tile);
+    border: 1px solid var(--c-footer-line);
+    color: var(--c-footer-text);
+  }
+  .footer-circle:hover {
+    border-color: var(--c-sky);
+    color: var(--c-sky);
+  }
+  .footer-link {
+    color: var(--c-footer-text);
+  }
+  .footer-link:hover {
+    color: var(--c-sky);
+  }
+
   /* Display type: large, tight, the Inter Display cut via optical sizing. */
   .type-display {
     font-size: clamp(2.6rem, 1.6rem + 4.4vw, 4.75rem);

@@ -157,6 +157,7 @@ export const LANDING = {
     tagline:
       'Homes to rent and to buy in Austin, Denver, Seattle, Chicago, Atlanta and Phoenix. Browse without an account; sign in to save homes or to list one.',
     product: 'Browse',
+    cities: 'Cities',
     account: 'Account',
     github: 'Source on GitHub',
     readme: 'About Keyhaven',

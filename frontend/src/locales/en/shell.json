@@ -50,6 +50,7 @@
     },
     "columns": {
       "browse": "Browse",
+      "cities": "Cities",
       "account": "Account"
     },
     "links": {

@@ -3,9 +3,11 @@ import { SITE } from '@/content/site';
 
 interface Props {
   class?: string;
+  /** `light`: the name reads on a dark band (the footer). */
+  tone?: 'ink' | 'light';
 }
 
-const { class: className } = Astro.props;
+const { class: className, tone = 'ink' } = Astro.props;
 ---
 
 <span class:list={['inline-flex items-center gap-2.5', className]}>
@@ -15,5 +17,12 @@ const { class: className } = Astro.props;
     <path d="M24 9 9 22h4v14h9V26h4v10h9V22h4z" class="fill-on-brand"></path>
     <circle cx="24" cy="20" r="2.4" class="fill-brand"></circle>
   </svg>
-  <span class="text-[1.2rem] font-semibold tracking-[-0.02em] text-ink">{SITE.name}</span>
+  <span
+    class:list={[
+      'text-[1.2rem] font-semibold tracking-[-0.02em]',
+      tone === 'light' ? 'footer-text' : 'text-ink',
+    ]}
+  >
+    {SITE.name}
+  </span>
 </span>

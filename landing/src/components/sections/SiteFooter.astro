@@ -3,23 +3,34 @@ import Container from '@/components/ui/Container.astro';
 import Icon from '@/components/ui/Icon.astro';
 import Logo from '@/components/ui/Logo.astro';
 import { LANDING } from '@/content/landing';
-import { SITE } from '@/content/site';
+import { CITIES, SITE } from '@/content/site';
 
 const { footer, nav } = LANDING;
 const year = new Date().getUTCFullYear();
-const ACCOUNT_LINKS = [
-  { href: SITE.links.signIn, label: LANDING.header.signIn },
-  { href: SITE.links.signUp, label: LANDING.header.listHome },
-  { href: SITE.links.readme, label: footer.readme },
-  { href: SITE.links.github, label: footer.github },
-] as const;
 const COLUMNS = [
   {
     id: 'footer-browse',
     title: footer.product,
     links: [...nav, { href: '#demo', label: LANDING.demo.open }],
   },
-  { id: 'footer-account', title: footer.account, links: ACCOUNT_LINKS },
+  {
+    id: 'footer-cities',
+    title: footer.cities,
+    links: CITIES.map((city) => ({
+      href: `${SITE.links.browse}?city=${city.slug}`,
+      label: `${city.name}, ${city.state}`,
+    })),
+  },
+  {
+    id: 'footer-account',
+    title: footer.account,
+    links: [
+      { href: SITE.links.signIn, label: LANDING.header.signIn },
+      { href: SITE.links.signUp, label: LANDING.header.listHome },
+      { href: SITE.links.readme, label: footer.readme },
+      { href: SITE.links.github, label: footer.github },
+    ],
+  },
 ] as const;
 const CIRCLES = [
   { href: SITE.links.github, label: footer.icons.github, icon: 'github' },
@@ -28,14 +39,14 @@ const CIRCLES = [
 ] as const;
 ---
 
-<!-- A deep forest band (the same as the app's footer), the brand and a line about the site, three
-     round icon links, two columns of links, then the fine print and a sign-in nudge. -->
+<!-- The same footer as the app's (frontend SiteFooter): the brand block, three titled columns, the
+     icon links, then the fine print and a sign-in nudge, all on one deep forest band. -->
 <footer class="footer-band mt-10">
-  <Container class="flex flex-col gap-10 pt-12 pb-8">
-    <div class="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_1fr_1fr]">
-      <div class="flex max-w-md flex-col gap-4">
-        <Logo class="footer-logo" />
-        <p class="text-sm leading-relaxed footer-muted">{footer.tagline}</p>
+  <Container class="flex flex-col gap-12 pt-14 pb-8">
+    <div class="grid grid-cols-2 gap-10 md:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))] md:gap-8">
+      <div class="col-span-2 flex max-w-sm flex-col gap-5 md:col-span-1">
+        <Logo tone="light" />
+        <p class="footer-muted text-[0.9375rem] leading-relaxed">{footer.tagline}</p>
         <ul class="m-0 flex list-none gap-2 p-0">
           {CIRCLES.map((circle) => (
             <li>
@@ -52,13 +63,16 @@ const CIRCLES = [
         </ul>
       </div>
       {COLUMNS.map((column) => (
-        <nav aria-label={column.title}>
-          <ul class="m-0 flex list-none flex-col gap-1 p-0">
+        <nav aria-labelledby={column.id} class="flex flex-col gap-3">
+          <h2 id={column.id} class="footer-muted type-eyebrow">
+            {column.title}
+          </h2>
+          <ul class="m-0 flex list-none flex-col gap-0.5 p-0">
             {column.links.map((item) => (
               <li>
                 <a
                   href={item.href}
-                  class="inline-flex min-h-9 items-center text-[0.9375rem] font-medium footer-text hover:underline"
+                  class="footer-link inline-flex min-h-9 items-center text-[0.9375rem] font-medium transition-colors"
                 >
                   {item.label}
                 </a>
@@ -68,7 +82,7 @@ const CIRCLES = [
         </nav>
       ))}
     </div>
-    <div class="footer-line flex flex-col gap-2 border-t pt-6 text-sm footer-muted sm:flex-row sm:items-center sm:justify-between">
+    <div class="footer-line footer-muted flex flex-col gap-2 border-t pt-6 text-sm sm:flex-row sm:items-center sm:justify-between">
       <p>
         © {year} {SITE.name}. {footer.rights}
       </p>
@@ -76,7 +90,7 @@ const CIRCLES = [
         {footer.haveAccount}
         <a
           href={SITE.links.signIn}
-          class="font-medium footer-text underline-offset-4 hover:underline"
+          class="footer-link font-medium underline-offset-4 hover:underline"
         >
           {footer.signIn}
         </a>
@@ -84,31 +98,3 @@ const CIRCLES = [
     </div>
   </Container>
 </footer>
-
-<style>
-  /* The band is dark in both schemes: the footer's own tones, not the page's (global.css tokens). */
-  .footer-band {
-    background: var(--c-footer);
-    color: var(--c-footer-text);
-  }
-  .footer-text {
-    color: var(--c-footer-text);
-  }
-  .footer-muted {
-    color: var(--c-footer-muted);
-  }
-  .footer-line {
-    border-color: var(--c-footer-line);
-  }
-  .footer-circle {
-    background: var(--c-footer-tile);
-    border: 1px solid var(--c-footer-line);
-  }
-  .footer-circle:hover {
-    border-color: var(--c-sky);
-  }
-  /* The brand's name reads light on the band; the mark keeps its forest tile. */
-  .footer-logo :global(span:last-child) {
-    color: var(--c-footer-text);
-  }
-</style>

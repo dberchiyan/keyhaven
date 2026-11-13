@@ -92,4 +92,5 @@
   --color-footer-muted: var(--mui-palette-footer-muted);
   --color-footer-line: var(--mui-palette-footer-line);
   --color-footer-tile: var(--mui-palette-footer-tile);
+  --color-footer-accent: var(--mui-palette-footer-accent);
 }

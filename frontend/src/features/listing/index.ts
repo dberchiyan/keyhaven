@@ -7,3 +7,4 @@ export const ListingPage = lazyWithPreload(() => import('./pages/ListingPage'));
 export const ManagedListingPage = lazyWithPreload(() => import('./pages/ManagedListingPage'));
 export const ListingEditorPage = lazyWithPreload(() => import('./pages/ListingEditorPage'));
 export const SavedPage = lazyWithPreload(() => import('./pages/SavedPage'));
+export { useCities } from './hooks/useListingQueries';
