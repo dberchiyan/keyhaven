@@ -80,8 +80,8 @@ export function SiteFooter() {
     'inline-flex min-h-9 items-center text-footer-text no-underline hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-footer-text';
 
   return (
-    <footer className="mt-10 bg-footer-background text-footer-text">
-      <div className="mx-auto flex w-full max-w-page flex-col gap-10 px-4 pt-12 pb-8 md:px-8">
+    <footer className="mt-10 bg-footer-background px-4 text-footer-text md:px-8">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-10 pt-12 pb-8">
         <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_1fr_1fr]">
           <div className="flex max-w-md flex-col gap-4">
             <div className="flex items-center gap-2.5">
