@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { randomUUID } from 'node:crypto';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import request, { type Response } from 'supertest';
@@ -6,20 +7,26 @@ import { AppModule } from '../src/app.module';
 import { setupApp } from '../src/app.setup';
 import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from '../src/common/security/csrf.guard';
 import { EmailSender } from '../src/modules/email/service/email-sender';
+import { ObjectStorage } from '../src/modules/storage/service/object-storage';
 import { FakeEmailSender } from './fake-email.sender';
+import { FakeObjectStorage } from './fake-object.storage';
 
 export interface TestApp {
   app: NestExpressApplication;
   emails: FakeEmailSender;
+  storage: FakeObjectStorage;
   close: () => Promise<void>;
 }
 
-/** The whole application with the real database and a fake mail transport. */
+/** The whole application with the real database, a fake mail transport and a fake object store. */
 export const createTestApp = async (): Promise<TestApp> => {
   const emails = new FakeEmailSender();
+  const storage = new FakeObjectStorage();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(EmailSender)
     .useValue(emails)
+    .overrideProvider(ObjectStorage)
+    .useValue(storage)
     .compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>({
     bodyParser: false,
@@ -30,6 +37,7 @@ export const createTestApp = async (): Promise<TestApp> => {
   return {
     app,
     emails,
+    storage,
     close: async () => {
       await app.close();
     },
@@ -86,7 +94,7 @@ export class Client {
       .then((r) => r);
   }
 
-  async put(path: string, body: unknown): Promise<Response> {
+  async put(path: string, body: unknown = {}): Promise<Response> {
     const response = await request(this.app.getHttpServer())
       .put(path)
       .set('Cookie', this.cookies)
@@ -95,6 +103,26 @@ export class Client {
       .send(body as object);
     this.remember(response);
     return response;
+  }
+
+  delete(path: string): Promise<Response> {
+    return request(this.app.getHttpServer())
+      .delete(path)
+      .set('Cookie', this.cookies)
+      .set(CSRF_HEADER_NAME, this.csrfToken ?? '')
+      .then((r) => r);
+  }
+
+  /** A side-effecting POST with its Idempotency-Key (api.md). */
+  postIdempotent(path: string, body: unknown, key: string = randomUUID()): Promise<Response> {
+    return request(this.app.getHttpServer())
+      .post(path)
+      .set('Cookie', this.cookies)
+      .set(CSRF_HEADER_NAME, this.csrfToken ?? '')
+      .set('Idempotency-Key', key)
+      .set('Content-Type', 'application/json')
+      .send(body as object)
+      .then((r) => r);
   }
 
   /** Keeps the cookies a response set (a sign-in, a password change) for the next request. */

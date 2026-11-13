@@ -39,6 +39,8 @@ export const createFixtures = async (run: string): Promise<Fixtures> => {
     adapter: new PrismaPg({ connectionString: testDatabaseUrl(), options: PG_SESSION_OPTIONS }),
   });
   try {
+    // Every file starts with fresh rate-limit budgets (sign-ups and sign-ins add up across files).
+    await prisma.rateLimit.deleteMany();
     const passwordHash = await new PasswordHasher().hash(PASSWORD);
     const agency = await prisma.agency.create({
       data: { name: `Agency ${run}`, email: `agency-${run}@test.example`, phone: '+1 555 0100' },
