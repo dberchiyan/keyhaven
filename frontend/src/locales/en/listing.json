@@ -364,5 +364,18 @@
   "strip": {
     "previous": "Previous homes",
     "next": "Next homes"
+  },
+  "showcase": {
+    "badge": "Showcase",
+    "add": "Add listing",
+    "dashboard": {
+      "title": "Showcase listings are read-only",
+      "text": "The seeded homes stay as they are. Add a listing of your own to edit, publish and upload photos — everything added is wiped at the daily reset, 00:00 Kyiv time."
+    },
+    "listing": {
+      "title": "Showcase listing — read-only",
+      "text": "This home is part of the demo data and cannot be changed. Add a listing of your own to try editing, publishing and photos; it is wiped at the daily reset, 00:00 Kyiv time."
+    },
+    "hint": "A showcase listing: its status does not change in the demo."
   }
 }

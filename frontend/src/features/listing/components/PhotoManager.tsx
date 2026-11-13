@@ -18,10 +18,12 @@ const MAX_PHOTOS = 20;
 
 export interface PhotoManagerProps {
   listing: ManagedListing;
+  /** A showcase listing of the demo: every control is shown disabled (the page says why). */
+  readOnly?: boolean;
 }
 
 /** Upload (straight to storage), reorder with arrow buttons (keyboard-friendly), remove. */
-export function PhotoManager({ listing }: PhotoManagerProps) {
+export function PhotoManager({ listing, readOnly = false }: PhotoManagerProps) {
   const { t } = useTranslation(['listing', 'errors']);
   const { upload, progress, error, clearError } = usePhotoUpload(listing.id);
   const reorder = useReorderPhotos(listing.id);
@@ -31,7 +33,7 @@ export function PhotoManager({ listing }: PhotoManagerProps) {
   const ready = listing.managedPhotos
     .filter((photo) => photo.status === 'READY')
     .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-  const isBusy = progress !== null || reorder.isPending || remove.isPending;
+  const isBusy = readOnly || progress !== null || reorder.isPending || remove.isPending;
 
   const move = (index: number, direction: -1 | 1): void => {
     const order = ready.map((photo) => photo.id);

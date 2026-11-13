@@ -10,6 +10,7 @@ import { managedListingPath } from '@/shared/lib/paths';
 import { formatAvailability, formatBaths, formatBeds, formatPrice } from '../format';
 import type { ManagedListingCard } from '../types';
 import { ListingStatusBadge } from './ListingStatusBadge';
+import { ShowcaseBadge } from './ShowcaseBadge';
 
 /** Fixed widths, so columns never jump between pages and filters. */
 const COLUMNS = [
@@ -81,17 +82,20 @@ export function ManagedListingTable({ listings }: ManagedListingTableProps) {
             <TableCell className="app-tabular whitespace-nowrap">
               {`${formatBeds(listing.bedrooms, t)} · ${formatBaths(listing.bathrooms, t)}`}
             </TableCell>
-            <TableCell className="app-tabular whitespace-nowrap">
+            <TableCell className="app-tabular truncate">
               {formatAvailability(listing, i18n.language, t)}
             </TableCell>
-            <TableCell className="app-tabular whitespace-nowrap">
+            <TableCell className="app-tabular truncate">
               {t('manage.table.interestCell', {
                 views: listing.viewCount,
                 saves: listing.saveCount,
               })}
             </TableCell>
             <TableCell>
-              <ListingStatusBadge status={listing.status} />
+              <div className="flex flex-wrap gap-1">
+                <ListingStatusBadge status={listing.status} />
+                {listing.demo && <ShowcaseBadge />}
+              </div>
             </TableCell>
           </TableRow>
         ))}

@@ -2,7 +2,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Skeleton from '@mui/material/Skeleton';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
+import { Navigate, useParams } from 'react-router';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { usePageHeadingFocus } from '@/shared/hooks/usePageHeadingFocus';
 import { managedListingPath, PATHS } from '@/shared/lib/paths';
@@ -46,6 +46,10 @@ export default function ListingEditorPage() {
         />
       </DetailPageFrame>
     );
+  }
+  if (isEditing && listing.data?.demo) {
+    // Read-only in the demo: back to the listing's page, which says so.
+    return <Navigate to={managedListingPath(listingId)} replace />;
   }
   return (
     <DetailPageFrame headingRef={headingRef} title={title} back={back}>

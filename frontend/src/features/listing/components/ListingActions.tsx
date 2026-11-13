@@ -50,11 +50,14 @@ export function ListingActions({ listing }: ListingActionsProps) {
         <Typography id="actions-heading" variant="subtitle2" component="h2" color="textSecondary">
           {t('listing:managed.actions')}
         </Typography>
-        <Typography variant="body2">{t(`listing:${STATUS_HINT[listing.status]}`)}</Typography>
+        <Typography variant="body2">
+          {listing.demo ? t('listing:showcase.hint') : t(`listing:${STATUS_HINT[listing.status]}`)}
+        </Typography>
         {actions.ownerAction && (
           <Button
             variant="contained"
             size="large"
+            disabled={listing.demo}
             loading={actions.isPending}
             onClick={() => {
               actions.run(actions.ownerAction === 'publish' ? 'publish' : 'unpublish');
@@ -70,7 +73,7 @@ export function ListingActions({ listing }: ListingActionsProps) {
             color="error"
             size="large"
             startIcon={<BlockOutlined aria-hidden />}
-            disabled={actions.isPending}
+            disabled={listing.demo || actions.isPending}
             onClick={actions.openSuspend}
           >
             {t('listing:managed.suspend')}

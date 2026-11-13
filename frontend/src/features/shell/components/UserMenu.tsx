@@ -101,6 +101,11 @@ export function UserMenu() {
             <Typography variant="caption" color="textSecondary" className="truncate">
               {user.agency ? t('account.roleAt', { role, agency: user.agency.name }) : role}
             </Typography>
+            {user.demoMode && (
+              <Typography variant="caption" color="textSecondary" className="truncate">
+                {t('account.demoReset')}
+              </Typography>
+            )}
           </div>
         </div>
         <Divider />

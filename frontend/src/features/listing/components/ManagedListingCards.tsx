@@ -5,6 +5,7 @@ import { managedListingPath } from '@/shared/lib/paths';
 import { formatAvailability, formatBaths, formatBeds, formatPrice } from '../format';
 import type { ManagedListingCard } from '../types';
 import { ListingStatusBadge } from './ListingStatusBadge';
+import { ShowcaseBadge } from './ShowcaseBadge';
 
 export interface ManagedListingCardsProps {
   listings: readonly ManagedListingCard[];
@@ -49,6 +50,7 @@ export function ManagedListingCards({ listings }: ManagedListingCardsProps) {
                 ].join(' · ')}
               </Typography>
               <ListingStatusBadge status={listing.status} />
+              {listing.demo && <ShowcaseBadge />}
             </div>
             <Typography variant="caption" color="textSecondary">
               {`${listing.city.name}, ${listing.city.state} · ${formatAvailability(listing, i18n.language, t)}`}

@@ -20,7 +20,8 @@
     "profile": "Account",
     "securityDevices": "Security & devices",
     "settings": "Settings",
-    "roleAt": "{{role}} · {{agency}}"
+    "roleAt": "{{role}} · {{agency}}",
+    "demoReset": "Public demo · resets daily at 00:00 Kyiv time"
   },
   "role": {
     "TENANT": "Tenant",

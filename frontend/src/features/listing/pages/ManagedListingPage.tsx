@@ -16,6 +16,8 @@ import { ListingDetailView } from '../components/ListingDetailView';
 import { ListingStatusBadge } from '../components/ListingStatusBadge';
 import { ListingError } from '../components/ListingStates';
 import { PhotoManager } from '../components/PhotoManager';
+import { ShowcaseBadge } from '../components/ShowcaseBadge';
+import { ShowcaseNotice } from '../components/ShowcaseNotice';
 import { formatInstant } from '../format';
 import { useManagedListing } from '../hooks/useListingQueries';
 
@@ -63,15 +65,18 @@ export default function ManagedListingPage() {
           {t('managed.counts', { views: listing.data.viewCount, saves: listing.data.saveCount })}
         </Typography>
       </div>
+      {listing.data.demo && <ShowcaseNotice scope="listing" />}
       {can('listing.edit') && listing.data.status !== 'SUSPENDED' && (
         <Card variant="outlined">
           <CardContent className="flex flex-col gap-4 p-4">
-            <PhotoManager listing={listing.data} />
+            <PhotoManager listing={listing.data} readOnly={listing.data.demo} />
+            {/* Disabled, not hidden, on a showcase listing: the notice above says why. */}
             <Button
               component={RouterLink}
               to={editListingPath(listing.data.id)}
               variant="outlined"
               startIcon={<EditOutlined aria-hidden />}
+              disabled={listing.data.demo}
               className="self-start"
             >
               {t('managed.edit')}
@@ -81,7 +86,12 @@ export default function ManagedListingPage() {
       )}
       <ListingDetailView
         listing={listing.data}
-        badge={<ListingStatusBadge status={listing.data.status} />}
+        badge={
+          <span className="inline-flex flex-wrap gap-1">
+            <ListingStatusBadge status={listing.data.status} />
+            {listing.data.demo && <ShowcaseBadge />}
+          </span>
+        }
         aside={<ListingActions listing={listing.data} />}
         addressNote={t('managed.addressNote')}
       />

@@ -18,6 +18,7 @@ import { ListingEmpty, ListingError, ListingGridLoading } from './ListingStates'
 import { ManagedListingCards } from './ManagedListingCards';
 import { ManagedListingTable } from './ManagedListingTable';
 import { ManagedToolbar } from './ManagedToolbar';
+import { ShowcaseNotice } from './ShowcaseNotice';
 import { StatusCounts } from './StatusCounts';
 
 /** The owner's home: counts per status, filters in the URL, the list as a table or cards. */
@@ -105,6 +106,7 @@ export function ManagedListingsDashboard() {
           </Button>
         )}
       </div>
+      {user?.demoMode && <ShowcaseNotice scope="dashboard" />}
       <StatusCounts />
       <Card variant="outlined" aria-busy={listings.isFetching} className="overflow-hidden">
         <ManagedToolbar params={params} total={listings.data?.totalElements} onChange={update} />
