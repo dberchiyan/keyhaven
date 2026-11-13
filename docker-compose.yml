@@ -1,0 +1,92 @@
+# Whole app on one machine: docker compose up --build → http://localhost:8080
+# Local use only (http, dev seed allowed). Values come from .env (copy .env.example).
+name: keyhaven
+
+x-database: &database
+  DATABASE_URL: postgresql://${DATABASE_USERNAME:-keyhaven}:${DATABASE_PASSWORD}@db:5432/${DATABASE_NAME:-keyhaven}?schema=public
+
+services:
+  db:
+    image: postgres:18.3-alpine
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-keyhaven}
+      POSTGRES_USER: ${DATABASE_USERNAME:-keyhaven}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in .env}
+    ports:
+      - '${DATABASE_PORT:-5433}:5432'
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Applies pending migrations, then exits; the backend starts after it. The same image runs the
+  # seed: docker compose run --rm migrate npm run db:seed
+  migrate:
+    build:
+      context: ./backend
+      target: build
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *database
+      APP_ENV: dev
+    restart: 'no'
+
+  backend:
+    build:
+      context: ./backend
+      target: runtime
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      <<: *database
+      APP_ENV: dev
+      NODE_ENV: production
+      PORT: '3000'
+      TZ: UTC
+      APP_URL: http://localhost:${APP_PORT:-8080}
+      DB_POOL_SIZE: '10'
+      DB_QUERY_LOG: 'false'
+      # nginx (frontend) sits in front.
+      TRUST_PROXY_HOPS: '1'
+      SESSION_COOKIE_NAME: keyhaven_session
+      COOKIE_DOMAIN: ''
+      # Plain http on localhost.
+      COOKIE_SECURE: 'false'
+      COOKIE_SAME_SITE: lax
+      SESSION_IDLE_TIMEOUT_MINUTES: '2880'
+      SESSION_ABSOLUTE_TIMEOUT_MINUTES: '10080'
+      CORS_ALLOWED_ORIGINS: http://localhost:${APP_PORT:-8080}
+      SUPPORTED_LOCALES: en
+      # Emails (verification, password reset) go to the backend's log: docker compose logs backend
+      EMAIL_TRANSPORT: ${EMAIL_TRANSPORT:-log}
+      SMTP_URL: ${SMTP_URL:-}
+      EMAIL_FROM: ${EMAIL_FROM:-Keyhaven <no-reply@keyhaven.local>}
+      # DEMO_MODE=true docker compose up → the public demo's restrictions (README → Environments).
+      DEMO_MODE: ${DEMO_MODE:-false}
+      DEMO_PROTECTED_EMAILS: ${DEMO_PROTECTED_EMAILS:-}
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/health/live >/dev/null || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - '${APP_PORT:-8080}:80'
+    restart: unless-stopped
+
+volumes:
+  db-data:
