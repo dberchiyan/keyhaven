@@ -53,7 +53,7 @@ export default function SettingsPage() {
           {/* Phones: one scrolling row. From md: a column. */}
           <ul
             ref={trackScrollEdges}
-            className="app-scroll-fade m-0 flex list-none gap-1 overflow-x-auto p-0 md:flex-col"
+            className="app-scroll-fade app-scroll-quiet m-0 flex list-none gap-1 overflow-x-auto p-0 md:flex-col"
           >
             {SETTINGS_SECTIONS.map(({ key, icon: Icon }) => (
               <li key={key} className="shrink-0">

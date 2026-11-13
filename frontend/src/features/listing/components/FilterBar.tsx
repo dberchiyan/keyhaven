@@ -82,7 +82,7 @@ export function FilterBar({ params, total, onChange, onClear, saveSearch }: Filt
         {/* The pills: one row that scrolls sideways on a phone, its edges faded (ux.md). */}
         <div
           ref={trackScrollEdges}
-          className="app-scroll-fade -mx-4 flex gap-2 overflow-x-auto px-4 py-0.5 md:mx-0 md:flex-wrap md:px-0"
+          className="app-scroll-fade app-scroll-quiet -mx-4 flex gap-2 overflow-x-auto px-4 py-0.5 md:mx-0 md:flex-wrap md:px-0"
         >
           <FilterPill label={t('browse.city')} {...(city ? { value: city.name } : {})}>
             {(close) => (

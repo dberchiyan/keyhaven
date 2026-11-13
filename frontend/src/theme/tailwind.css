@@ -98,6 +98,15 @@
   inherits: false;
   initial-value: 0px;
 }
+/* Rows of pills, tabs and thumbnails scroll sideways with no scrollbar: the faded edge already
+   says there is more, and a bar under a row of pills reads as a broken control. Tables keep
+   theirs — a mouse needs it there. */
+.app-scroll-quiet {
+  scrollbar-width: none;
+}
+.app-scroll-quiet::-webkit-scrollbar {
+  display: none;
+}
 .app-scroll-fade:is([data-more-start], [data-more-end]) {
   mask-image: linear-gradient(
     to right,

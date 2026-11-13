@@ -30,7 +30,7 @@ export function PhotoGallery({ title, photos }: PhotoGalleryProps) {
       {/* The phone's carousel: bleeds to the screen's edges (the page's 1 rem gutter), snaps per photo. */}
       <div className="relative -mx-4 md:hidden">
         <ul
-          className="m-0 flex snap-x snap-mandatory [scrollbar-width:none] list-none overflow-x-auto p-0"
+          className="app-scroll-quiet m-0 flex snap-x snap-mandatory list-none overflow-x-auto p-0"
           onScroll={(event) => {
             const { scrollLeft, clientWidth } = event.currentTarget;
             setSlide(clientWidth > 0 ? Math.round(scrollLeft / clientWidth) : 0);
@@ -100,7 +100,7 @@ export function PhotoGallery({ title, photos }: PhotoGalleryProps) {
       {photos.length > 1 && (
         <ul
           ref={trackScrollEdges}
-          className="app-scroll-fade m-0 hidden list-none gap-2 overflow-x-auto p-0 pb-1 md:flex"
+          className="app-scroll-fade app-scroll-quiet m-0 hidden list-none gap-2 overflow-x-auto p-0 pb-1 md:flex"
         >
           {photos.map((photo, photoIndex) => (
             <li key={photo.id} className="shrink-0">

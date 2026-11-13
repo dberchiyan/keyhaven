@@ -47,7 +47,10 @@ export function ManagedToolbar({ params, total, onChange }: ManagedToolbarProps)
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <div ref={trackScrollEdges} className="app-scroll-fade -mx-4 overflow-x-auto px-4">
+      <div
+        ref={trackScrollEdges}
+        className="app-scroll-fade app-scroll-quiet -mx-4 overflow-x-auto px-4"
+      >
         <ToggleButtonGroup
           exclusive
           size="small"
