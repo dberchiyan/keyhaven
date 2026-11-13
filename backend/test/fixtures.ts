@@ -31,6 +31,9 @@ export interface Fixtures {
   agencyPublished: string;
   /** Owned by the agency, draft. */
   agencyDraft: string;
+  /** Showcase rows of the public demo (`is_demo`): read-only while DEMO_MODE is on. */
+  landlordDemo: string;
+  agencyDemo: string;
 }
 
 /** Fresh accounts and listings for one test file; names carry the run so files never collide. */
@@ -90,10 +93,12 @@ export const createFixtures = async (run: string): Promise<Fixtures> => {
     const listing = async (
       owner: { landlordId: string } | { agencyId: string },
       status: ListingStatus,
+      isDemo = false,
     ): Promise<string> => {
       const created = await prisma.listing.create({
         data: {
           ...owner,
+          isDemo,
           title: `Home ${run} ${status}`,
           description: 'A test home.',
           propertyType: PropertyType.APARTMENT,
@@ -140,6 +145,8 @@ export const createFixtures = async (run: string): Promise<Fixtures> => {
       ),
       agencyPublished: await listing({ agencyId: agency.id }, ListingStatus.PUBLISHED),
       agencyDraft: await listing({ agencyId: agency.id }, ListingStatus.DRAFT),
+      landlordDemo: await listing({ landlordId: landlord.id }, ListingStatus.PUBLISHED, true),
+      agencyDemo: await listing({ agencyId: agency.id }, ListingStatus.PUBLISHED, true),
     };
   } finally {
     await prisma.$disconnect();

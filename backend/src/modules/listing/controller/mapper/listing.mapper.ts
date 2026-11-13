@@ -62,6 +62,7 @@ export const toManagedListingPageResponse = (page: {
   content: page.content.map((listing) => ({
     ...toListingCardResponse(listing),
     status: listing.status,
+    demo: listing.demo,
     viewCount: listing.viewCount,
     saveCount: listing.saveCount,
   })),
@@ -70,6 +71,7 @@ export const toManagedListingPageResponse = (page: {
 
 export const toListingDetailResponse = (listing: ListingDetail): ListingDetailBody => ({
   ...toListingCardResponse(listing),
+  demo: listing.demo,
   description: listing.description,
   furnished: listing.furnished,
   petsAllowed: listing.petsAllowed,

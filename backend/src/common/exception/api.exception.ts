@@ -43,6 +43,13 @@ export class DemoRestrictedException extends ApiException {
   }
 }
 
+/** The public demo's showcase listings are read-only; what a visitor adds is theirs to change. */
+export class DemoReadOnlyException extends ApiException {
+  constructor() {
+    super('DEMO_READ_ONLY', 'errors.DEMO_READ_ONLY');
+  }
+}
+
 export class SessionExpiredException extends ApiException {
   constructor() {
     super('SESSION_EXPIRED', 'errors.SESSION_EXPIRED');

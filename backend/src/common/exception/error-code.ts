@@ -10,6 +10,8 @@ export const ErrorCode = {
   EMAIL_NOT_VERIFIED: 403,
   /** Turned off in the public demo (DEMO_MODE): it would lock other visitors out. */
   DEMO_RESTRICTED: 403,
+  /** A showcase listing of the public demo: nobody edits it, add your own instead. */
+  DEMO_READ_ONLY: 403,
   RESOURCE_NOT_FOUND: 404,
   CONFLICT: 409,
   CONCURRENT_MODIFICATION: 409,

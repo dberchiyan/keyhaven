@@ -1,4 +1,4 @@
-import { ResourceNotFoundException } from '../exception/api.exception';
+import { DemoReadOnlyException, ResourceNotFoundException } from '../exception/api.exception';
 import { policy, publicPolicy } from './policy';
 import type { Principal } from './principal';
 
@@ -9,6 +9,17 @@ import type { Principal } from './principal';
 const orNotFound = (exists: boolean): true => {
   if (!exists) {
     throw new ResourceNotFoundException();
+  }
+  return true;
+};
+
+/**
+ * Writes to a showcase listing of the public demo answer 403 DEMO_READ_ONLY, once the caller's
+ * authority and ownership passed (a foreign id stays a plain 403, an unknown one a 404).
+ */
+const orReadOnly = (demo: boolean): true => {
+  if (demo) {
+    throw new DemoReadOnlyException();
   }
   return true;
 };
@@ -64,22 +75,28 @@ export const can = {
   publishListing: policy(
     ['listingId'],
     async (principal, args, permissions) =>
-      isLister(principal) && (await permissions.isOwnListing(principal, args.listingId ?? '')),
+      isLister(principal) &&
+      (await permissions.isOwnListing(principal, args.listingId ?? '')) &&
+      orReadOnly(await permissions.isDemoListing(args.listingId ?? '')),
     'verified',
   ),
   /** Taking a listing off the site: admins only; an unknown id is 404. */
-  suspendListing: policy(
-    ['listingId'],
-    async (principal, args, permissions) =>
-      isAdmin(principal) && orNotFound(await permissions.listingExists(args.listingId ?? '')),
-  ),
+  suspendListing: policy(['listingId'], async (principal, args, permissions) => {
+    if (!isAdmin(principal)) {
+      return false;
+    }
+    orNotFound(await permissions.listingExists(args.listingId ?? ''));
+    return orReadOnly(await permissions.isDemoListing(args.listingId ?? ''));
+  }),
   /** Creating a listing: landlords and agents, once their email is verified. */
   createListing: policy([], isLister, 'verified'),
   /** Editing details and photos: the owner (landlord / agency agent), verified — someone else's is 403. */
   editListing: policy(
     ['listingId'],
     async (principal, args, permissions) =>
-      isLister(principal) && (await permissions.isOwnListing(principal, args.listingId ?? '')),
+      isLister(principal) &&
+      (await permissions.isOwnListing(principal, args.listingId ?? '')) &&
+      orReadOnly(await permissions.isDemoListing(args.listingId ?? '')),
     'verified',
   ),
   /** One photo of one of the owner's listings: the whole chain (photo → listing → owner). */
@@ -87,7 +104,8 @@ export const can = {
     ['listingId', 'photoId'],
     async (principal, args, permissions) =>
       isLister(principal) &&
-      (await permissions.isOwnListingPhoto(principal, args.listingId ?? '', args.photoId ?? '')),
+      (await permissions.isOwnListingPhoto(principal, args.listingId ?? '', args.photoId ?? '')) &&
+      orReadOnly(await permissions.isDemoListing(args.listingId ?? '')),
     'verified',
   ),
   /** Saved homes are a tenant's thing. */

@@ -27,6 +27,7 @@ export const listingCardSelect = {
   neighborhood: true,
   availableFrom: true,
   publishedAt: true,
+  isDemo: true,
   city: { select: citySelect },
   // Bounded: the cover only.
   photos: {

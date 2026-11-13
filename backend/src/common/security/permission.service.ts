@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../persistence/prisma.service';
 import type { Prisma } from '../../generated/prisma/client';
 import type { Principal } from './principal';
@@ -13,7 +14,10 @@ const PUBLISHED = 'PUBLISHED';
  */
 @Injectable()
 export class PermissionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: AppConfigService,
+  ) {}
 
   /** The session is the user's own. */
   async isOwnSession(userId: string, sessionId: string): Promise<boolean> {
@@ -33,6 +37,18 @@ export class PermissionService {
       return false;
     }
     const count = await this.prisma.listing.count({ where: { id: listingId, ...ownership } });
+    return count > 0;
+  }
+
+  /**
+   * A showcase row of the public demo (`listings.is_demo`, set by the seed), which stays as
+   * seeded: nobody writes to it while DEMO_MODE is on. Always false outside the demo.
+   */
+  async isDemoListing(listingId: string): Promise<boolean> {
+    if (!this.config.isDemo) {
+      return false;
+    }
+    const count = await this.prisma.listing.count({ where: { id: listingId, isDemo: true } });
     return count > 0;
   }
 

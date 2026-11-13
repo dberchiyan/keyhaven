@@ -120,7 +120,7 @@ describe('Access by role', () => {
       const response = await landlord.get('/api/v1/managed-listings?size=100');
       expect(response.status).toBe(200);
       const ids = (response.body as { content: { id: string }[] }).content.map((item) => item.id);
-      expect(ids.sort()).toEqual([f.landlordPublished, f.landlordDraft].sort());
+      expect(ids.sort()).toEqual([f.landlordPublished, f.landlordDraft, f.landlordDemo].sort());
     });
 
     it('sees their own draft with the exact address', async () => {
@@ -179,7 +179,7 @@ describe('Access by role', () => {
       const response = await agent.get('/api/v1/managed-listings?size=100');
       expect(response.status).toBe(200);
       const ids = (response.body as { content: { id: string }[] }).content.map((item) => item.id);
-      expect(ids.sort()).toEqual([f.agencyPublished, f.agencyDraft].sort());
+      expect(ids.sort()).toEqual([f.agencyPublished, f.agencyDraft, f.agencyDemo].sort());
     });
 
     it('manages the agency’s listings but not a landlord’s (403)', async () => {

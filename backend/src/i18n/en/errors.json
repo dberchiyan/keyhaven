@@ -8,6 +8,7 @@
   "FORBIDDEN": "You don't have access to this action",
   "EMAIL_NOT_VERIFIED": "Verify your email address first — open the link we sent you",
   "DEMO_RESTRICTED": "Turned off for the shared demo accounts",
+  "DEMO_READ_ONLY": "Showcase listings are read-only — add a listing of your own to edit, publish and upload photos",
   "RESOURCE_NOT_FOUND": "The requested item was not found",
   "CONFLICT": "This conflicts with existing data — reload and try again",
   "CONCURRENT_MODIFICATION": "This record was changed by someone else — reload and try again",

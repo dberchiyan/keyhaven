@@ -58,6 +58,8 @@ model Listing {
   createdBy    String?        @map("created_by") @db.Uuid
   updatedBy    String?        @map("updated_by") @db.Uuid
   version      Int            @default(0)
+  /// A showcase row of the public demo (set by the seed only): read-only while DEMO_MODE is on.
+  isDemo       Boolean        @default(false) @map("is_demo")
   photos       ListingPhoto[]
   savedBy      SavedListing[]
   views        ListingView[]

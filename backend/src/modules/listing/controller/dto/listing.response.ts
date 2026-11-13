@@ -53,6 +53,8 @@ export const ManagedListingCardSchema = z
   .object({
     ...ListingCardSchema.shape,
     status: ListingStatusSchema,
+    /** A showcase row of the public demo: read-only, add your own listing instead. */
+    demo: z.boolean(),
     viewCount: z.number().int().min(0),
     saveCount: z.number().int().min(0),
   })
@@ -105,6 +107,8 @@ const ListingAddressSchema = z
 export const ListingDetailSchema = z
   .object({
     ...ListingCardSchema.shape,
+    /** A showcase row of the public demo: read-only, add your own listing instead. */
+    demo: z.boolean(),
     description: z.string().max(4000),
     furnished: z.boolean(),
     petsAllowed: z.boolean(),

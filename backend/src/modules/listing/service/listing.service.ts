@@ -13,6 +13,7 @@ import { toDecimal, toMoney } from '../../../common/persistence/money';
 import type { Principal } from '../../../common/security/principal';
 import { AuditAction, AuditTargetType } from '../../audit/service/audit-action';
 import { AuditField, auditValue, changeOf } from '../../audit/service/audit-change';
+import { AppConfigService } from '../../../common/config/app-config.service';
 import { AuditService } from '../../audit/service/audit.service';
 import { ObjectStorage } from '../../storage/service/object-storage';
 import { UserRole } from '../../user/service/user-role';
@@ -91,6 +92,7 @@ export class ListingService {
     private readonly photoRepository: ListingPhotoRepository,
     private readonly auditService: AuditService,
     private readonly storage: ObjectStorage,
+    private readonly config: AppConfigService,
     @InjectPinoLogger(ListingService.name) private readonly logger: PinoLogger,
   ) {}
 
@@ -587,6 +589,7 @@ export class ListingService {
     return {
       ...this.toCard(listing, false),
       status: toStatus(listing.status),
+      demo: this.isDemo(listing),
       viewCount: listing._count.views,
       saveCount: listing._count.savedBy,
     };
@@ -599,6 +602,7 @@ export class ListingService {
   ): ListingDetail {
     return {
       ...this.toCard(listing, saved),
+      demo: this.isDemo(listing),
       description: listing.description,
       furnished: listing.furnished,
       petsAllowed: listing.petsAllowed,
@@ -628,6 +632,11 @@ export class ListingService {
       updatedAt: listing.updatedAt,
       version: listing.version,
     };
+  }
+
+  /** Seeded showcase rows are read-only in the demo only; locally the seed is editable. */
+  private isDemo(listing: { isDemo: boolean }): boolean {
+    return this.config.isDemo && listing.isDemo;
   }
 
   private toManagedPhoto(photo: ManagedPhotoRecord): ManagedPhoto {

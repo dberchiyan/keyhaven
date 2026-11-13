@@ -5,6 +5,7 @@ export const toCurrentUserResponse = (
   user: UserProfile,
   idleTimeoutMinutes: number,
   demoRestricted: boolean,
+  demoMode: boolean,
 ): CurrentUserResponse => ({
   id: user.id,
   email: user.email,
@@ -16,4 +17,5 @@ export const toCurrentUserResponse = (
   agency: user.agency ? { id: user.agency.id, name: user.agency.name } : null,
   idleTimeoutMinutes,
   demoRestricted,
+  demoMode,
 });

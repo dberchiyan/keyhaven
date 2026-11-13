@@ -395,6 +395,8 @@ export const seedListings = async (
           status,
           publishedAt,
           createdBy: owner.createdBy,
+          // Showcase rows: read-only while the demo is on (DEMO_MODE).
+          isDemo: true,
         });
         const isHouse = type === PropertyType.HOUSE || type === PropertyType.TOWNHOUSE;
         for (let photoIndex = 0; photoIndex < photoCount; photoIndex += 1) {
@@ -412,6 +414,10 @@ export const seedListings = async (
           UPDATE listings AS l SET description = d.description
           FROM unnest(${realigned.map((row) => row.id)}::uuid[], ${realigned.map((row) => row.description)}::text[]) AS d(id, description)
           WHERE l.id = d.id AND l.description <> d.description`;
+        // Rows seeded before the demo flag existed become showcase rows too.
+        await prisma.$executeRaw`
+          UPDATE listings SET is_demo = true
+          WHERE id = ANY(${realigned.map((row) => row.id)}::uuid[]) AND NOT is_demo`;
       }
       if (rows.length === 0) {
         continue;

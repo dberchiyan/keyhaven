@@ -22,6 +22,11 @@ export const CurrentUserResponseSchema = z.object({
    * out are turned off for it. False for everyone else (an account a visitor created included).
    */
   demoRestricted: z.boolean(),
+  /**
+   * The public demo is on: showcase listings are read-only and everything added is wiped at the
+   * daily reset. False locally.
+   */
+  demoMode: z.boolean(),
 });
 
 export class CurrentUserResponse extends createZodDto(CurrentUserResponseSchema) {}

@@ -120,6 +120,7 @@ export class AccountRecoveryController {
       user,
       this.config.get('SESSION_IDLE_TIMEOUT_MINUTES'),
       this.config.isDemoProtected(user.email),
+      this.config.isDemo,
     );
   }
 }

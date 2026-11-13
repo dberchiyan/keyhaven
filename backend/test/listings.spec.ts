@@ -398,13 +398,13 @@ describe('Listings and search (M1)', () => {
       // The tenant opens it: no address, one view counted (once per day).
       const page = await tenant.get(`/api/v1/listings/${listingId}`);
       expect(page.status).toBe(200);
-      // Three comparable rentals in Testville (the fixtures' apartments at $1,500): the median
-      // comes from the city, and $2,200.50 is 47 % above it.
+      // Five comparable rentals in Testville (the fixtures' published apartments at $1,500, the
+      // showcase rows included): the median comes from the city, and $2,200.50 is 47 % above it.
       expect(page.body).toMatchObject({
         address: null,
         priceContext: {
           scope: 'CITY',
-          sample: 3,
+          sample: 5,
           median: { amount: '1500.0000' },
           differencePercent: 47,
         },

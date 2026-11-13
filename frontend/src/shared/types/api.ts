@@ -631,7 +631,7 @@ export interface components {
             status: "ok";
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_FAILED" | "MALFORMED_REQUEST" | "INVALID_PARAMETER" | "UNAUTHORIZED" | "INVALID_CREDENTIALS" | "SESSION_EXPIRED" | "FORBIDDEN" | "EMAIL_NOT_VERIFIED" | "DEMO_RESTRICTED" | "RESOURCE_NOT_FOUND" | "CONFLICT" | "CONCURRENT_MODIFICATION" | "IDEMPOTENCY_KEY_REUSED" | "BUSINESS_RULE_VIOLATION" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "RATE_LIMIT_EXCEEDED" | "UPSTREAM_UNAVAILABLE" | "INTERNAL_ERROR";
+        ErrorCode: "VALIDATION_FAILED" | "MALFORMED_REQUEST" | "INVALID_PARAMETER" | "UNAUTHORIZED" | "INVALID_CREDENTIALS" | "SESSION_EXPIRED" | "FORBIDDEN" | "EMAIL_NOT_VERIFIED" | "DEMO_RESTRICTED" | "DEMO_READ_ONLY" | "RESOURCE_NOT_FOUND" | "CONFLICT" | "CONCURRENT_MODIFICATION" | "IDEMPOTENCY_KEY_REUSED" | "BUSINESS_RULE_VIOLATION" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "RATE_LIMIT_EXCEEDED" | "UPSTREAM_UNAVAILABLE" | "INTERNAL_ERROR";
         ErrorResponse: {
             /** Format: date-time */
             timestamp: string;
@@ -669,6 +669,7 @@ export interface components {
             } | null;
             idleTimeoutMinutes: number;
             demoRestricted: boolean;
+            demoMode: boolean;
         };
         ChangePasswordRequest: {
             currentPassword: string;
@@ -829,6 +830,7 @@ export interface components {
             publishedAt: string | null;
             coverPhotoUrl: string | null;
             saved: boolean;
+            demo: boolean;
             description: string;
             furnished: boolean;
             petsAllowed: boolean;
@@ -862,6 +864,7 @@ export interface components {
             coverPhotoUrl: string | null;
             saved: boolean;
             status: components["schemas"]["ListingStatus_Output"];
+            demo: boolean;
             viewCount: number;
             saveCount: number;
         };
@@ -921,6 +924,7 @@ export interface components {
             publishedAt: string | null;
             coverPhotoUrl: string | null;
             saved: boolean;
+            demo: boolean;
             description: string;
             furnished: boolean;
             petsAllowed: boolean;

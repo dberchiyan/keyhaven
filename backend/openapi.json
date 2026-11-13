@@ -2991,6 +2991,7 @@
           "FORBIDDEN",
           "EMAIL_NOT_VERIFIED",
           "DEMO_RESTRICTED",
+          "DEMO_READ_ONLY",
           "RESOURCE_NOT_FOUND",
           "CONFLICT",
           "CONCURRENT_MODIFICATION",
@@ -3146,6 +3147,9 @@
           },
           "demoRestricted": {
             "type": "boolean"
+          },
+          "demoMode": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -3158,7 +3162,8 @@
           "emailVerifiedAt",
           "agency",
           "idleTimeoutMinutes",
-          "demoRestricted"
+          "demoRestricted",
+          "demoMode"
         ],
         "additionalProperties": false
       },
@@ -3905,6 +3910,9 @@
           "saved": {
             "type": "boolean"
           },
+          "demo": {
+            "type": "boolean"
+          },
           "description": {
             "type": "string",
             "maxLength": 4000
@@ -3980,6 +3988,7 @@
           "publishedAt",
           "coverPhotoUrl",
           "saved",
+          "demo",
           "description",
           "furnished",
           "petsAllowed",
@@ -4058,6 +4067,9 @@
           "status": {
             "$ref": "#/components/schemas/ListingStatus_Output"
           },
+          "demo": {
+            "type": "boolean"
+          },
           "viewCount": {
             "type": "integer",
             "minimum": 0,
@@ -4085,6 +4097,7 @@
           "coverPhotoUrl",
           "saved",
           "status",
+          "demo",
           "viewCount",
           "saveCount"
         ],
@@ -4327,6 +4340,9 @@
           "saved": {
             "type": "boolean"
           },
+          "demo": {
+            "type": "boolean"
+          },
           "description": {
             "type": "string",
             "maxLength": 4000
@@ -4437,6 +4453,7 @@
           "publishedAt",
           "coverPhotoUrl",
           "saved",
+          "demo",
           "description",
           "furnished",
           "petsAllowed",

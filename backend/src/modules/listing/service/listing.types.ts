@@ -37,6 +37,8 @@ export interface ListingCard {
 /** A row of the owner's dashboard. */
 export interface ManagedListingCard extends ListingCard {
   status: ListingStatus;
+  /** A showcase row of the public demo: read-only (false outside DEMO_MODE). */
+  demo: boolean;
   /** People who opened the page (one per person and day) and who saved it. */
   viewCount: number;
   saveCount: number;
@@ -70,6 +72,8 @@ export interface PriceContext {
 }
 
 export interface ListingDetail extends ListingCard {
+  /** A showcase row of the public demo: read-only (false outside DEMO_MODE). */
+  demo: boolean;
   priceContext: PriceContext | null;
   description: string;
   furnished: boolean;
