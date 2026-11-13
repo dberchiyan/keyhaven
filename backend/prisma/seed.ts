@@ -132,7 +132,7 @@ const seed = async (): Promise<void> => {
       today,
     );
     process.stdout.write(
-      `Seeded ${CITIES.length} cities, 1 agency, ${users.count} users, ${listings.listings} listings, ${listings.photos} photos (${listings.retired} replaced; existing rows kept)\n`,
+      `Seeded ${CITIES.length} cities, 1 agency, ${users.count} users, ${listings.listings} listings, ${listings.photos} photos (${listings.retired} photos replaced, ${listings.descriptions} descriptions refreshed; existing rows kept)\n`,
     );
   } finally {
     await prisma.$disconnect();

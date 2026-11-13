@@ -138,7 +138,41 @@ const FEATURES = [
   'bike storage',
 ];
 
+/** Sentence pools for the description; picked by the listing's index, so a re-run writes the same text. */
+const LIGHT = [
+  'Morning light fills the main room, and the bedrooms face the quiet side of the building.',
+  'High ceilings and an open plan make the space feel larger than its footprint.',
+  'A long, bright living area opens onto the kitchen; the bathroom was redone last year.',
+  'Every room has a window, and the storage is unusually generous for the size.',
+];
+const AREA = [
+  '{n} is a walkable part of {c}: cafés, a weekly market and a park within a few blocks.',
+  'Transit is close — a short ride to downtown {c} and an easy drive to the highway.',
+  'Groceries, a pharmacy and a gym are on the same street, with a library and schools nearby.',
+  'Quiet, tree-lined blocks, with restaurants and nightlife a ten-minute walk away.',
+];
+const RENT_TERMS = [
+  'Twelve-month lease; the first month and a deposit are due at signing.',
+  'Twelve-month lease, with a shorter term possible on request; utilities are billed separately.',
+  'Available on a twelve-month lease; a deposit equal to one month is held in escrow.',
+];
+const SALE_TERMS = [
+  'Sold by the owners after many years in the home; most appliances stay.',
+  'A well-kept building with low monthly dues; the roof and the boiler were replaced recently.',
+  'Priced for a quick sale; viewings any day of the week by appointment.',
+];
+const at = <T>(items: readonly T[], index: number): T => {
+  const item = items[index % items.length];
+  if (item === undefined) {
+    throw new Error('pick from an empty list');
+  }
+  return item;
+};
+
+/** Two or three paragraphs: the home, the area, the terms — from the row's own attributes. */
 const describe = (
+  index: number,
+  kind: ListingKind,
   type: PropertyType,
   bedrooms: number,
   bathrooms: number,
@@ -150,16 +184,28 @@ const describe = (
   furnished: boolean,
   parking: boolean,
 ): string => {
-  const kind =
+  const home =
     type === PropertyType.STUDIO
       ? 'studio'
       : `${bedrooms}-bedroom, ${bathrooms}-bath ${type.toLowerCase()}`;
-  const extras = [
-    petsAllowed ? 'Pets are welcome.' : 'No pets, please.',
-    furnished ? 'Comes fully furnished.' : 'Unfurnished — bring your own style.',
-    parking ? 'One parking spot is included.' : 'Street parking nearby.',
-  ].join(' ');
-  return `A ${kind} in ${neighborhood}, ${city.name}, with ${feature} and ${secondFeature}. Minutes from cafés, groceries and transit. ${extras} Twelve-month lease; the first month and a deposit are due at signing.`;
+  const intro = `A ${home} in ${neighborhood}, ${city.name}, with ${feature} and ${secondFeature}. ${at(LIGHT, index)}`;
+  const area = at(AREA, index >> 2)
+    .replaceAll('{n}', neighborhood)
+    .replaceAll('{c}', city.name);
+  const terms =
+    kind === ListingKind.RENT
+      ? [
+          petsAllowed ? 'Pets are welcome.' : 'No pets, please.',
+          furnished ? 'Comes fully furnished.' : 'Unfurnished — bring your own style.',
+          parking ? 'One parking spot is included.' : 'Street parking nearby.',
+          at(RENT_TERMS, index),
+        ].join(' ')
+      : [
+          parking ? 'One parking spot comes with the home.' : 'Street parking only.',
+          at(SALE_TERMS, index),
+        ].join(' ');
+  // Every third listing folds the area into the first paragraph: two paragraphs instead of three.
+  return index % 3 === 0 ? `${intro} ${area}\n\n${terms}` : `${intro}\n\n${area}\n\n${terms}`;
 };
 
 export interface SeedOwners {
@@ -176,7 +222,7 @@ export const seedListings = async (
   prisma: PrismaClient,
   owners: SeedOwners,
   today: Date,
-): Promise<{ listings: number; photos: number; retired: number }> => {
+): Promise<{ listings: number; photos: number; descriptions: number; retired: number }> => {
   const cityIds = new Map(
     (await prisma.city.findMany({ select: { id: true, slug: true } })).map((city) => [
       city.slug,
@@ -190,6 +236,7 @@ export const seedListings = async (
   });
   let listings = 0;
   let photos = 0;
+  let descriptions = 0;
   const ranges: { kind: ListingKind; from: number; to: number }[] = [
     { kind: ListingKind.RENT, from: 0, to: LISTING_COUNT },
     { kind: ListingKind.SALE, from: SALE_INDEX_FROM, to: SALE_INDEX_FROM + SALE_LISTING_COUNT },
@@ -198,6 +245,7 @@ export const seedListings = async (
     for (let start = from; start < to; start += BATCH) {
       const rows = [];
       const photoRows = [];
+      const realigned: { id: string; description: string }[] = [];
       // Idempotent re-runs: rows that exist are left alone, photos included. ON CONFLICT cannot
       // arbitrate on the deferrable photo-position unique, so the check happens here instead.
       // Every roll() below still happens for a skipped row, so the catalogue stays the same.
@@ -293,7 +341,23 @@ export const seedListings = async (
             ? null
             : `Unit ${1 + Math.floor(roll() * 40)}${pick(['A', 'B', 'C', ''], roll())}`;
         const photoCount = 3 + Math.floor(roll() * 4);
+        const description = describe(
+          index,
+          kind,
+          type,
+          bedrooms,
+          bathrooms,
+          city,
+          neighborhood,
+          feature,
+          secondFeature,
+          petsAllowed,
+          furnished,
+          parking,
+        );
         if (existing.has(listingId(index))) {
+          // Kept rows get the current text (the wording evolves; the attributes never do).
+          realigned.push({ id: listingId(index), description });
           continue;
         }
         rows.push({
@@ -301,18 +365,7 @@ export const seedListings = async (
           landlordId: owner.landlordId,
           agencyId: owner.agencyId,
           title: `${pick(ADJECTIVES, roll())} ${type === PropertyType.STUDIO ? 'studio' : `${bedrooms}-bedroom ${type.toLowerCase()}`} in ${neighborhood}${kind === ListingKind.SALE ? ' for sale' : ''}`,
-          description: describe(
-            type,
-            bedrooms,
-            bathrooms,
-            city,
-            neighborhood,
-            feature,
-            secondFeature,
-            petsAllowed,
-            furnished,
-            parking,
-          ),
+          description,
           propertyType: type,
           kind,
           price,
@@ -353,6 +406,13 @@ export const seedListings = async (
           });
         }
       }
+      if (realigned.length > 0) {
+        // One statement for the batch (no query per row): only rows whose text differs change.
+        descriptions += await prisma.$executeRaw`
+          UPDATE listings AS l SET description = d.description
+          FROM unnest(${realigned.map((row) => row.id)}::uuid[], ${realigned.map((row) => row.description)}::text[]) AS d(id, description)
+          WHERE l.id = d.id AND l.description <> d.description`;
+      }
       if (rows.length === 0) {
         continue;
       }
@@ -362,5 +422,5 @@ export const seedListings = async (
       photos += createdPhotos.count;
     }
   }
-  return { listings, photos, retired: retired.count };
+  return { listings, photos, descriptions, retired: retired.count };
 };
