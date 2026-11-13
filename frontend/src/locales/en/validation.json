@@ -41,5 +41,51 @@
   },
   "search": {
     "tooLong": "Search must be at most {{max}} characters"
+  },
+  "title": {
+    "required": "Enter a title",
+    "tooLong": "Title must be at most {{max}} characters"
+  },
+  "description": {
+    "required": "Describe the home",
+    "tooLong": "Description must be at most {{max}} characters"
+  },
+  "propertyType": {
+    "required": "Choose the type of home"
+  },
+  "amount": {
+    "invalid": "Enter an amount such as 1850 or 1850.50"
+  },
+  "bedrooms": {
+    "invalid": "Enter a whole number from 0 to 20"
+  },
+  "bathrooms": {
+    "invalid": "Enter a number such as 1, 1.5 or 2"
+  },
+  "sizeSqft": {
+    "invalid": "Enter a whole number of square feet"
+  },
+  "availableFrom": {
+    "invalid": "Enter a date"
+  },
+  "addressLine1": {
+    "required": "Enter the street address",
+    "tooLong": "Address must be at most {{max}} characters"
+  },
+  "addressLine2": {
+    "tooLong": "This line must be at most {{max}} characters"
+  },
+  "city": {
+    "required": "Choose a city"
+  },
+  "neighborhood": {
+    "tooLong": "Neighborhood must be at most {{max}} characters"
+  },
+  "zip": {
+    "invalid": "Enter a 5-digit ZIP, optionally with -1234"
+  },
+  "savedSearchName": {
+    "required": "Name the search",
+    "tooLong": "Name must be at most {{max}} characters"
   }
 }

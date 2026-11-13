@@ -9,6 +9,7 @@ const LISTERS = ['LANDLORD', 'AGENT', 'ADMIN'] as const satisfies readonly UserR
 /** Owners of listings — admins take listings down through suspension instead. */
 const OWNERS = ['LANDLORD', 'AGENT'] as const satisfies readonly UserRole[];
 const ADMINS = ['ADMIN'] as const satisfies readonly UserRole[];
+const TENANTS = ['TENANT'] as const satisfies readonly UserRole[];
 
 /**
  * Which roles use which parts of the interface — the one place the UI decides by role. Hiding is
@@ -22,6 +23,12 @@ export const ACCESS = {
   'section.settings': EVERYONE,
   /** Home (`/`): the listings dashboard; everyone else lands on Browse. */
   'home.manage': LISTERS,
+  /** Saved homes and searches are a tenant's section. */
+  'section.saved': TENANTS,
+  'listing.save': TENANTS,
+  /** Writing listings and their photos: the owners. */
+  'listing.create': OWNERS,
+  'listing.edit': OWNERS,
   /** One listing in the dashboard: publish and unpublish (owners), suspend (admins). */
   'listing.publish': OWNERS,
   'listing.suspend': ADMINS,

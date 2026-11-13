@@ -1,4 +1,7 @@
+import type { BrowseParams } from '@/shared/lib/listingSearch';
 import type { Schemas } from '@/shared/types';
+
+export type { BrowseParams } from '@/shared/lib/listingSearch';
 
 export type City = Schemas['City_Output'];
 export type ListingCard = Schemas['ListingCard_Output'];
@@ -11,15 +14,22 @@ export type ListingStatusCounts = Schemas['ListingStatusCountsResponse_Output'];
 export type ListingStatus = Schemas['ListingStatus_Output'];
 export type PropertyType = Schemas['PropertyType_Output'];
 export type ListedBy = Schemas['ListedBy_Output'];
+export type ManagedPhoto = Schemas['ManagedPhoto_Output'];
+export type PhotoStatus = Schemas['PhotoStatus_Output'];
+export type CreateListingRequest = Schemas['CreateListingRequest'];
+export type UpdateListingRequest = Schemas['UpdateListingRequest'];
+export type PhotoIntentRequest = Schemas['PhotoIntentRequest'];
+export type PhotoIntent = Schemas['PhotoIntentResponse_Output'];
+export type SavedListing = Schemas['SavedListingResponse_Output'];
 
-/** Search (tenant side): the city and the order, page and size. */
-export interface BrowseParams {
-  city: string | undefined;
-  sort: 'publishedAt,desc' | 'rent,asc' | 'rent,desc';
-  /** One-based in the URL; the API takes zero-based pages. */
+/** A tenant's saved homes: newest save first; page and size only. */
+export interface SavedListParams {
   page: number;
   size: number;
 }
+
+/** The search request as the API takes it (zero-based page). */
+export type SearchRequestParams = Omit<BrowseParams, 'page'> & { page: number };
 
 /** The owner's dashboard: status, search, order, page and size. */
 export interface ManagedListParams {

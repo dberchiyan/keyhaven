@@ -1,15 +1,21 @@
+import EditOutlined from '@mui/icons-material/EditOutlined';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
+import { Link as RouterLink, useParams } from 'react-router';
+import { useAccess } from '@/features/auth';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { usePageHeadingFocus } from '@/shared/hooks/usePageHeadingFocus';
-import { PATHS } from '@/shared/lib/paths';
+import { editListingPath, PATHS } from '@/shared/lib/paths';
 import { DetailPageFrame } from '../components/DetailPageFrame';
 import { ListingActions } from '../components/ListingActions';
 import { ListingDetailView } from '../components/ListingDetailView';
 import { ListingStatusBadge } from '../components/ListingStatusBadge';
 import { ListingError } from '../components/ListingStates';
+import { PhotoManager } from '../components/PhotoManager';
 import { formatInstant } from '../format';
 import { useManagedListing } from '../hooks/useListingQueries';
 
@@ -19,6 +25,7 @@ export default function ManagedListingPage() {
   const { listingId = '' } = useParams();
   const listing = useManagedListing(listingId);
   const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
+  const can = useAccess();
   useDocumentTitle(
     listing.data ? t('managed.pageTitle', { title: listing.data.title }) : t('manage.pageTitle'),
   );
@@ -48,9 +55,30 @@ export default function ManagedListingPage() {
   }
   return (
     <DetailPageFrame headingRef={headingRef} title={listing.data.title} back={back}>
-      <Typography variant="caption" color="textSecondary" className="-mt-2">
-        {t('managed.updated', { date: formatInstant(listing.data.updatedAt, i18n.language) })}
-      </Typography>
+      <div className="-mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+        <Typography variant="caption" color="textSecondary">
+          {t('managed.updated', { date: formatInstant(listing.data.updatedAt, i18n.language) })}
+        </Typography>
+        <Typography variant="caption" color="textSecondary" className="app-tabular">
+          {t('managed.counts', { views: listing.data.viewCount, saves: listing.data.saveCount })}
+        </Typography>
+      </div>
+      {can('listing.edit') && listing.data.status !== 'SUSPENDED' && (
+        <Card variant="outlined">
+          <CardContent className="flex flex-col gap-4 p-4">
+            <PhotoManager listing={listing.data} />
+            <Button
+              component={RouterLink}
+              to={editListingPath(listing.data.id)}
+              variant="outlined"
+              startIcon={<EditOutlined aria-hidden />}
+              className="self-start"
+            >
+              {t('managed.edit')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       <ListingDetailView
         listing={listing.data}
         badge={<ListingStatusBadge status={listing.data.status} />}

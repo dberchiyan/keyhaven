@@ -3,7 +3,8 @@
     "label": "Main navigation",
     "listings": "Listings",
     "browse": "Browse homes",
-    "settings": "Settings"
+    "settings": "Settings",
+    "saved": "Saved"
   },
   "menu": {
     "open": "Open menu",

@@ -9,7 +9,14 @@ import {
   SignupPage,
   VerifyEmailPage,
 } from '@/features/auth';
-import { BrowsePage, HomePage, ListingPage, ManagedListingPage } from '@/features/listing';
+import {
+  BrowsePage,
+  HomePage,
+  ListingEditorPage,
+  ListingPage,
+  ManagedListingPage,
+  SavedPage,
+} from '@/features/listing';
 import { SettingsPage } from '@/features/settings';
 import { AppLayout } from '@/features/shell';
 import { PageLoader } from '@/shared/components/PageLoader';
@@ -45,8 +52,16 @@ export const router = createBrowserRouter([
             ],
           },
           {
+            element: <RequireAccess part="section.saved" />,
+            children: [{ path: PATHS.saved, element: route(<SavedPage />) }],
+          },
+          {
             element: <RequireAccess part="section.listings" />,
-            children: [{ path: PATHS.managedListing, element: route(<ManagedListingPage />) }],
+            children: [
+              { path: PATHS.newListing, element: route(<ListingEditorPage />) },
+              { path: PATHS.managedListing, element: route(<ManagedListingPage />) },
+              { path: PATHS.editListing, element: route(<ListingEditorPage />) },
+            ],
           },
           {
             element: <RequireAccess part="section.settings" />,

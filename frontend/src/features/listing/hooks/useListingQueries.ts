@@ -2,7 +2,18 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import type { ApiError } from '@/shared/api/apiError';
 import { listingApi } from '../api/listingApi';
 import { managedListingApi } from '../api/managedListingApi';
-import type { BrowseParams, ListingTransition, ManagedListing, ManagedListParams } from '../types';
+import { savedListingApi } from '../api/savedListingApi';
+import type {
+  BrowseParams,
+  CreateListingRequest,
+  ListingTransition,
+  ManagedListing,
+  ManagedListParams,
+  PhotoIntent,
+  PhotoIntentRequest,
+  SavedListParams,
+  UpdateListingRequest,
+} from '../types';
 import { listingKeys } from './queryKeys';
 
 /** Reference data: the six cities change with a release, not during a visit. */
@@ -26,6 +37,31 @@ export const useListings = (params: BrowseParams) =>
 export const useListing = (listingId: string) =>
   useQuery({ queryKey: listingKeys.detail(listingId), queryFn: () => listingApi.find(listingId) });
 
+export const useSavedListings = (params: SavedListParams) =>
+  useQuery({
+    queryKey: listingKeys.savedList(params),
+    queryFn: () => savedListingApi.list(params),
+    placeholderData: keepPreviousData,
+  });
+
+/**
+ * Save or unsave a home. Reversible, so it is not optimistic either way: the heart flips when
+ * the server answered, and every list that shows the heart is read again.
+ */
+export const useToggleSaved = () => {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, ApiError, { listingId: string; saved: boolean }>({
+    mutationFn: ({ listingId, saved }) =>
+      saved ? savedListingApi.unsave(listingId) : savedListingApi.save(listingId),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: listingKeys.searches() }),
+        queryClient.invalidateQueries({ queryKey: listingKeys.saved() }),
+      ]);
+    },
+  });
+};
+
 export const useManagedListings = (params: ManagedListParams) =>
   useQuery({
     queryKey: listingKeys.managedList(params),
@@ -36,32 +72,92 @@ export const useManagedListings = (params: ManagedListParams) =>
 export const useManagedListingCounts = () =>
   useQuery({ queryKey: listingKeys.managedCounts(), queryFn: managedListingApi.statusCounts });
 
+/** No request without an id: the editor mounts for `/manage/new` with none. */
 export const useManagedListing = (listingId: string) =>
   useQuery({
     queryKey: listingKeys.managedDetail(listingId),
     queryFn: () => managedListingApi.find(listingId),
+    enabled: listingId !== '',
   });
 
-/**
- * A status change. Not optimistic (publishing is visible to everyone at once); on success the
- * answer replaces the cached listing and the lists, counts and the public view are read again.
- */
-const useTransition = (listingId: string, transition: ListingTransition) => {
+/** The answer of any owner action replaces the cached listing; lists and counts are read again. */
+const useManagedResult = () => {
   const queryClient = useQueryClient();
+  return async (listing: ManagedListing): Promise<void> => {
+    queryClient.setQueryData(listingKeys.managedDetail(listing.id), listing);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: listingKeys.managedLists() }),
+      queryClient.invalidateQueries({ queryKey: listingKeys.managedCounts() }),
+      queryClient.invalidateQueries({ queryKey: listingKeys.searches() }),
+      queryClient.invalidateQueries({ queryKey: listingKeys.detail(listing.id) }),
+    ]);
+  };
+};
+
+/** Not optimistic: creating is visible to colleagues (an agency) at once. */
+export const useCreateListing = () => {
+  const settle = useManagedResult();
+  return useMutation<ManagedListing, ApiError, { request: CreateListingRequest; key: string }>({
+    mutationFn: ({ request, key }) => managedListingApi.create(request, key),
+    onSuccess: settle,
+  });
+};
+
+/** Not optimistic; a 409 (someone else saved first) reads the listing again in `onSettled`. */
+export const useUpdateListing = (listingId: string) => {
+  const queryClient = useQueryClient();
+  const settle = useManagedResult();
+  return useMutation<ManagedListing, ApiError, UpdateListingRequest>({
+    mutationFn: (request) => managedListingApi.update(listingId, request),
+    onSuccess: settle,
+    onSettled: async (_data, error) => {
+      if (error?.code === 'CONCURRENT_MODIFICATION') {
+        await queryClient.invalidateQueries({ queryKey: listingKeys.managedDetail(listingId) });
+      }
+    },
+  });
+};
+
+/** A status change — publishing is visible to everyone at once, so never optimistic. */
+const useTransition = (listingId: string, transition: ListingTransition) => {
+  const settle = useManagedResult();
   return useMutation<ManagedListing, ApiError>({
     mutationFn: () => managedListingApi.transition(listingId, transition),
-    onSuccess: async (listing) => {
-      queryClient.setQueryData(listingKeys.managedDetail(listingId), listing);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: listingKeys.managedLists() }),
-        queryClient.invalidateQueries({ queryKey: listingKeys.managedCounts() }),
-        queryClient.invalidateQueries({ queryKey: listingKeys.searches() }),
-        queryClient.invalidateQueries({ queryKey: listingKeys.detail(listingId) }),
-      ]);
-    },
+    onSuccess: settle,
   });
 };
 
 export const usePublishListing = (listingId: string) => useTransition(listingId, 'publish');
 export const useUnpublishListing = (listingId: string) => useTransition(listingId, 'unpublish');
 export const useSuspendListing = (listingId: string) => useTransition(listingId, 'suspend');
+
+export const usePhotoIntent = (listingId: string) =>
+  useMutation<PhotoIntent, ApiError, { request: PhotoIntentRequest; key: string }>({
+    mutationFn: ({ request, key }) => managedListingApi.createPhotoIntent(listingId, request, key),
+  });
+
+export const useConfirmPhoto = (listingId: string) => {
+  const settle = useManagedResult();
+  return useMutation<ManagedListing, ApiError, string>({
+    mutationFn: (photoId) => managedListingApi.confirmPhoto(listingId, photoId),
+    onSuccess: settle,
+  });
+};
+
+export const useReorderPhotos = (listingId: string) => {
+  const settle = useManagedResult();
+  return useMutation<ManagedListing, ApiError, string[]>({
+    mutationFn: (photoIds) => managedListingApi.reorderPhotos(listingId, photoIds),
+    onSuccess: settle,
+  });
+};
+
+export const useRemovePhoto = (listingId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, ApiError, string>({
+    mutationFn: (photoId) => managedListingApi.removePhoto(listingId, photoId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: listingKeys.managedDetail(listingId) });
+    },
+  });
+};

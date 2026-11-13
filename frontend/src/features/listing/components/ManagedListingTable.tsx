@@ -13,12 +13,13 @@ import { ListingStatusBadge } from './ListingStatusBadge';
 
 /** Fixed widths, so columns never jump between pages and filters. */
 const COLUMNS = [
-  { key: 'home', width: 'w-[34%]' },
-  { key: 'city', width: 'w-[15%]' },
-  { key: 'rent', width: 'w-[11%]' },
-  { key: 'size', width: 'w-[14%]' },
-  { key: 'available', width: 'w-[13%]' },
-  { key: 'status', width: 'w-[13%]' },
+  { key: 'home', width: 'w-[30%]' },
+  { key: 'city', width: 'w-[13%]' },
+  { key: 'rent', width: 'w-[10%]' },
+  { key: 'size', width: 'w-[13%]' },
+  { key: 'available', width: 'w-[12%]' },
+  { key: 'interest', width: 'w-[10%]' },
+  { key: 'status', width: 'w-[12%]' },
 ] as const;
 
 export interface ManagedListingTableProps {
@@ -82,6 +83,12 @@ export function ManagedListingTable({ listings }: ManagedListingTableProps) {
             </TableCell>
             <TableCell className="app-tabular whitespace-nowrap">
               {formatDay(listing.availableFrom, i18n.language)}
+            </TableCell>
+            <TableCell className="app-tabular whitespace-nowrap">
+              {t('manage.table.interestCell', {
+                views: listing.viewCount,
+                saves: listing.saveCount,
+              })}
             </TableCell>
             <TableCell>
               <ListingStatusBadge status={listing.status} />

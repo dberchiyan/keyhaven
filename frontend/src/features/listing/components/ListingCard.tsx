@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { listingPath } from '@/shared/lib/paths';
 import { formatBaths, formatBeds, formatDay, formatRent, formatSize } from '../format';
 import type { ListingCard as ListingCardData } from '../types';
+import { SaveButton } from './SaveButton';
 
 export interface ListingCardProps {
   listing: ListingCardData;
@@ -19,7 +20,14 @@ export function ListingCard({ listing }: ListingCardProps) {
     .join(' · ');
   return (
     <Card variant="outlined" component="article" className="relative flex h-full flex-col">
-      {/* Reserved space: the grid never shifts while photos arrive. */}
+      {/* Reserved space: the grid never shifts while photos arrive. The heart sits above the
+          stretched link (z-10), so it is its own control. */}
+      <SaveButton
+        listingId={listing.id}
+        saved={listing.saved}
+        title={listing.title}
+        className="absolute top-2 right-2 z-10"
+      />
       <div className="aspect-[4/3] w-full overflow-hidden bg-badge-neutral-background">
         {listing.coverPhotoUrl ? (
           <img

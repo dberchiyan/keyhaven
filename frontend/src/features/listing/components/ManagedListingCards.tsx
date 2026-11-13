@@ -53,6 +53,12 @@ export function ManagedListingCards({ listings }: ManagedListingCardsProps) {
             <Typography variant="caption" color="textSecondary">
               {`${listing.city.name}, ${listing.city.state} · ${t('card.availableFrom', { date: formatDay(listing.availableFrom, i18n.language) })}`}
             </Typography>
+            <Typography variant="caption" color="textSecondary" className="app-tabular">
+              {t('manage.table.interestCell', {
+                views: listing.viewCount,
+                saves: listing.saveCount,
+              })}
+            </Typography>
           </div>
         </li>
       ))}

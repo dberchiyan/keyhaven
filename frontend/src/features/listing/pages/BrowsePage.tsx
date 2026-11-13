@@ -1,21 +1,23 @@
 import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
+import { SaveSearchButton } from '@/features/saved-search';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { usePageHeadingFocus } from '@/shared/hooks/usePageHeadingFocus';
 import { cn } from '@/shared/lib/cn';
-import { BrowseToolbar } from '../components/BrowseToolbar';
+import { filtersOf } from '@/shared/lib/listingSearch';
+import { FilterBar } from '../components/FilterBar';
 import { ListingCard } from '../components/ListingCard';
 import { ListingEmpty, ListingError, ListingGridLoading } from '../components/ListingStates';
 import { useBrowseParams } from '../hooks/useBrowseParams';
 import { useListings } from '../hooks/useListingQueries';
 
-/** Published homes: a city filter, a sort and a paged grid — all kept in the URL. */
+/** Published homes: every filter, the sort and the page in the URL, so a search can be shared. */
 export default function BrowsePage() {
   const { t } = useTranslation('listing');
   useDocumentTitle(t('browse.pageTitle'));
   const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
-  const { params, update } = useBrowseParams();
+  const { params, update, clear } = useBrowseParams();
   const listings = useListings(params);
   const total = listings.data?.totalElements ?? 0;
   const pages = Math.ceil(total / params.size);
@@ -36,7 +38,13 @@ export default function BrowsePage() {
           {t('browse.subtitle')}
         </Typography>
       </div>
-      <BrowseToolbar params={params} total={listings.data?.totalElements} onChange={update} />
+      <FilterBar
+        params={params}
+        total={listings.data?.totalElements}
+        onChange={update}
+        onClear={clear}
+        saveSearch={<SaveSearchButton filters={filtersOf(params)} />}
+      />
       <section aria-label={t('browse.results')} aria-busy={listings.isFetching}>
         {listings.isPending ? (
           <ListingGridLoading />
@@ -50,12 +58,7 @@ export default function BrowsePage() {
           <ListingEmpty
             title={t('browse.empty')}
             hint={t('browse.emptyHint')}
-            action={{
-              label: t('browse.clear'),
-              onClick: () => {
-                update({ city: undefined });
-              },
-            }}
+            action={{ label: t('filters.clear'), onClick: clear }}
           />
         ) : (
           <ul

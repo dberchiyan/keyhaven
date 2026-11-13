@@ -9,7 +9,11 @@ export const PATHS = {
   home: '/',
   browse: '/browse',
   listing: '/listings/:listingId',
+  /** A tenant's saved homes and searches. */
+  saved: '/saved',
+  newListing: '/manage/new',
   managedListing: '/manage/:listingId',
+  editListing: '/manage/:listingId/edit',
   settings: '/settings',
   settingsSection: '/settings/:section',
 } as const;
@@ -21,6 +25,10 @@ export const listingPath = (listingId: string): string =>
 /** `/manage/:listingId` — one listing in the owner's dashboard. */
 export const managedListingPath = (listingId: string): string =>
   PATHS.managedListing.replace(':listingId', encodeURIComponent(listingId));
+
+/** `/manage/:listingId/edit` — the listing's details form. */
+export const editListingPath = (listingId: string): string =>
+  PATHS.editListing.replace(':listingId', encodeURIComponent(listingId));
 
 /** `/settings/<section>` — one section of Settings. */
 export const settingsPath = (section: string): string =>

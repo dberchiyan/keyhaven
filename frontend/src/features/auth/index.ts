@@ -16,6 +16,8 @@ export { useLogout } from './hooks/useLogout';
 export { useCurrentUser } from './hooks/useCurrentUser';
 export { authKeys } from './hooks/queryKeys';
 export { useResendVerification } from './hooks/useAccountRecovery';
+export { applyServerFieldErrors } from './hooks/useServerFieldErrors';
+export { FormErrorLine, RESERVED_LINE } from './components/FormErrorLine';
 export {
   useChangePassword,
   useEndOtherSessions,

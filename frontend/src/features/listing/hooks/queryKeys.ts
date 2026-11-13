@@ -1,4 +1,4 @@
-import type { BrowseParams, ManagedListParams } from '../types';
+import type { BrowseParams, ManagedListParams, SavedListParams } from '../types';
 
 /** The caller comes from the session; the cache is cleared on sign-out. */
 export const listingKeys = {
@@ -7,6 +7,8 @@ export const listingKeys = {
   searches: () => [...listingKeys.all, 'search'] as const,
   search: (params: BrowseParams) => [...listingKeys.searches(), params] as const,
   detail: (listingId: string) => [...listingKeys.all, 'detail', listingId] as const,
+  saved: () => [...listingKeys.all, 'saved'] as const,
+  savedList: (params: SavedListParams) => [...listingKeys.saved(), params] as const,
   managed: () => [...listingKeys.all, 'managed'] as const,
   managedLists: () => [...listingKeys.managed(), 'list'] as const,
   managedList: (params: ManagedListParams) => [...listingKeys.managedLists(), params] as const,

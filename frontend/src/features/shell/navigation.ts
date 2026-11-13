@@ -1,16 +1,18 @@
+import FavoriteBorderOutlined from '@mui/icons-material/FavoriteBorderOutlined';
 import HomeWorkOutlined from '@mui/icons-material/HomeWorkOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
 import type { SvgIconProps } from '@mui/material/SvgIcon';
 import type { ComponentType } from 'react';
 import type { AccessPart } from '@/features/auth';
-import { BrowsePage, HomePage } from '@/features/listing';
+import { BrowsePage, HomePage, SavedPage } from '@/features/listing';
 import { SettingsPage } from '@/features/settings';
 import { PATHS } from '@/shared/lib/paths';
 
 export const NavSection = {
   LISTINGS: 'listings',
   BROWSE: 'browse',
+  SAVED: 'saved',
   SETTINGS: 'settings',
 } as const;
 export type NavSection = (typeof NavSection)[keyof typeof NavSection];
@@ -36,7 +38,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: HomeWorkOutlined,
     access: 'section.listings',
     placement: 'main',
-    alsoActiveOn: [PATHS.managedListing],
+    alsoActiveOn: [PATHS.managedListing, PATHS.newListing, PATHS.editListing],
     preload: HomePage.preload,
   },
   {
@@ -47,6 +49,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     placement: 'main',
     alsoActiveOn: [PATHS.listing],
     preload: BrowsePage.preload,
+  },
+  {
+    section: NavSection.SAVED,
+    path: PATHS.saved,
+    icon: FavoriteBorderOutlined,
+    access: 'section.saved',
+    placement: 'main',
+    preload: SavedPage.preload,
   },
   {
     section: NavSection.SETTINGS,

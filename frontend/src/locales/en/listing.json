@@ -15,7 +15,7 @@
     "count_other": "{{formatted}} homes",
     "pages": "Result pages",
     "empty": "No homes match",
-    "emptyHint": "Try another city.",
+    "emptyHint": "Loosen a filter or clear them all.",
     "clear": "Show all cities",
     "error": "The homes could not be loaded.",
     "retry": "Try again",
@@ -119,7 +119,9 @@
       "size": "Beds · baths",
       "available": "Available",
       "status": "Status",
-      "updated": "Last changed"
+      "updated": "Last changed",
+      "interest": "Interest",
+      "interestCell": "{{views}} views · {{saves}} saves"
     },
     "open": "Open {{title}}",
     "empty": "No listings here",
@@ -136,7 +138,8 @@
       "own": "Only your own listings are listed here.",
       "agency": "Every agent of {{agency}} manages these listings together.",
       "all": "Listings of every landlord and agency."
-    }
+    },
+    "new": "New listing"
   },
   "managed": {
     "pageTitle": "{{title}} · Keyhaven",
@@ -169,6 +172,90 @@
     "error": "This listing could not be loaded.",
     "retry": "Try again",
     "addressNote": "Only you, your colleagues and Keyhaven staff see the exact address; tenants get it once a viewing is confirmed.",
-    "publicView": "View as a tenant"
+    "publicView": "View as a tenant",
+    "counts": "{{views}} views · {{saves}} saves",
+    "edit": "Edit details"
+  },
+  "filters": {
+    "search": "Search by title, neighborhood or ZIP",
+    "rentMin": "Min rent",
+    "rentMax": "Max rent",
+    "beds": "Bedrooms",
+    "baths": "Bathrooms",
+    "any": "Any",
+    "bedsOption_zero": "Studio+",
+    "bedsOption_one": "{{count}}+",
+    "bedsOption_other": "{{count}}+",
+    "bathsOption": "{{count}}+",
+    "availableBy": "Available by",
+    "amenities": "Amenities",
+    "pets": "Pets welcome",
+    "furnished": "Furnished",
+    "parking": "Parking",
+    "clear": "Clear filters"
+  },
+  "save": {
+    "add": "Save {{title}}",
+    "remove": "Remove {{title}} from saved homes",
+    "save": "Save",
+    "saved": "Saved"
+  },
+  "saved": {
+    "pageTitle": "Saved · Keyhaven",
+    "title": "Saved",
+    "subtitle": "Homes you marked and searches that email you new matches.",
+    "tabs": "Saved homes and searches",
+    "homes": "Homes",
+    "searches": "Searches",
+    "empty": "No saved homes yet",
+    "emptyHint": "Press the heart on a home to keep it here.",
+    "browse": "Browse homes",
+    "retry": "Try again"
+  },
+  "editor": {
+    "newPageTitle": "New listing · Keyhaven",
+    "newTitle": "New listing",
+    "editPageTitle": "Edit listing · Keyhaven",
+    "editTitle": "Edit listing"
+  },
+  "form": {
+    "sections": {
+      "home": "The home",
+      "address": "Address"
+    },
+    "title": "Title",
+    "description": "Description",
+    "propertyType": "Type",
+    "rent": "Monthly rent",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "sizeSqft": "Size, sq ft",
+    "availableFrom": "Available from",
+    "petsAllowed": "Pets welcome",
+    "furnished": "Furnished",
+    "parking": "Parking included",
+    "addressHint": "Tenants see the city, neighborhood and ZIP; the exact address stays private until a viewing is confirmed.",
+    "addressLine1": "Street address",
+    "addressLine2": "Apartment, unit (optional)",
+    "city": "City",
+    "neighborhood": "Neighborhood (optional)",
+    "zip": "ZIP",
+    "cancel": "Cancel",
+    "create": "Create listing",
+    "save": "Save changes"
+  },
+  "photos": {
+    "title": "Photos ({{count}} of {{max}})",
+    "add": "Add photos",
+    "hint": "JPEG, PNG or WebP up to 10 MB each. The first photo is the cover; a listing needs one to be published.",
+    "uploading": "Uploading {{name}} — {{percent}}%",
+    "empty": "No photos yet",
+    "photo": "Photo {{number}}",
+    "cover": "Cover",
+    "moveLeft": "Move photo {{number}} earlier",
+    "moveRight": "Move photo {{number}} later",
+    "remove": "Remove photo {{number}}",
+    "tooLarge": "That file is over 10 MB.",
+    "typeRejected": "Only JPEG, PNG and WebP photos can be uploaded."
   }
 }

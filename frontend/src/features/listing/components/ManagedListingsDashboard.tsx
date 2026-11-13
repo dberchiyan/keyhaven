@@ -1,3 +1,5 @@
+import AddOutlined from '@mui/icons-material/AddOutlined';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import LinearProgress from '@mui/material/LinearProgress';
 import TablePagination from '@mui/material/TablePagination';
@@ -5,9 +7,11 @@ import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTranslation } from 'react-i18next';
+import { Link as RouterLink } from 'react-router';
 import { useAccess, useCurrentUser } from '@/features/auth';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { usePageHeadingFocus } from '@/shared/hooks/usePageHeadingFocus';
+import { PATHS } from '@/shared/lib/paths';
 import { useManagedListings } from '../hooks/useListingQueries';
 import { MANAGED_PAGE_SIZES, useManagedListingsParams } from '../hooks/useManagedListingsParams';
 import { ListingEmpty, ListingError, ListingGridLoading } from './ListingStates';
@@ -74,19 +78,32 @@ export function ManagedListingsDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <Typography
-          ref={headingRef}
-          tabIndex={-1}
-          variant="h4"
-          component="h1"
-          className="outline-none"
-        >
-          {title}
-        </Typography>
-        <Typography variant="body2" color="textSecondary">
-          {t(`manage.scope.${scope}`, { agency: user?.agency?.name ?? '' })}
-        </Typography>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <Typography
+            ref={headingRef}
+            tabIndex={-1}
+            variant="h4"
+            component="h1"
+            className="outline-none"
+          >
+            {title}
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            {t(`manage.scope.${scope}`, { agency: user?.agency?.name ?? '' })}
+          </Typography>
+        </div>
+        {can('listing.create') && (
+          <Button
+            component={RouterLink}
+            to={PATHS.newListing}
+            variant="contained"
+            startIcon={<AddOutlined aria-hidden />}
+            className="shrink-0 self-start"
+          >
+            {t('manage.new')}
+          </Button>
+        )}
       </div>
       <StatusCounts />
       <Card variant="outlined" aria-busy={listings.isFetching} className="overflow-hidden">
