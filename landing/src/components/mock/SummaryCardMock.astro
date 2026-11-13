@@ -1,0 +1,85 @@
+---
+import MockFrame from './MockFrame.astro';
+
+interface Props {
+  label: string;
+  class?: string | undefined;
+}
+
+const { label, class: className } = Astro.props;
+const FACTS = [
+  ['3 beds', 'M3 18V8l9-5 9 5v10M8 18v-5h8v5'],
+  ['1,192 sq ft', 'M4 20V4h16M4 20h16'],
+  ['2.5 baths', 'M5 12h14v3a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-3ZM7 12V7a2 2 0 0 1 4 0'],
+  [
+    'Pets ok',
+    'M12 20.5c-2.6 0-4.5-1.3-4.5-3 0-1.5 1.2-2.4 2.2-3.5.9-1 1.3-2.5 2.3-2.5s1.4 1.5 2.3 2.5c1 1.1 2.2 2 2.2 3.5 0 1.7-1.9 3-4.5 3Z',
+  ],
+] as const;
+---
+
+<MockFrame label={label} class={className}>
+  <div class="rounded-panel bg-surface p-5 shadow-window ring-glass sm:p-6">
+    <p class="anim-fade text-xs text-subtle" style="--i: 0">
+      Homes · For rent in Seattle
+    </p>
+    <p
+      class="anim-rise mt-3 text-[2rem] leading-none font-semibold tracking-[-0.03em] text-ink tabular-nums"
+      style="--i: 1"
+    >
+      $3,775 <span class="text-base font-medium text-muted">/mo</span>
+    </p>
+    <p class="anim-rise mt-2 text-[0.9375rem] font-medium text-ink-2" style="--i: 2">
+      Wallingford · Seattle, WA
+    </p>
+    <div class="anim-rise mt-3 flex flex-wrap gap-1.5" style="--i: 3">
+      <span class="rounded-full bg-success-bg px-2.5 py-1 text-xs font-medium text-success-fg">
+        Harborline Realty
+      </span>
+      <span class="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted">
+        Listed 2 days ago
+      </span>
+    </div>
+    <div class="anim-rise mt-4 rounded-xl bg-surface-2" style="--i: 4">
+      <div class="grid grid-cols-4 divide-x divide-line">
+        {FACTS.map(([value, path]) => (
+          <div class="flex flex-col items-center gap-1 px-1 py-3 text-center">
+            <svg
+              viewBox="0 0 24 24"
+              class="size-5 text-brand"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d={path}></path>
+            </svg>
+            <span class="text-xs font-semibold text-ink tabular-nums">{value}</span>
+          </div>
+        ))}
+      </div>
+      <p class="mx-4 border-t border-line py-3 text-xs leading-relaxed text-muted">
+        16 more homes for rent in Wallingford right now —{' '}
+        <span class="font-medium text-brand">See them</span>
+      </p>
+    </div>
+    <div class="anim-pop mt-4 flex items-center gap-2" style="--i: 5">
+      <span class="flex h-11 flex-1 items-center justify-center rounded-full bg-brand text-sm font-semibold text-on-brand">
+        Contact Harborline Realty
+      </span>
+      <span class="flex size-11 items-center justify-center rounded-full bg-surface text-ink ring-1 ring-line">
+        <svg
+          viewBox="0 0 24 24"
+          class="size-5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linejoin="round"
+        >
+          <path d="M12 20.5 4.9 13.6A4.6 4.6 0 0 1 11.4 7l.6.6.6-.6a4.6 4.6 0 0 1 6.5 6.6L12 20.5Z"></path>
+        </svg>
+      </span>
+    </div>
+  </div>
+</MockFrame>

@@ -20,6 +20,24 @@ export interface Question {
   a: string;
 }
 
+export interface PopularSearch {
+  label: string;
+  /** The app's search page with these filters. */
+  href: string;
+}
+
+export interface Path {
+  icon: IconName;
+  title: string;
+  text: string;
+}
+
+export interface ListingPoint {
+  icon: IconName;
+  title: string;
+  text: string;
+}
+
 export const LANDING = {
   nav: [
     { href: '/browse?kind=rent', label: 'Rent' },
@@ -50,12 +68,121 @@ export const LANDING = {
     mockLabel:
       'Three listing cards from the search page: a photo, the monthly rent, beds, baths and size, the neighborhood and the move-in date.',
   },
-  highlights: [
-    { value: 'No account', label: 'to browse every home' },
-    { value: 'Six cities', label: 'from Seattle to Atlanta' },
-    { value: 'Filters in the link', label: 'so a search can be shared' },
-    { value: 'Light & dark', label: 'on any screen' },
-  ],
+  popular: {
+    title: 'Popular searches',
+    items: [
+      {
+        label: '2-bed apartments for rent in Seattle',
+        href: '/browse?city=seattle&beds=2&type=APARTMENT',
+      },
+      { label: 'Houses for sale in Austin', href: '/browse?kind=sale&city=austin&type=HOUSE' },
+      { label: 'Pet-friendly rentals in Denver', href: '/browse?city=denver&pets=true' },
+      { label: 'Furnished homes in Chicago', href: '/browse?city=chicago&furnished=true' },
+      {
+        label: 'Studios under $1,500 in Phoenix',
+        href: '/browse?city=phoenix&type=STUDIO&priceMax=1500',
+      },
+      {
+        label: 'Townhouses for sale in Atlanta',
+        href: '/browse?kind=sale&city=atlanta&type=TOWNHOUSE',
+      },
+    ] satisfies readonly PopularSearch[],
+  },
+  cities: {
+    eyebrow: 'Six cities',
+    title: 'Pick a city, start looking',
+    lead: 'Apartments, houses, condos, townhouses and studios in every one of them — for rent and for sale.',
+    rent: 'For rent',
+    buy: 'For sale',
+    tagline: {
+      austin: 'South Congress, Zilker, Mueller, East Austin and more',
+      denver: 'Capitol Hill, LoHi, RiNo, Washington Park and more',
+      seattle: 'Capitol Hill, Ballard, Fremont, Wallingford and more',
+      chicago: 'Wicker Park, Logan Square, Lincoln Park, West Loop and more',
+      atlanta: 'Midtown, Inman Park, Buckhead, West End and more',
+      phoenix: 'Arcadia, Roosevelt Row, Biltmore, Ahwatukee and more',
+    },
+  },
+  paths: {
+    eyebrow: 'Rent or buy',
+    title: 'Two ways to find a home',
+    lead: 'The same search, the same homes — with the filters that matter for each.',
+    rent: {
+      title: 'Renting',
+      text: 'Monthly rent, the move-in date, pets and furnishing up front; a twelve-month lease is the norm.',
+      points: [
+        {
+          icon: 'calendar',
+          title: 'Move in by a date',
+          text: 'Filter by the day you need the keys.',
+        },
+        {
+          icon: 'paw',
+          title: 'Pets and furniture',
+          text: 'Pet-friendly and furnished homes, one tap each.',
+        },
+        {
+          icon: 'bell',
+          title: 'New matches by email',
+          text: 'Save the search and get the new homes every morning.',
+        },
+      ] satisfies readonly Path[],
+      cta: 'Browse rentals',
+      href: '/browse?kind=rent',
+    },
+    buy: {
+      title: 'Buying',
+      text: 'The asking price and what it works out to per square foot, by type of home and neighborhood.',
+      points: [
+        {
+          icon: 'tag',
+          title: 'Price per square foot',
+          text: 'Every listing shows it, so homes compare at a glance.',
+        },
+        {
+          icon: 'building',
+          title: 'Houses, condos, townhouses',
+          text: 'Narrow the search to the type you want.',
+        },
+        {
+          icon: 'mail',
+          title: 'Straight to the seller',
+          text: 'Contact the owner or the agency from the listing.',
+        },
+      ] satisfies readonly Path[],
+      cta: 'Browse homes for sale',
+      href: '/browse?kind=sale',
+    },
+  },
+  listing: {
+    eyebrow: 'Every listing',
+    title: 'What a listing tells you',
+    lead: 'Enough to decide whether to ask for a viewing — and nothing you have to guess.',
+    points: [
+      {
+        icon: 'camera',
+        title: 'Up to twenty photos',
+        text: 'A gallery with the cover first, as the owner arranged it.',
+      },
+      {
+        icon: 'tag',
+        title: 'The price in context',
+        text: 'Monthly rent or asking price, the price per square foot, and how many similar homes are listed nearby right now.',
+      },
+      {
+        icon: 'home',
+        title: 'The facts and the terms',
+        text: 'Rooms, size, type, the move-in day; pets, furnishing and parking as plain yes or no.',
+      },
+      {
+        icon: 'lock',
+        title: 'The address, when it is yours to know',
+        text: 'City, neighborhood and ZIP for everyone; the street once a viewing is confirmed.',
+      },
+    ] satisfies readonly ListingPoint[],
+    mockLabel:
+      'The side card of a listing page: the monthly rent, the neighborhood, who lists it, four facts, how many similar homes are nearby, and a contact button.',
+  },
   steps: {
     eyebrow: 'How it works',
     title: 'From a search to a set of keys',

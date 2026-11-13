@@ -1,0 +1,60 @@
+---
+import Button from '@/components/ui/Button.astro';
+import Container from '@/components/ui/Container.astro';
+import Icon from '@/components/ui/Icon.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { LANDING } from '@/content/landing';
+
+const { paths } = LANDING;
+const CARDS = [
+  { ...paths.rent, icon: 'key' as const },
+  { ...paths.buy, icon: 'home' as const },
+];
+---
+
+<section
+  id="rent-or-buy"
+  aria-labelledby="paths-title"
+  class="border-y border-line bg-surface py-24 sm:py-32"
+>
+  <Container>
+    <SectionHeading
+      id="paths-title"
+      eyebrow={paths.eyebrow}
+      title={paths.title}
+      lead={paths.lead}
+    />
+    <div class="mt-14 grid gap-6 lg:grid-cols-2">
+      {CARDS.map((card) => (
+        <article class="reveal flex flex-col gap-6 rounded-panel bg-canvas p-6 ring-glass sm:p-8">
+          <div class="flex items-center gap-3">
+            <span class="flex size-11 items-center justify-center rounded-xl bg-brand text-on-brand">
+              <Icon name={card.icon} class="size-5" />
+            </span>
+            <h3 class="text-2xl font-semibold tracking-[-0.02em] text-ink">{card.title}</h3>
+          </div>
+          <p class="text-[0.9375rem] leading-relaxed text-muted">{card.text}</p>
+          <ul class="flex flex-col gap-4">
+            {card.points.map((point) => (
+              <li class="flex gap-3.5">
+                <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand">
+                  <Icon name={point.icon} class="size-4.5" />
+                </span>
+                <div>
+                  <h4 class="font-semibold text-ink">{point.title}</h4>
+                  <p class="mt-0.5 text-sm leading-relaxed text-muted">{point.text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div class="mt-auto pt-2">
+            <Button href={card.href} variant="secondary">
+              {card.cta}
+              <Icon name="arrowRight" class="size-4" />
+            </Button>
+          </div>
+        </article>
+      ))}
+    </div>
+  </Container>
+</section>

@@ -1,0 +1,72 @@
+---
+import Container from '@/components/ui/Container.astro';
+import Icon from '@/components/ui/Icon.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import { LANDING } from '@/content/landing';
+import { CITIES, SITE } from '@/content/site';
+
+const { cities } = LANDING;
+/** Each tile's "sky": a gradient in the page's tones, so the six read as different places. */
+const TONES = [
+  'from-chart-1/60 via-brand/40 to-navy',
+  'from-chart-4/70 via-chart-2/50 to-brand-strong',
+  'from-brand-glow via-brand to-navy',
+  'from-chart-3/60 via-brand/50 to-navy',
+  'from-chart-2/60 via-chart-4/40 to-brand-strong',
+  'from-chart-4/80 via-chart-2/60 to-chart-1/50',
+] as const;
+---
+
+<section id="cities" aria-labelledby="cities-title" class="py-24 sm:py-32">
+  <Container>
+    <SectionHeading
+      id="cities-title"
+      eyebrow={cities.eyebrow}
+      title={cities.title}
+      lead={cities.lead}
+    />
+    <ul class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {CITIES.map((city, index) => (
+        <li class="reveal">
+          <article class="group relative flex h-full flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass">
+            <div
+              class:list={['relative h-36 bg-gradient-to-br', TONES[index % TONES.length]]}
+              aria-hidden="true"
+            >
+              <!-- A skyline drawn in blocks, different per tile. -->
+              <span class="absolute bottom-0 left-[8%] h-[48%] w-[12%] rounded-t-sm bg-surface/25"></span>
+              <span class="absolute bottom-0 left-[24%] h-[70%] w-[10%] rounded-t-sm bg-surface/30"></span>
+              <span class="absolute bottom-0 left-[38%] h-[38%] w-[16%] rounded-t-sm bg-surface/20"></span>
+              <span class="absolute bottom-0 left-[58%] h-[58%] w-[9%] rounded-t-sm bg-surface/30"></span>
+              <span class="absolute bottom-0 left-[71%] h-[80%] w-[8%] rounded-t-sm bg-surface/35"></span>
+              <span class="absolute bottom-0 left-[83%] h-[44%] w-[11%] rounded-t-sm bg-surface/25"></span>
+            </div>
+            <div class="flex flex-1 flex-col gap-3 p-5">
+              <div class="flex items-center gap-2">
+                <Icon name="pin" class="size-4 text-brand" />
+                <h3 class="text-lg font-semibold tracking-[-0.015em] text-ink">
+                  {city.name}, {city.state}
+                </h3>
+              </div>
+              <p class="text-sm leading-relaxed text-muted">{cities.tagline[city.slug]}</p>
+              <div class="mt-auto flex gap-2 pt-2">
+                <a
+                  href={`${SITE.links.browse}?kind=rent&city=${city.slug}`}
+                  class="inline-flex min-h-9 items-center rounded-full bg-brand-soft px-3.5 text-sm font-semibold text-brand-strong transition-colors hover:bg-brand hover:text-on-brand"
+                >
+                  {cities.rent}
+                </a>
+                <a
+                  href={`${SITE.links.browse}?kind=sale&city=${city.slug}`}
+                  class="inline-flex min-h-9 items-center rounded-full bg-surface-2 px-3.5 text-sm font-semibold text-ink-2 ring-1 ring-line transition-colors hover:bg-brand hover:text-on-brand"
+                >
+                  {cities.buy}
+                </a>
+              </div>
+            </div>
+          </article>
+        </li>
+      ))}
+    </ul>
+  </Container>
+</section>
