@@ -1,6 +1,7 @@
 ---
 import MockFrame from './MockFrame.astro';
 import ListingCardMock from './ListingCardMock.astro';
+import { HERO_HOMES } from '@/content/showcase';
 
 interface Props {
   label: string;
@@ -9,34 +10,8 @@ interface Props {
 
 const { label, class: className } = Astro.props;
 
-/** Three homes in the app's own shapes — the figures are illustrative, like the demo's. */
-const CARDS = [
-  {
-    price: '$2,450/mo',
-    title: 'Sunny 2-bedroom apartment in Capitol Hill',
-    facts: '2 beds · 1.5 baths · 940 sq ft',
-    place: 'Capitol Hill · Seattle, WA',
-    pill: 'Available Dec 1',
-    tone: 'dusk',
-    saved: true,
-  },
-  {
-    price: '$3,100/mo',
-    title: 'Quiet 3-bedroom house in Wallingford',
-    facts: '3 beds · 2 baths · 1,420 sq ft',
-    place: 'Wallingford · Seattle, WA',
-    pill: 'Available Jan 15',
-    tone: 'moss',
-  },
-  {
-    price: '$1,850/mo',
-    title: 'Bright studio near the Mueller lake',
-    facts: 'Studio · 1 bath · 520 sq ft',
-    place: 'Mueller · Austin, TX',
-    pill: 'Available now',
-    tone: 'clay',
-  },
-] as const;
+/** Three real homes of the catalogue snapshot, in the app's own shapes. */
+const CARDS = HERO_HOMES;
 ---
 
 <MockFrame label={label} class={className}>
@@ -66,8 +41,8 @@ const CARDS = [
       </span>
     </div>
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      {CARDS.map((card, index) => (
-        <ListingCardMock {...card} i={index + 1} />
+      {CARDS.map((home, index) => (
+        <ListingCardMock home={home} saved={index === 0} i={index + 1} />
       ))}
     </div>
   </div>

@@ -1,39 +1,36 @@
 ---
+import type { ShowcaseHome } from '@/content/showcase';
+
 /**
- * One search card drawn in HTML/CSS (the app's ListingCard): a photo block, the price, facts,
- * the place and the move-in pill. Decorative inside a MockFrame.
+ * One search card in the app's own shape (the app's ListingCard): the cover photo, the price,
+ * facts, the place and the move-in pill. A real home of the catalogue snapshot; decorative
+ * inside a MockFrame (the card's own page is a click away in the app, not from here: the
+ * photos behind a card vary in quality, so the landing does not vouch for one home).
  */
 interface Props {
-  price: string;
-  title: string;
-  facts: string;
-  place: string;
-  pill: string;
-  /** The "photo": a gradient standing in for a picture. */
-  tone: 'dusk' | 'moss' | 'clay';
+  home: ShowcaseHome;
   saved?: boolean;
   /** Stagger index for the entrance. */
   i?: number;
 }
 
-const { price, title, facts, place, pill, tone, saved = false, i = 0 } = Astro.props;
-
-const TONES = {
-  dusk: 'from-chart-1/70 via-navy to-brand-strong',
-  moss: 'from-brand-glow via-brand to-navy',
-  clay: 'from-chart-4/80 via-chart-2/70 to-chart-3/60',
-} as const;
+const { home, saved = false, i = 0 } = Astro.props;
 ---
 
 <div
   class="anim-rise flex flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass"
   style={`--i: ${i}`}
 >
-  <div class:list={['relative aspect-[4/3] bg-gradient-to-br', TONES[tone]]}>
-    <!-- A window and a roof line, so the block reads as a home rather than a swatch. -->
-    <span class="absolute inset-x-[22%] bottom-0 h-[52%] rounded-t-md bg-surface/25"></span>
-    <span class="absolute top-[18%] left-[34%] h-[14%] w-[12%] rounded-sm bg-surface/50"></span>
-    <span class="absolute top-[18%] left-[54%] h-[14%] w-[12%] rounded-sm bg-surface/50"></span>
+  <div class="relative aspect-[4/3] bg-surface-2">
+    <img
+      src={home.photo}
+      alt=""
+      width="1200"
+      height="800"
+      loading="lazy"
+      decoding="async"
+      class="size-full object-cover"
+    />
     <span
       class:list={[
         'anim-pop absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-surface shadow-card',
@@ -54,12 +51,12 @@ const TONES = {
     </span>
   </div>
   <div class="flex flex-col gap-1 p-4">
-    <p class="text-lg font-semibold text-ink tabular-nums">{price}</p>
-    <p class="text-sm font-medium text-ink-2">{title}</p>
-    <p class="text-[0.8125rem] text-muted">{facts}</p>
-    <p class="text-[0.8125rem] text-muted">{place}</p>
+    <p class="text-lg font-semibold text-ink tabular-nums">{home.price}</p>
+    <p class="truncate text-sm font-medium text-ink-2">{home.title}</p>
+    <p class="text-[0.8125rem] text-muted">{home.facts}</p>
+    <p class="truncate text-[0.8125rem] text-muted">{home.place}</p>
     <span class="mt-1.5 inline-flex w-fit items-center rounded-full bg-success-bg px-2 py-0.5 text-[0.6875rem] font-medium text-success-fg">
-      {pill}
+      {home.pill}
     </span>
   </div>
 </div>

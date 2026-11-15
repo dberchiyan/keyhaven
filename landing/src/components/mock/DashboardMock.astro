@@ -1,6 +1,7 @@
 ---
 import StatusBadge from '@/components/ui/StatusBadge.astro';
 import MockFrame from './MockFrame.astro';
+import { DASHBOARD_HOMES } from '@/content/showcase';
 
 interface Props {
   label: string;
@@ -15,35 +16,19 @@ const TILES = [
   { label: 'Unpublished', value: '1' },
 ] as const;
 
-const ROWS = [
-  {
-    title: 'Renovated 3-bedroom in Mueller',
-    city: 'Austin',
-    price: '$2,950',
-    status: 'success',
-    word: 'Published',
-    views: '128',
-    saves: '9',
-  },
-  {
-    title: 'Corner loft on Harbor Street',
-    city: 'Seattle',
-    price: '$2,395',
-    status: 'warning',
-    word: 'Draft',
-    views: '—',
-    saves: '—',
-  },
-  {
-    title: 'Townhouse near Washington Park',
-    city: 'Denver',
-    price: '$3,400',
-    status: 'success',
-    word: 'Published',
-    views: '61',
-    saves: '4',
-  },
+/** Real homes of the snapshot as the dashboard's rows; the views and saves are illustrative. */
+const STATES = [
+  { status: 'success', word: 'Published', views: '128', saves: '9' },
+  { status: 'warning', word: 'Draft', views: '—', saves: '—' },
+  { status: 'success', word: 'Published', views: '61', saves: '4' },
 ] as const;
+const ROWS = DASHBOARD_HOMES.map((home, index) => ({
+  title: home.title,
+  city: home.cityName,
+  price: home.price.replace('/mo', ''),
+  photo: home.photo,
+  ...(STATES[index] ?? STATES[0]),
+}));
 ---
 
 <MockFrame label={label} class={className}>
@@ -62,7 +47,15 @@ const ROWS = [
     <div class="mt-4 divide-y divide-line">
       {ROWS.map((row, index) => (
         <div class="anim-rise flex items-center gap-3 py-2.5" style={`--i: ${index + 3}`}>
-          <span class="size-9 shrink-0 rounded-md bg-gradient-to-br from-brand-glow to-brand"></span>
+          <img
+            src={row.photo}
+            alt=""
+            width="72"
+            height="72"
+            loading="lazy"
+            decoding="async"
+            class="size-9 shrink-0 rounded-md object-cover"
+          />
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm font-medium text-ink">{row.title}</p>
             <p class="text-xs text-muted">
