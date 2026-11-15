@@ -14,6 +14,7 @@ import { usePageHeadingFocus } from '@/shared/hooks/usePageHeadingFocus';
 import { PATHS } from '@/shared/lib/paths';
 import { useManagedListings } from '../hooks/useListingQueries';
 import { MANAGED_PAGE_SIZES, useManagedListingsParams } from '../hooks/useManagedListingsParams';
+import { InsightsPanel } from './InsightsPanel';
 import { ListingEmpty, ListingError, ListingGridLoading } from './ListingStates';
 import { ManagedListingCards } from './ManagedListingCards';
 import { ManagedListingTable } from './ManagedListingTable';
@@ -108,6 +109,7 @@ export function ManagedListingsDashboard() {
       </div>
       {user?.demoMode && <ShowcaseNotice scope="dashboard" />}
       <StatusCounts />
+      <InsightsPanel />
       <Card variant="outlined" aria-busy={listings.isFetching} className="overflow-hidden">
         <ManagedToolbar params={params} total={listings.data?.totalElements} onChange={update} />
         {listings.isFetching && listings.isPlaceholderData && (

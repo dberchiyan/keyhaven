@@ -7,6 +7,7 @@ import { savedListingApi } from '../api/savedListingApi';
 import type {
   BrowseParams,
   CreateListingRequest,
+  InsightPeriod,
   ListingTransition,
   ManagedListing,
   ManagedListParams,
@@ -106,6 +107,21 @@ export const useManagedListings = (params: ManagedListParams) =>
 
 export const useManagedListingCounts = () =>
   useQuery({ queryKey: listingKeys.managedCounts(), queryFn: managedListingApi.statusCounts });
+
+/** Another period keeps the previous chart on screen until the new one arrives. */
+export const useManagedInsights = (period: InsightPeriod) =>
+  useQuery({
+    queryKey: listingKeys.managedInsights(period),
+    queryFn: () => managedListingApi.insights(period),
+    placeholderData: keepPreviousData,
+  });
+
+export const useListingInsights = (listingId: string, period: InsightPeriod) =>
+  useQuery({
+    queryKey: listingKeys.managedListingInsights(listingId, period),
+    queryFn: () => managedListingApi.listingInsights(listingId, period),
+    placeholderData: keepPreviousData,
+  });
 
 /** No request without an id: the editor mounts for `/manage/new` with none. */
 export const useManagedListing = (listingId: string) =>

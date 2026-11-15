@@ -1,5 +1,5 @@
 import type { SearchFilters } from '@/shared/lib/listingSearch';
-import type { BrowseParams, ManagedListParams, SavedListParams } from '../types';
+import type { BrowseParams, InsightPeriod, ManagedListParams, SavedListParams } from '../types';
 
 /** The caller comes from the session; the cache is cleared on sign-out. */
 export const listingKeys = {
@@ -19,4 +19,8 @@ export const listingKeys = {
   managedList: (params: ManagedListParams) => [...listingKeys.managedLists(), params] as const,
   managedCounts: () => [...listingKeys.managed(), 'counts'] as const,
   managedDetail: (listingId: string) => [...listingKeys.managed(), 'detail', listingId] as const,
+  managedInsights: (period: InsightPeriod) =>
+    [...listingKeys.managed(), 'insights', period] as const,
+  managedListingInsights: (listingId: string, period: InsightPeriod) =>
+    [...listingKeys.managed(), 'detail', listingId, 'insights', period] as const,
 };

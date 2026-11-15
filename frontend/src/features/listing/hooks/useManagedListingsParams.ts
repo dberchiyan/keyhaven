@@ -57,8 +57,16 @@ export const useManagedListingsParams = (): {
   const update = useCallback(
     (change: ListChange): void => {
       setSearchParams(
-        // Any change other than the page itself starts again from page 1.
-        (current) => toSearchParams({ ...parseParams(current), page: 1, ...change }),
+        (current) => {
+          // Any change other than the page itself starts again from page 1.
+          const next = toSearchParams({ ...parseParams(current), page: 1, ...change });
+          // The insights' period shares the URL (useInsightPeriod) and stays as it was.
+          const period = current.get('period');
+          if (period !== null) {
+            next.set('period', period);
+          }
+          return next;
+        },
         // Typing a search replaces the history entry instead of adding one per pause.
         { replace: change.search !== undefined },
       );

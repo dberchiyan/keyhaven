@@ -1,7 +1,10 @@
 import { apiClient } from '@/shared/api/client';
 import type {
   CreateListingRequest,
+  InsightPeriod,
+  ListingInsights,
   ListingStatusCounts,
+  ManagedInsights,
   ListingTransition,
   ManagedListing,
   ManagedListingPage,
@@ -36,6 +39,15 @@ export const managedListingApi = {
     ).data,
   statusCounts: async (): Promise<ListingStatusCounts> =>
     (await apiClient.get<ListingStatusCounts>(`${BASE}/status-counts`)).data,
+  /** Views and saves per day over the caller's scope, with the busiest listings. */
+  insights: async (period: InsightPeriod): Promise<ManagedInsights> =>
+    (await apiClient.get<ManagedInsights>(`${BASE}/insights`, { params: { period } })).data,
+  listingInsights: async (listingId: string, period: InsightPeriod): Promise<ListingInsights> =>
+    (
+      await apiClient.get<ListingInsights>(`${BASE}/${encodeURIComponent(listingId)}/insights`, {
+        params: { period },
+      })
+    ).data,
   find: async (listingId: string): Promise<ManagedListing> =>
     (await apiClient.get<ManagedListing>(`${BASE}/${encodeURIComponent(listingId)}`)).data,
   /** One Idempotency-Key per form submission: a retried Create never creates twice. */

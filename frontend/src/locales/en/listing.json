@@ -377,5 +377,46 @@
       "text": "This home is part of the demo data and cannot be changed. Add a listing of your own to try editing, publishing and photos; it is wiped at the daily reset, 00:00 Kyiv time."
     },
     "hint": "A showcase listing: its status does not change in the demo."
+  },
+  "insights": {
+    "title": "Interest",
+    "titleHint": "Who looked at your homes and who saved one, day by day",
+    "listingTitle": "Interest in this home",
+    "listingHint": "Views and saves day by day, against the period before",
+    "period": "Period",
+    "periods": {
+      "7": "7 days",
+      "30": "30 days",
+      "90": "90 days"
+    },
+    "views": "Views",
+    "saves": "Saves",
+    "saveRate": "Save rate",
+    "noRate": "—",
+    "saveRateHint": "The share of views that end in a save, once there are views",
+    "saveRateOf": "{{saves}} saves from {{views}} views",
+    "saveRatePrevious": "{{rate}} in the previous {{days}} days",
+    "change": "{{percent}} vs the previous {{days}} days",
+    "changeNew": "None in the previous {{days}} days",
+    "changeNone": "Nothing yet",
+    "range": "{{from}} – {{to}}, UTC days",
+    "chartLabel": "{{title}} per day: {{total}} in all, at most {{max}} on {{peak}}",
+    "chartEmpty": "{{title}} per day: none in this period",
+    "dayTip": "{{date}}: {{views}} views · {{saves}} saves",
+    "empty": "Nothing in this period yet — published homes draw views from the catalogue and from search engines.",
+    "top": "Most viewed",
+    "topHint": "The homes that drew the most interest in this period",
+    "topEmpty": "No home was viewed in this period.",
+    "topCell": "{{views}} views · {{saves}} saves",
+    "showTable": "Show as table",
+    "hideTable": "Hide table",
+    "table": {
+      "caption": "Views and saves per day, latest first",
+      "day": "Day"
+    },
+    "loading": "Loading the insights",
+    "error": "The insights could not be loaded.",
+    "retry": "Try again",
+    "titleHintAll": "Who looked at the homes on Keyhaven and who saved one, day by day"
   }
 }

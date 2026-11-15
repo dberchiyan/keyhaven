@@ -22,6 +22,15 @@ export type UpdateListingRequest = Schemas['UpdateListingRequest'];
 export type PhotoIntentRequest = Schemas['PhotoIntentRequest'];
 export type PhotoIntent = Schemas['PhotoIntentResponse_Output'];
 export type SavedListing = Schemas['SavedListingResponse_Output'];
+export type ListingInsights = Schemas['ListingInsightsResponse_Output'];
+export type ManagedInsights = Schemas['ManagedInsightsResponse_Output'];
+export type InsightPoint = Schemas['InsightPoint_Output'];
+export type InsightTotals = Schemas['InsightTotals_Output'];
+
+/** The insights' window in days, today included (backend: service/insight-period.ts). */
+export const INSIGHT_PERIODS = [7, 30, 90] as const;
+export type InsightPeriod = (typeof INSIGHT_PERIODS)[number];
+export const DEFAULT_INSIGHT_PERIOD: InsightPeriod = 30;
 
 /** A tenant's saved homes: newest save first; page and size only. */
 export interface SavedListParams {

@@ -15,6 +15,7 @@ import { ListingActions } from '../components/ListingActions';
 import { ListingDetailView } from '../components/ListingDetailView';
 import { ListingStatusBadge } from '../components/ListingStatusBadge';
 import { ListingError } from '../components/ListingStates';
+import { ListingInsightsSection } from '../components/ListingInsightsSection';
 import { PhotoManager } from '../components/PhotoManager';
 import { ShowcaseBadge } from '../components/ShowcaseBadge';
 import { ShowcaseNotice } from '../components/ShowcaseNotice';
@@ -84,6 +85,7 @@ export default function ManagedListingPage() {
           </CardContent>
         </Card>
       )}
+      <ListingInsightsSection listingId={listing.data.id} />
       <ListingDetailView
         listing={listing.data}
         badge={
