@@ -51,7 +51,15 @@ export default function BrowsePage() {
         onClear={clear}
         saveSearch={<SaveSearchButton filters={filtersOf(params)} />}
       />
-      {params.page === 1 && !hasFilters(filtersOf(params)) && <RecentlyViewed />}
+      {params.page === 1 && !hasFilters(filtersOf(params)) && (
+        <>
+          <RecentlyViewed />
+          {/* A plain heading after the side note, so the page's main grid reads as its own part. */}
+          <Typography variant="h6" component="h2" className="-mb-2">
+            {forSale ? t('browse.allHomesSale') : t('browse.allHomes')}
+          </Typography>
+        </>
+      )}
       <section aria-label={t('browse.results')} aria-busy={listings.isFetching}>
         {listings.isPending ? (
           <ListingGridLoading />

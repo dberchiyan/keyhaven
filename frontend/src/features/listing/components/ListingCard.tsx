@@ -70,11 +70,11 @@ export function ListingCard({ listing }: ListingCardProps) {
         <Typography variant="body2" color="textSecondary" className="truncate">
           {where}
         </Typography>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-1 pt-1">
           <Typography
             variant="caption"
             component="span"
-            className="font-medium rounded-full bg-badge-active-background px-2.5 py-1 text-badge-active-text"
+            className="font-medium rounded-full bg-badge-active-background px-2.5 py-1 whitespace-nowrap text-badge-active-text"
           >
             {formatAvailability(listing, i18n.language, t)}
           </Typography>

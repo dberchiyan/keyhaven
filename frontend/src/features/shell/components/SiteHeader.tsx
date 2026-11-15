@@ -13,6 +13,8 @@ import {
 import { PATHS } from '@/shared/lib/paths';
 import { UserMenu } from './UserMenu';
 
+const BRAND_CLASS = '-ml-1 flex items-center gap-2.5 rounded-sm p-1 text-inherit no-underline';
+
 type Tab = 'rent' | 'sale' | 'houses';
 const TABS: readonly Tab[] = ['rent', 'sale', 'houses'];
 
@@ -63,16 +65,28 @@ export function SiteHeader() {
       {/* Gutters on the header, the column inside — the same box as <main>, so the brand and the
           actions line up with the page's content. */}
       <div className="mx-auto flex h-top-bar-height w-full max-w-page items-center gap-3">
-        <Link
-          to={PATHS.browse}
-          aria-label={t('shell:site.home')}
-          className="-ml-1 flex items-center gap-2.5 rounded-sm p-1 text-inherit no-underline"
-        >
-          <BrandMark className="size-9" />
-          <Typography variant="h6" component="span">
-            {t('common:app.name')}
-          </Typography>
-        </Link>
+        {/* The brand goes "home", and home depends on who is here: the landing page for a visitor
+            (a full navigation — nginx serves it at `/` when there is no session), the catalogue
+            for a tenant, the dashboard for someone who lists. */}
+        {user ? (
+          <Link
+            to={can('home.manage') ? PATHS.home : PATHS.browse}
+            aria-label={t('shell:site.home')}
+            className={BRAND_CLASS}
+          >
+            <BrandMark className="size-9" />
+            <Typography variant="h6" component="span">
+              {t('common:app.name')}
+            </Typography>
+          </Link>
+        ) : (
+          <a href={PATHS.home} aria-label={t('shell:site.landing')} className={BRAND_CLASS}>
+            <BrandMark className="size-9" />
+            <Typography variant="h6" component="span">
+              {t('common:app.name')}
+            </Typography>
+          </a>
+        )}
         <nav aria-label={t('shell:site.catalogue')} className="hidden md:block">
           <Tabs activeTab={activeTab} params={params} />
         </nav>

@@ -26,7 +26,10 @@
     },
     "titleSale": "Find a home to buy",
     "pageTitleSale": "Homes for sale · Keyhaven",
-    "recent": "Recently viewed"
+    "recent": "Recently viewed",
+    "recentHint": "Homes you opened lately, while they are still on the site.",
+    "allHomes": "All homes for rent",
+    "allHomesSale": "All homes for sale"
   },
   "card": {
     "perMonth": "{{rent}}/mo",

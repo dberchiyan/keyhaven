@@ -42,7 +42,8 @@ const { hero, popular } = LANDING;
         style="--d: 4"
         class="enter mt-9 flex w-full max-w-2xl flex-col gap-3 rounded-panel bg-surface p-3 shadow-float ring-glass sm:flex-row sm:items-center sm:rounded-full sm:p-2 sm:pl-3"
       >
-        <fieldset class="flex shrink-0 rounded-full bg-surface-2 p-1">
+        <!-- Two equal halves across the card on a phone; a compact pill beside the field from `sm`. -->
+        <fieldset class="grid grid-cols-2 shrink-0 rounded-full bg-surface-2 p-1 sm:flex">
           <legend class="sr-only">{hero.search.legend}</legend>
           <label class="kind-option">
             <input type="radio" name="kind" value="rent" checked class="sr-only" />
@@ -76,13 +77,14 @@ const { hero, popular } = LANDING;
         {hero.search.hint}
       </p>
 
-      <nav aria-label={hero.citiesLabel} style="--d: 5" class="enter mt-6">
-        <ul class="flex flex-wrap justify-center gap-2">
+      <nav aria-label={hero.citiesLabel} style="--d: 5" class="enter mt-6 w-full max-w-2xl">
+        <!-- Six equal cells: three a row on a phone, one row from `md`. -->
+        <ul class="grid w-full grid-cols-3 gap-2 md:grid-cols-6">
           {CITIES.map((city) => (
-            <li>
+            <li class="flex">
               <a
                 href={`/rent/${city.slug}`}
-                class="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-surface/70 px-3.5 text-sm font-medium text-ink-2 ring-glass backdrop-blur transition-colors hover:bg-surface hover:text-ink"
+                class="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full bg-surface/70 px-2 text-sm font-medium whitespace-nowrap text-ink-2 ring-glass backdrop-blur transition-colors hover:bg-surface hover:text-ink sm:px-3.5"
               >
                 <Icon name="pin" class="size-4 text-brand" />
                 {city.name}, {city.state}
@@ -108,12 +110,14 @@ const { hero, popular } = LANDING;
       class="reveal mx-auto mt-16 flex max-w-5xl flex-col items-center gap-4"
     >
       <p class="type-eyebrow text-brand">{popular.title}</p>
-      <ul class="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- A phone gets two rows of chips that swipe sideways within the page's gutters (a stack of
+           six full pills read as a list); from `sm` the chips are equal cells of a grid. -->
+      <ul class="popular-chips grid w-full auto-cols-max grid-flow-col grid-rows-2 gap-2 overflow-x-auto py-1 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-2 sm:grid-rows-none sm:overflow-visible sm:py-0 lg:grid-cols-3">
         {popular.items.map((item) => (
-          <li class="flex">
+          <li class="flex snap-start">
             <a
               href={item.href}
-              class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-surface px-4 text-center text-sm font-medium text-ink-2 ring-glass transition-colors hover:text-ink"
+              class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-surface px-4 text-center text-sm font-medium whitespace-nowrap text-ink-2 ring-glass transition-colors hover:text-ink"
             >
               <Icon name="search" class="size-4 text-brand" />
               {item.label}
@@ -126,15 +130,36 @@ const { hero, popular } = LANDING;
 </section>
 
 <style>
+  /* The chips' sideways row on a phone: inside the page's gutters (the same edges as the hero
+     card), no scrollbar, the far end fading out, snapping. */
+  .popular-chips {
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent);
+    mask-image: linear-gradient(to right, black calc(100% - 2.5rem), transparent);
+  }
+  .popular-chips::-webkit-scrollbar {
+    display: none;
+  }
+  @media (min-width: 40rem) {
+    .popular-chips {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+
   /* The Rent / Buy switch: the chosen option is a raised pill, as in the app's segmented control. */
   .kind-option {
+    display: flex;
     cursor: pointer;
   }
 
   .kind-option span {
     display: inline-flex;
+    flex: 1;
     min-height: 2.25rem;
     align-items: center;
+    justify-content: center;
     border-radius: 999px;
     padding-inline: 1rem;
     font-size: 0.9375rem;
