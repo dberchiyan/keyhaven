@@ -108,6 +108,46 @@ export const can = {
       orReadOnly(await permissions.isDemoListing(args.listingId ?? '')),
     'verified',
   ),
+  /** A home's open viewing slots: everyone who may see the home (published, or 404), visitors too. */
+  viewListingSlots: publicPolicy(['listingId'], async (principal, args, permissions) =>
+    orNotFound(
+      principal
+        ? await permissions.isVisibleListing(principal, args.listingId ?? '')
+        : await permissions.isPublishedListing(args.listingId ?? ''),
+    ),
+  ),
+  /** Asking for a viewing: a tenant with a verified email; the service checks the home is published. */
+  requestViewing: policy([], isTenant, 'verified'),
+  /** A tenant's own viewings. */
+  viewOwnViewings: policy([], isTenant),
+  /**
+   * One viewing: its tenant, the home's owner (landlord / agency agent) — someone else's is 403 —
+   * or an admin (404 when unknown).
+   */
+  viewViewing: policy(['viewingId'], async (principal, args, permissions) =>
+    isAdmin(principal)
+      ? orNotFound(await permissions.viewingExists(args.viewingId ?? ''))
+      : isTenant(principal)
+        ? await permissions.isOwnViewing(principal.userId, args.viewingId ?? '')
+        : isLister(principal) &&
+          (await permissions.isOwnListingViewing(principal, args.viewingId ?? '')),
+  ),
+  /** Confirming or declining a request: the home's owner (landlord / agency agent) only. */
+  decideViewing: policy(
+    ['viewingId'],
+    async (principal, args, permissions) =>
+      isLister(principal) &&
+      (await permissions.isOwnListingViewing(principal, args.viewingId ?? '')),
+  ),
+  /** Cancelling: the tenant their own viewing, the owner one of their home's. */
+  cancelViewing: policy(['viewingId'], async (principal, args, permissions) =>
+    isTenant(principal)
+      ? await permissions.isOwnViewing(principal.userId, args.viewingId ?? '')
+      : isLister(principal) &&
+        (await permissions.isOwnListingViewing(principal, args.viewingId ?? '')),
+  ),
+  /** The viewings dashboard: landlords (their homes'), agents (the agency's), admins (all). */
+  manageViewings: policy([], (principal) => isAdmin(principal) || isLister(principal)),
   /** Saved homes are a tenant's thing. */
   viewSavedListings: policy([], isTenant),
   /** The homes one opened lately: anyone signed in, their own rows only. */

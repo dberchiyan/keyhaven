@@ -1,0 +1,209 @@
+import { TransactionHost } from '@nestjs-cls/transactional';
+import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+import { Injectable } from '@nestjs/common';
+import type { Pageable } from '../../../common/dto/pageable';
+import { toPrismaPage } from '../../../common/persistence/pageable';
+import type { PrismaService } from '../../../common/persistence/prisma.service';
+import type { Prisma } from '../../../generated/prisma/client';
+import { MAX_LISTING_VIEWINGS, MAX_OWN_VIEWINGS } from '../service/viewing-limits';
+import type { ViewingSortField } from '../service/viewing-sort';
+import { type CancelledBy, ViewingStatus } from '../service/viewing-status';
+import type { ViewingCriteria, ViewingScope } from '../service/viewing.types';
+import {
+  type BookableListingRecord,
+  bookableListingSelect,
+  type ViewingRecord,
+  viewingSelect,
+  type ViewingStatusRecord,
+  viewingStatusSelect,
+} from './record/viewing.record';
+import { activeViewingWhere, managedViewingWhere } from './viewing-where';
+
+/** Rows a scheduler run handles at most (bounded jobs, platform.md). */
+const MAX_JOB_ROWS = 500;
+
+const orderBy = (
+  field: ViewingSortField,
+  direction: Prisma.SortOrder,
+): Prisma.ViewingOrderByWithRelationInput[] => [{ [field]: direction }];
+
+@Injectable()
+export class ViewingRepository {
+  constructor(
+    private readonly txHost: TransactionHost<TransactionalAdapterPrisma<PrismaService>>,
+  ) {}
+
+  findBookable(listingId: string): Promise<BookableListingRecord | null> {
+    return this.txHost.tx.listing.findUnique({
+      where: { id: listingId },
+      select: bookableListingSelect,
+    });
+  }
+
+  /** The starts of the live viewings of a home in a window: what is already taken. */
+  async findActiveStartsBetween(listingId: string, from: Date, to: Date): Promise<Date[]> {
+    const rows = await this.txHost.tx.viewing.findMany({
+      where: { listingId, startsAt: { gte: from, lte: to }, ...activeViewingWhere },
+      select: { startsAt: true },
+      // Bounded by the schedule: at most the slots of the window, never more than a few hundred.
+      take: 1000,
+    });
+    return rows.map((row) => row.startsAt);
+  }
+
+  countActiveByTenant(tenantId: string, now: Date): Promise<number> {
+    return this.txHost.tx.viewing.count({
+      where: { tenantId, startsAt: { gt: now }, ...activeViewingWhere },
+    });
+  }
+
+  async hasActiveByTenantAndListing(tenantId: string, listingId: string): Promise<boolean> {
+    const count = await this.txHost.tx.viewing.count({
+      where: { tenantId, listingId, ...activeViewingWhere },
+    });
+    return count > 0;
+  }
+
+  /** The tenant may see the exact address: a confirmed viewing, ahead or already held. */
+  async hasConfirmedByTenantAndListing(tenantId: string, listingId: string): Promise<boolean> {
+    const count = await this.txHost.tx.viewing.count({
+      where: { tenantId, listingId, status: ViewingStatus.CONFIRMED },
+    });
+    return count > 0;
+  }
+
+  /** Throws Prisma's unique violation when the slot (or the tenant's live viewing) exists. */
+  async create(
+    data: {
+      listingId: string;
+      tenantId: string;
+      startsAt: Date;
+      endsAt: Date;
+      message: string | null;
+    },
+    actorUserId: string,
+  ): Promise<string> {
+    const { id } = await this.txHost.tx.viewing.create({
+      data: {
+        ...data,
+        status: ViewingStatus.REQUESTED,
+        createdBy: actorUserId,
+        updatedBy: actorUserId,
+      },
+      select: { id: true },
+    });
+    return id;
+  }
+
+  findById(id: string): Promise<ViewingRecord | null> {
+    return this.txHost.tx.viewing.findUnique({ where: { id }, select: viewingSelect });
+  }
+
+  findStatusById(id: string): Promise<ViewingStatusRecord | null> {
+    return this.txHost.tx.viewing.findUnique({ where: { id }, select: viewingStatusSelect });
+  }
+
+  /** A tenant's viewings, latest slot first — bounded by MAX_OWN_VIEWINGS. */
+  findByTenant(tenantId: string): Promise<ViewingRecord[]> {
+    return this.txHost.tx.viewing.findMany({
+      where: { tenantId },
+      select: viewingSelect,
+      orderBy: [{ startsAt: 'desc' }, { id: 'desc' }],
+      take: MAX_OWN_VIEWINGS,
+    });
+  }
+
+  /** One home's live viewings ahead, soonest first — bounded by MAX_LISTING_VIEWINGS. */
+  findUpcomingByListing(listingId: string, now: Date): Promise<ViewingRecord[]> {
+    return this.txHost.tx.viewing.findMany({
+      where: { listingId, startsAt: { gt: now }, ...activeViewingWhere },
+      select: viewingSelect,
+      orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
+      take: MAX_LISTING_VIEWINGS,
+    });
+  }
+
+  async findPage(
+    scope: ViewingScope,
+    criteria: ViewingCriteria,
+    pageable: Pageable<ViewingSortField>,
+    now: Date,
+  ): Promise<{ content: ViewingRecord[]; totalElements: number }> {
+    const where = managedViewingWhere(scope, criteria, now);
+    const page = toPrismaPage(pageable, orderBy, (direction) => ({ id: direction }));
+    // In parallel (api.md → Pagination): a concurrent write may make them differ by a row.
+    const [totalElements, content] = await Promise.all([
+      this.txHost.tx.viewing.count({ where }),
+      this.txHost.tx.viewing.findMany({ where, select: viewingSelect, ...page }),
+    ]);
+    return { content, totalElements };
+  }
+
+  /** Requests waiting and confirmed viewings ahead, for the dashboard badge. */
+  async countSummary(
+    scope: ViewingScope,
+    now: Date,
+  ): Promise<{ requested: number; upcoming: number }> {
+    const [requested, upcoming] = await Promise.all([
+      this.txHost.tx.viewing.count({
+        where: managedViewingWhere(scope, { status: ViewingStatus.REQUESTED, upcoming: true }, now),
+      }),
+      this.txHost.tx.viewing.count({
+        where: managedViewingWhere(scope, { status: ViewingStatus.CONFIRMED, upcoming: true }, now),
+      }),
+    ]);
+    return { requested, upcoming };
+  }
+
+  /** Optimistic status change; false when the row changed meanwhile. */
+  async updateStatus(
+    id: string,
+    version: number,
+    data: {
+      status: ViewingStatus;
+      note: string | null;
+      cancelledBy: CancelledBy | null;
+      decidedAt: Date;
+    },
+    actorUserId: string | null,
+  ): Promise<boolean> {
+    const { count } = await this.txHost.tx.viewing.updateMany({
+      where: { id, version },
+      data: { ...data, updatedBy: actorUserId, version: { increment: 1 } },
+    });
+    return count > 0;
+  }
+
+  /** Requests whose slot started unanswered, oldest first (the scheduler expires them). */
+  findUnansweredBefore(now: Date): Promise<ViewingStatusRecord[]> {
+    return this.txHost.tx.viewing.findMany({
+      where: { status: ViewingStatus.REQUESTED, startsAt: { lte: now } },
+      select: viewingStatusSelect,
+      orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
+      take: MAX_JOB_ROWS,
+    });
+  }
+
+  /** Confirmed viewings starting within the window that were not reminded yet, soonest first. */
+  findReminderDue(now: Date, until: Date): Promise<ViewingRecord[]> {
+    return this.txHost.tx.viewing.findMany({
+      where: {
+        status: ViewingStatus.CONFIRMED,
+        reminderSentAt: null,
+        startsAt: { gt: now, lte: until },
+      },
+      select: viewingSelect,
+      orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
+      take: MAX_JOB_ROWS,
+    });
+  }
+
+  /** Marks the reminder as sent; false when another run got there first (idempotent jobs). */
+  async markReminded(id: string, at: Date): Promise<boolean> {
+    const { count } = await this.txHost.tx.viewing.updateMany({
+      where: { id, reminderSentAt: null },
+      data: { reminderSentAt: at },
+    });
+    return count > 0;
+  }
+}

@@ -129,6 +129,13 @@ export class ResourceNotFoundException extends ApiException {
   }
 }
 
+/** 409 — the slot went to another request meanwhile (the partial unique index decided). */
+export class ViewingSlotTakenException extends ApiException {
+  constructor() {
+    super('VIEWING_SLOT_TAKEN', 'errors.VIEWING_SLOT_TAKEN');
+  }
+}
+
 /** 409 — the record changed since the client read it (optimistic locking). */
 export class ConcurrentModificationException extends ApiException {
   constructor() {

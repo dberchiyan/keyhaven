@@ -1,0 +1,63 @@
+/// When a listing can be viewed (M2): the owner's weekly windows in the city's time zone, how
+/// long a viewing takes, how much notice a tenant must give and how far ahead they may book.
+/// One row per listing; without one the home cannot be booked. `windows` and `blocked_days`
+/// are documents validated by `ViewingScheduleSchema` on write and on read (data.md → JSON).
+model ViewingSchedule {
+  listingId   String   @id(map: "pk_viewing_schedules") @map("listing_id") @db.Uuid
+  /// Cascade: hours mean nothing without the home.
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_viewing_schedules_listing_id")
+  /// 15 | 20 | 30 | 45 | 60 — CHECK in migration.
+  slotMinutes Int      @map("slot_minutes") @db.SmallInt
+  /// A slot can be booked only this many hours ahead at least (0–168, CHECK).
+  noticeHours Int      @map("notice_hours") @db.SmallInt
+  /// Slots are offered this many days ahead at most (1–60, CHECK).
+  horizonDays Int      @map("horizon_days") @db.SmallInt
+  /// `[{ weekday: 0–6 (Sunday = 0), start, end }]` in minutes of the city's local day.
+  windows     Json     @db.JsonB
+  /// `["YYYY-MM-DD", …]` local days without viewings (holidays, trips).
+  blockedDays Json     @map("blocked_days") @db.JsonB
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy   String?  @map("created_by") @db.Uuid
+  updatedBy   String?  @map("updated_by") @db.Uuid
+  version     Int      @default(0)
+
+  @@map("viewing_schedules")
+}
+
+/// A tenant's viewing of a home: requested in one of the owner's slots, then confirmed or
+/// declined by the owner (landlord or the agency's agents), cancelled by either side, or expired
+/// unanswered. One active row (REQUESTED | CONFIRMED) per listing and slot — the partial unique
+/// index `uq_viewings_listing_slot_active` is what rules out a double booking — and one active
+/// row per tenant and listing (`uq_viewings_tenant_listing_active`).
+model Viewing {
+  id             String    @id(map: "pk_viewings") @default(dbgenerated("uuidv7()")) @db.Uuid
+  listingId      String    @map("listing_id") @db.Uuid
+  listing        Listing   @relation(fields: [listingId], references: [id], onDelete: Restrict, map: "fk_viewings_listing_id")
+  tenantId       String    @map("tenant_id") @db.Uuid
+  tenant         User      @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "fk_viewings_tenant_id")
+  startsAt       DateTime  @map("starts_at") @db.Timestamptz(3)
+  endsAt         DateTime  @map("ends_at") @db.Timestamptz(3)
+  /// REQUESTED | CONFIRMED | DECLINED | CANCELLED | EXPIRED — CHECK in migration.
+  status         String    @db.VarChar(16)
+  /// The tenant's note with the request (who they are, what they look for).
+  message        String?   @db.VarChar(500)
+  /// The note that came with a decline or a cancellation.
+  note           String?   @db.VarChar(300)
+  /// TENANT | OWNER — set with CANCELLED only (CHECK in migration).
+  cancelledBy    String?   @map("cancelled_by") @db.VarChar(16)
+  /// When the request was answered, cancelled or expired; null while it waits.
+  decidedAt      DateTime? @map("decided_at") @db.Timestamptz(3)
+  /// The day-before reminder went out (confirmed viewings only).
+  reminderSentAt DateTime? @map("reminder_sent_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy      String?   @map("created_by") @db.Uuid
+  updatedBy      String?   @map("updated_by") @db.Uuid
+  version        Int       @default(0)
+
+  @@index([listingId, startsAt], map: "idx_viewings_listing_id_starts_at")
+  @@index([tenantId, startsAt], map: "idx_viewings_tenant_id_starts_at")
+  @@index([status, startsAt], map: "idx_viewings_status_starts_at")
+  @@map("viewings")
+}

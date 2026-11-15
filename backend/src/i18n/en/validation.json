@@ -101,5 +101,41 @@
   },
   "kind": {
     "required": "Choose whether the home is for rent or for sale"
+  },
+  "viewing": {
+    "listingId": {
+      "invalid": "Choose a home"
+    },
+    "startsAt": {
+      "invalid": "Choose a time slot"
+    },
+    "message": {
+      "tooLong": "The note must be at most {max} characters"
+    },
+    "note": {
+      "tooLong": "The note must be at most {max} characters"
+    }
+  },
+  "schedule": {
+    "slotMinutes": {
+      "invalid": "Choose how long a viewing takes"
+    },
+    "noticeHours": {
+      "invalid": "Notice must be between {min} and {max} hours"
+    },
+    "horizonDays": {
+      "invalid": "Bookings can open between {min} and {max} days ahead"
+    },
+    "windows": {
+      "required": "Open at least one day with hours",
+      "tooMany": "At most {max} time ranges a day",
+      "order": "The end must come after the start",
+      "overlap": "Time ranges on the same day must not overlap",
+      "tooShort": "A time range must fit at least one viewing"
+    },
+    "blockedDays": {
+      "tooMany": "At most {max} blocked days",
+      "invalid": "Enter a date"
+    }
   }
 }

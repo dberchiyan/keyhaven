@@ -6,6 +6,12 @@ export const AuditAction = {
   LISTING_PUBLISHED: 'listing.published',
   LISTING_UNPUBLISHED: 'listing.unpublished',
   LISTING_SUSPENDED: 'listing.suspended',
+  /** Viewings (target type `viewing`): the tenant's request, the owner's answer, a cancellation by either side, the scheduler's expiry. */
+  VIEWING_REQUESTED: 'viewing.requested',
+  VIEWING_CONFIRMED: 'viewing.confirmed',
+  VIEWING_DECLINED: 'viewing.declined',
+  VIEWING_CANCELLED: 'viewing.cancelled',
+  VIEWING_EXPIRED: 'viewing.expired',
   /** The account itself (target type `user`): created at sign-up, renamed by its owner. */
   USER_REGISTERED: 'user.registered',
   USER_UPDATED: 'user.updated',
@@ -31,6 +37,7 @@ export const AUDIT_ACTIONS = Object.values(AuditAction) as [AuditAction, ...Audi
 export const AuditTargetType = {
   USER: 'user',
   LISTING: 'listing',
+  VIEWING: 'viewing',
 } as const;
 export type AuditTargetType = (typeof AuditTargetType)[keyof typeof AuditTargetType];
 export const AUDIT_TARGET_TYPES = Object.values(AuditTargetType) as [

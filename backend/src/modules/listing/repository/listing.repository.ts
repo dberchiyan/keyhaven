@@ -443,6 +443,17 @@ export class ListingRepository {
    * A page view, counted once per viewer and UTC day: a person by id, a visitor without an
    * account by a daily hash (the partial unique indexes make repeats no-ops).
    */
+  /**
+   * The tenant's viewing of this home was confirmed (ahead or already held): the address is
+   * theirs to see (CONTEXT.md). The viewing module owns the table; this is a read of one fact.
+   */
+  async hasConfirmedViewing(listingId: string, userId: string): Promise<boolean> {
+    const count = await this.txHost.tx.viewing.count({
+      where: { listingId, tenantId: userId, status: 'CONFIRMED' },
+    });
+    return count > 0;
+  }
+
   async recordView(listingId: string, viewer: ListingViewer, viewedOn: Date): Promise<void> {
     await this.txHost.tx.listingView.createMany({
       data: [

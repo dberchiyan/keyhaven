@@ -19,50 +19,52 @@ model City {
 /// manages it) — exactly one of the two, CHECK in migration. The exact address is private: it
 /// is shown to the owner, admins and (M2) a tenant whose viewing was confirmed.
 model Listing {
-  id           String         @id(map: "pk_listings") @default(dbgenerated("uuidv7()")) @db.Uuid
-  landlordId   String?        @map("landlord_id") @db.Uuid
-  landlord     User?          @relation("ListingLandlord", fields: [landlordId], references: [id], onDelete: Restrict, map: "fk_listings_landlord_id")
-  agencyId     String?        @map("agency_id") @db.Uuid
-  agency       Agency?        @relation(fields: [agencyId], references: [id], onDelete: Restrict, map: "fk_listings_agency_id")
-  title        String         @db.VarChar(120)
-  description  String         @db.VarChar(4000)
-  propertyType String         @map("property_type") @db.VarChar(32) // APARTMENT | HOUSE | CONDO | TOWNHOUSE | STUDIO — CHECK in migration
+  id              String           @id(map: "pk_listings") @default(dbgenerated("uuidv7()")) @db.Uuid
+  landlordId      String?          @map("landlord_id") @db.Uuid
+  landlord        User?            @relation("ListingLandlord", fields: [landlordId], references: [id], onDelete: Restrict, map: "fk_listings_landlord_id")
+  agencyId        String?          @map("agency_id") @db.Uuid
+  agency          Agency?          @relation(fields: [agencyId], references: [id], onDelete: Restrict, map: "fk_listings_agency_id")
+  title           String           @db.VarChar(120)
+  description     String           @db.VarChar(4000)
+  propertyType    String           @map("property_type") @db.VarChar(32) // APARTMENT | HOUSE | CONDO | TOWNHOUSE | STUDIO — CHECK in migration
   /// For rent or for sale — RENT | SALE (CHECK in migration).
-  kind         String         @db.VarChar(8)
+  kind            String           @db.VarChar(8)
   /// Monthly rent (RENT) or the asking price (SALE) — money: Decimal + currency, data.md.
-  price        Decimal        @db.Decimal(19, 4)
-  currency     String         @db.Char(3)
+  price           Decimal          @db.Decimal(19, 4)
+  currency        String           @db.Char(3)
   /// 0 = studio.
-  bedrooms     Int            @db.SmallInt
+  bedrooms        Int              @db.SmallInt
   /// Half baths count: 1.5.
-  bathrooms    Decimal        @db.Decimal(3, 1)
-  sizeSqft     Int            @map("size_sqft")
+  bathrooms       Decimal          @db.Decimal(3, 1)
+  sizeSqft        Int              @map("size_sqft")
   /// Private part of the address (see the model comment).
-  addressLine1 String         @map("address_line1") @db.VarChar(255)
-  addressLine2 String?        @map("address_line2") @db.VarChar(255)
+  addressLine1    String           @map("address_line1") @db.VarChar(255)
+  addressLine2    String?          @map("address_line2") @db.VarChar(255)
   /// Public part of the address.
-  cityId       String         @map("city_id") @db.Uuid
-  city         City           @relation(fields: [cityId], references: [id], onDelete: Restrict, map: "fk_listings_city_id")
-  neighborhood String?        @db.VarChar(100)
-  zip          String         @db.VarChar(10)
-  petsAllowed  Boolean        @map("pets_allowed")
-  furnished    Boolean
-  parking      Boolean
+  cityId          String           @map("city_id") @db.Uuid
+  city            City             @relation(fields: [cityId], references: [id], onDelete: Restrict, map: "fk_listings_city_id")
+  neighborhood    String?          @db.VarChar(100)
+  zip             String           @db.VarChar(10)
+  petsAllowed     Boolean          @map("pets_allowed")
+  furnished       Boolean
+  parking         Boolean
   /// First day a tenant can move in (a calendar day, data.md → Time); null for homes for sale.
-  availableFrom DateTime?     @map("available_from") @db.Date
-  status       String         @db.VarChar(16) // DRAFT | PUBLISHED | UNPUBLISHED | SUSPENDED — CHECK in migration
+  availableFrom   DateTime?        @map("available_from") @db.Date
+  status          String           @db.VarChar(16) // DRAFT | PUBLISHED | UNPUBLISHED | SUSPENDED — CHECK in migration
   /// When it was last published; null while it never was.
-  publishedAt  DateTime?      @map("published_at") @db.Timestamptz(3)
-  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
-  createdBy    String?        @map("created_by") @db.Uuid
-  updatedBy    String?        @map("updated_by") @db.Uuid
-  version      Int            @default(0)
+  publishedAt     DateTime?        @map("published_at") @db.Timestamptz(3)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy       String?          @map("created_by") @db.Uuid
+  updatedBy       String?          @map("updated_by") @db.Uuid
+  version         Int              @default(0)
   /// A showcase row of the public demo (set by the seed only): read-only while DEMO_MODE is on.
-  isDemo       Boolean        @default(false) @map("is_demo")
-  photos       ListingPhoto[]
-  savedBy      SavedListing[]
-  views        ListingView[]
+  isDemo          Boolean          @default(false) @map("is_demo")
+  photos          ListingPhoto[]
+  savedBy         SavedListing[]
+  views           ListingView[]
+  viewingSchedule ViewingSchedule?
+  viewings        Viewing[]
 
   @@index([landlordId, status], map: "idx_listings_landlord_id_status")
   @@index([agencyId, status], map: "idx_listings_agency_id_status")
@@ -76,19 +78,19 @@ model Listing {
 /// CHECK in migration. Uploaded photos start PENDING (an intent) and become READY once the object
 /// was checked; only READY photos have a `position` and are shown.
 model ListingPhoto {
-  id          String    @id(map: "pk_listing_photos") @default(dbgenerated("uuidv7()")) @db.Uuid
-  listingId   String    @map("listing_id") @db.Uuid
+  id          String   @id(map: "pk_listing_photos") @default(dbgenerated("uuidv7()")) @db.Uuid
+  listingId   String   @map("listing_id") @db.Uuid
   // A photo means nothing without its listing.
-  listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_listing_photos_listing_id")
-  url         String?   @db.VarChar(500)
-  storageKey  String?   @map("storage_key") @db.VarChar(255)
-  contentType String?   @map("content_type") @db.VarChar(64)
-  sizeBytes   Int?      @map("size_bytes")
-  status      String    @default("READY") @db.VarChar(16) // PENDING | READY — CHECK in migration
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_listing_photos_listing_id")
+  url         String?  @db.VarChar(500)
+  storageKey  String?  @map("storage_key") @db.VarChar(255)
+  contentType String?  @map("content_type") @db.VarChar(64)
+  sizeBytes   Int?     @map("size_bytes")
+  status      String   @default("READY") @db.VarChar(16) // PENDING | READY — CHECK in migration
   /// Display order; null while PENDING.
-  position    Int?      @db.SmallInt
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  createdBy   String?   @map("created_by") @db.Uuid
+  position    Int?     @db.SmallInt
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  createdBy   String?  @map("created_by") @db.Uuid
 
   @@unique([listingId, position], map: "uq_listing_photos_listing_id_position")
   @@unique([storageKey], map: "uq_listing_photos_storage_key")

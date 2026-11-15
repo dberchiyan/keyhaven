@@ -15,6 +15,8 @@ export const ErrorCode = {
   RESOURCE_NOT_FOUND: 404,
   CONFLICT: 409,
   CONCURRENT_MODIFICATION: 409,
+  /** Another tenant took this viewing slot a moment ago — pick another one. */
+  VIEWING_SLOT_TAKEN: 409,
   IDEMPOTENCY_KEY_REUSED: 409,
   BUSINESS_RULE_VIOLATION: 422,
   PAYLOAD_TOO_LARGE: 413,

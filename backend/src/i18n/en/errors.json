@@ -12,6 +12,7 @@
   "RESOURCE_NOT_FOUND": "The requested item was not found",
   "CONFLICT": "This conflicts with existing data — reload and try again",
   "CONCURRENT_MODIFICATION": "This record was changed by someone else — reload and try again",
+  "VIEWING_SLOT_TAKEN": "Someone just booked this time — pick another slot",
   "IDEMPOTENCY_KEY_REUSED": "This request was already sent with different data",
   "BUSINESS_RULE_VIOLATION": "This action is not allowed",
   "PAYLOAD_TOO_LARGE": "The request is too large",
@@ -46,5 +47,15 @@
   },
   "savedSearch": {
     "tooMany": "You can keep at most {max} saved searches — delete one first"
+  },
+  "viewing": {
+    "noSchedule": "This home has no viewing hours yet — contact the lister instead",
+    "slotUnavailable": "This time is not available — pick one of the offered slots",
+    "pastSlot": "This time has already passed",
+    "alreadyActive": "You already have a viewing of this home — cancel it before asking for another",
+    "tooMany": "You can have at most {max} upcoming viewings — cancel one first",
+    "notPending": "This request was already answered",
+    "notCancellable": "This viewing can't be cancelled any more",
+    "scheduleNeedsWindow": "Open at least one day with viewing hours"
   }
 }

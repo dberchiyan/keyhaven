@@ -42,6 +42,21 @@ export const SecurityEvent_Output = /* @__PURE__ */ z.object({ "id": z.string(),
 export const SecurityLogResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(SecurityEvent_Output), "totalElements": z.number().int() });
 export const Session_Output = /* @__PURE__ */ z.object({ "id": z.string(), "clientType": z.enum(["WEB", "MOBILE"]), "ip": z.string().nullable(), "userAgent": z.string().nullable(), "createdAt": z.string(), "lastSeenAt": z.string() });
 export const SessionsResponse_Output = /* @__PURE__ */ z.object({ "current": Session_Output.nullable(), "others": z.object({ "content": z.array(Session_Output), "totalElements": z.number().int() }) });
+export const ViewingStatus_Output = /* @__PURE__ */ z.enum(["REQUESTED", "CONFIRMED", "DECLINED", "CANCELLED", "EXPIRED"]);
+export const ViewingListing_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "kind": z.enum(["RENT", "SALE"]), "coverPhotoUrl": z.string().nullable(), "neighborhood": z.string().nullable(), "city": z.object({ "name": z.string(), "state": z.string(), "slug": z.string(), "timeZone": z.string() }), "address": z.object({ "line1": z.string(), "line2": z.string().nullable() }).nullable(), "demo": z.boolean() });
+export const ViewingTenant_Output = /* @__PURE__ */ z.object({ "id": z.string(), "firstName": z.string(), "lastName": z.string(), "email": z.string(), "phone": z.string().nullable() });
+export const Viewing_Output = /* @__PURE__ */ z.object({ "id": z.string(), "status": ViewingStatus_Output, "startsAt": z.string(), "endsAt": z.string(), "message": z.string().nullable(), "note": z.string().nullable(), "cancelledBy": z.enum(["TENANT", "OWNER"]).nullable(), "decidedAt": z.string().nullable(), "createdAt": z.string(), "version": z.number().int(), "listing": ViewingListing_Output, "tenant": ViewingTenant_Output.nullable() });
+export const ViewingListResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(Viewing_Output) });
+export const ViewingPageResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(Viewing_Output), "totalElements": z.number().int() });
+export const ViewingResponse_Output = /* @__PURE__ */ z.object({ "id": z.string(), "status": ViewingStatus_Output, "startsAt": z.string(), "endsAt": z.string(), "message": z.string().nullable(), "note": z.string().nullable(), "cancelledBy": z.enum(["TENANT", "OWNER"]).nullable(), "decidedAt": z.string().nullable(), "createdAt": z.string(), "version": z.number().int(), "listing": ViewingListing_Output, "tenant": ViewingTenant_Output.nullable() });
+export const ViewingWindow_Output = /* @__PURE__ */ z.object({ "weekday": z.number().int(), "start": z.number().int(), "end": z.number().int() });
+export const ViewingScheduleResponse_Output = /* @__PURE__ */ z.object({ "listingId": z.string(), "timeZone": z.string(), "slotMinutes": z.number().int(), "noticeHours": z.number().int(), "horizonDays": z.number().int(), "windows": z.array(ViewingWindow_Output), "blockedDays": z.array(z.string()), "updatedAt": z.string(), "version": z.number().int() });
+export const ViewingSchedule_Output = /* @__PURE__ */ z.object({ "listingId": z.string(), "timeZone": z.string(), "slotMinutes": z.number().int(), "noticeHours": z.number().int(), "horizonDays": z.number().int(), "windows": z.array(ViewingWindow_Output), "blockedDays": z.array(z.string()), "updatedAt": z.string(), "version": z.number().int() });
+export const ViewingScheduleStateResponse_Output = /* @__PURE__ */ z.object({ "schedule": ViewingSchedule_Output.nullable(), "timeZone": z.string() });
+export const ViewingSlot_Output = /* @__PURE__ */ z.object({ "startsAt": z.string(), "endsAt": z.string() });
+export const ViewingSlotDay_Output = /* @__PURE__ */ z.object({ "day": z.string(), "slots": z.array(ViewingSlot_Output) });
+export const ViewingSlotsResponse_Output = /* @__PURE__ */ z.object({ "open": z.boolean(), "timeZone": z.string(), "slotMinutes": z.number().int().nullable(), "noticeHours": z.number().int(), "horizonEnd": z.string(), "from": z.string(), "days": z.array(ViewingSlotDay_Output) });
+export const ViewingSummaryResponse_Output = /* @__PURE__ */ z.object({ "requested": z.number().int(), "upcoming": z.number().int() });
 
 /** The schema each endpoint answers with (JSON success responses). */
 export const RESPONSE_SCHEMAS: readonly { method: string; pattern: RegExp; schema: z.ZodType }[] = [
@@ -54,30 +69,42 @@ export const RESPONSE_SCHEMAS: readonly { method: string; pattern: RegExp; schem
   { method: 'get', pattern: /^\/api\/v1\/auth\/sessions$/, schema: SessionsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings\/insights$/, schema: ManagedInsightsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings\/status-counts$/, schema: ListingStatusCountsResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/managed-viewings\/summary$/, schema: ViewingSummaryResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/photos\/[^/]+\/confirmation$/, schema: ManagedListingResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/listings\/[^/]+\/similar$/, schema: ListingCardsResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/listings\/[^/]+\/viewing-slots$/, schema: ViewingSlotsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/insights$/, schema: ListingInsightsResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/photo-intents$/, schema: PhotoIntentResponse_Output },
   { method: 'put', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/photos$/, schema: ManagedListingResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/publication$/, schema: ManagedListingResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/suspension$/, schema: ManagedListingResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/unpublication$/, schema: ManagedListingResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/viewing-schedule$/, schema: ViewingScheduleStateResponse_Output },
+  { method: 'put', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/viewing-schedule$/, schema: ViewingScheduleResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/viewings$/, schema: ViewingListResponse_Output },
+  { method: 'post', pattern: /^\/api\/v1\/viewings\/[^/]+\/cancellation$/, schema: ViewingResponse_Output },
+  { method: 'post', pattern: /^\/api\/v1\/viewings\/[^/]+\/confirmation$/, schema: ViewingResponse_Output },
+  { method: 'post', pattern: /^\/api\/v1\/viewings\/[^/]+\/declination$/, schema: ViewingResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/listings\/[^/]+$/, schema: ListingDetailResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings\/[^/]+$/, schema: ManagedListingResponse_Output },
   { method: 'put', pattern: /^\/api\/v1\/managed-listings\/[^/]+$/, schema: ManagedListingResponse_Output },
   { method: 'put', pattern: /^\/api\/v1\/saved-listings\/[^/]+$/, schema: SavedListingResponse_Output },
   { method: 'put', pattern: /^\/api\/v1\/saved-searches\/[^/]+$/, schema: SavedSearchResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/viewings\/[^/]+$/, schema: ViewingResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/cities$/, schema: CitiesResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/listing-cards$/, schema: ListingCardsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/listings$/, schema: ListingPageResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings$/, schema: ManagedListingPageResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings$/, schema: ManagedListingResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/managed-viewings$/, schema: ViewingPageResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/recent-listings$/, schema: ListingCardsResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/registrations$/, schema: CurrentUserResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/saved-listings$/, schema: ListingPageResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/saved-search-digests$/, schema: DigestSummaryResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/saved-searches$/, schema: SavedSearchListResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/saved-searches$/, schema: SavedSearchResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/viewings$/, schema: ViewingListResponse_Output },
+  { method: 'post', pattern: /^\/api\/v1\/viewings$/, schema: ViewingResponse_Output },
   { method: 'get', pattern: /^\/health\/live$/, schema: HealthResponse_Output },
   { method: 'get', pattern: /^\/health\/ready$/, schema: HealthResponse_Output },
 ];

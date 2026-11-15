@@ -73,6 +73,29 @@ export class PermissionService {
     return count > 0;
   }
 
+  async viewingExists(viewingId: string): Promise<boolean> {
+    const count = await this.prisma.viewing.count({ where: { id: viewingId } });
+    return count > 0;
+  }
+
+  /** The viewing is the tenant's own. */
+  async isOwnViewing(userId: string, viewingId: string): Promise<boolean> {
+    const count = await this.prisma.viewing.count({ where: { id: viewingId, tenantId: userId } });
+    return count > 0;
+  }
+
+  /** The viewing is of a home the caller owns: the landlord's listing or the agency's (whole chain). */
+  async isOwnListingViewing(principal: Principal, viewingId: string): Promise<boolean> {
+    const ownership = ownedBy(principal);
+    if (!ownership) {
+      return false;
+    }
+    const count = await this.prisma.viewing.count({
+      where: { id: viewingId, listing: ownership },
+    });
+    return count > 0;
+  }
+
   async isOwnSavedSearch(userId: string, savedSearchId: string): Promise<boolean> {
     const count = await this.prisma.savedSearch.count({ where: { id: savedSearchId, userId } });
     return count > 0;

@@ -119,9 +119,9 @@ export class ListingService {
 
   /**
    * One listing for a viewer (the policy admitted them: published, or theirs, or an admin). The
-   * exact address is shown only to the owner, the agency's agents and admins — M2 adds a tenant
-   * whose viewing was confirmed. Anyone else's visit counts as a view (once per viewer and day;
-   * a visitor without an account is known by a daily hash).
+   * exact address is shown to the owner, the agency's agents, admins and a tenant whose viewing
+   * of it was confirmed (M2). Anyone else's visit counts as a view (once per viewer and day; a
+   * visitor without an account is known by a daily hash).
    */
   async findForViewer(
     principal: Principal | null,
@@ -136,10 +136,14 @@ export class ListingService {
         : { kind: 'VISITOR', visitorKey };
       await this.listingRepository.recordView(listingId, viewer, utcToday());
     }
+    const seesAddress =
+      owns ||
+      (principal !== null &&
+        (await this.listingRepository.hasConfirmedViewing(listingId, principal.userId)));
     return {
       ...this.toDetail(
         listing,
-        owns ? { line1: listing.addressLine1, line2: listing.addressLine2 } : null,
+        seesAddress ? { line1: listing.addressLine1, line2: listing.addressLine2 } : null,
         listing.savedBy.length > 0,
       ),
       priceContext: await this.priceContextOf(listing),
