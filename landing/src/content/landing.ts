@@ -66,7 +66,8 @@ export const LANDING = {
     },
     citiesLabel: 'Browse by city',
     mockLabel:
-      'Three listing cards from the search page: a photo, the monthly rent, beds, baths and size, the neighborhood and the move-in date.',
+      'A search on Keyhaven, played out: Seattle is picked under City, then 3+ under Bedrooms; the count drops from every home to twelve, a chip appears for each filter, and the results change to three-bedroom homes in Seattle.',
+    demo: { pause: 'Pause the demo', play: 'Play the demo', replay: 'Replay the demo' },
   },
   popular: {
     title: 'Popular searches',

@@ -1,0 +1,1086 @@
+---
+import { DEMO_PHOTOS, DEMO_TOTALS } from '@/content/showcase';
+
+/**
+ * The hero's search, played out as a film of CSS keyframes on one shared cycle (`--cycle`): a
+ * pointer opens City and picks Seattle, then Bedrooms and picks 3+; after each the result line
+ * and the cards change as the catalogue's do; one home gets a heart, the grid scrolls to its
+ * second row, and a short fade hides the reset. The toolbar is the app's own: filter pills, the
+ * count, removable chips, "Clear filters" — no text box. One accessible image (the label tells
+ * the story); the buttons under it pause and replay. Under reduced motion the final frame
+ * stands still. The homes are made up; the pictures are the catalogue's.
+ */
+interface Props {
+  label: string;
+  controls: { pause: string; play: string; replay: string };
+  class?: string | undefined;
+}
+
+const { label, controls, class: className } = Astro.props;
+
+const photo = (index: number): string => DEMO_PHOTOS[index % DEMO_PHOTOS.length] ?? '';
+const homes = (count: number): string => `${count.toLocaleString('en-US')} homes`;
+
+interface Home {
+  price: string;
+  title: string;
+  facts: string;
+  place: string;
+  pill: string;
+}
+
+/** Everything for rent, newest first. */
+const ALL: Home[] = [
+  {
+    price: '$2,825/mo',
+    title: 'Sunny 2-bedroom house in Clarksville',
+    facts: '2 beds · 1.5 baths · 1,160 sq ft',
+    place: 'Clarksville · Austin, TX',
+    pill: 'Available Nov 23',
+  },
+  {
+    price: '$2,950/mo',
+    title: 'Bright 3-bedroom townhouse in Washington Park',
+    facts: '3 beds · 1.5 baths · 1,550 sq ft',
+    place: 'Washington Park · Denver, CO',
+    pill: 'Available Dec 18',
+  },
+  {
+    price: '$1,850/mo',
+    title: 'Quiet 1-bedroom apartment in Wicker Park',
+    facts: '1 bed · 1 bath · 720 sq ft',
+    place: 'Wicker Park · Chicago, IL',
+    pill: 'Available now',
+  },
+];
+
+/** Seattle only. */
+const SEATTLE: Home[] = [
+  {
+    price: '$2,450/mo',
+    title: 'Sunny 2-bedroom apartment in Capitol Hill',
+    facts: '2 beds · 1.5 baths · 940 sq ft',
+    place: 'Capitol Hill · Seattle, WA',
+    pill: 'Available Dec 1',
+  },
+  {
+    price: '$2,100/mo',
+    title: 'Corner condo with a Ballard view',
+    facts: '1 bed · 1 bath · 760 sq ft',
+    place: 'Ballard · Seattle, WA',
+    pill: 'Available Jan 8',
+  },
+  {
+    price: '$1,950/mo',
+    title: 'Loft over the Fremont canal',
+    facts: 'Studio · 1 bath · 610 sq ft',
+    place: 'Fremont · Seattle, WA',
+    pill: 'Available now',
+  },
+];
+
+/** Seattle, three bedrooms or more. */
+const MATCHES: Home[] = [
+  {
+    price: '$3,775/mo',
+    title: 'Quiet 3-bedroom house in Wallingford',
+    facts: '3 beds · 2.5 baths · 1,192 sq ft',
+    place: 'Wallingford · Seattle, WA',
+    pill: 'Available Jan 16',
+  },
+  {
+    price: '$3,250/mo',
+    title: 'Sunny 3-bedroom townhouse in Ballard',
+    facts: '3 beds · 2 baths · 1,380 sq ft',
+    place: 'Ballard · Seattle, WA',
+    pill: 'Available Dec 12',
+  },
+  {
+    price: '$4,200/mo',
+    title: 'Renovated 4-bedroom house near Green Lake',
+    facts: '4 beds · 2.5 baths · 1,860 sq ft',
+    place: 'Green Lake · Seattle, WA',
+    pill: 'Available Feb 1',
+  },
+  {
+    price: '$2,975/mo',
+    title: 'Bright 3-bedroom condo in Fremont',
+    facts: '3 beds · 2 baths · 1,210 sq ft',
+    place: 'Fremont · Seattle, WA',
+    pill: 'Available Dec 20',
+  },
+  {
+    price: '$3,100/mo',
+    title: 'Airy 3-bedroom apartment in Capitol Hill',
+    facts: '3 beds · 1.5 baths · 1,090 sq ft',
+    place: 'Capitol Hill · Seattle, WA',
+    pill: 'Available Jan 3',
+  },
+  {
+    price: '$4,450/mo',
+    title: 'Family 4-bedroom craftsman in Wallingford',
+    facts: '4 beds · 3 baths · 2,040 sq ft',
+    place: 'Wallingford · Seattle, WA',
+    pill: 'Available Mar 1',
+  },
+];
+
+const CITY_OPTIONS = [
+  'Austin, TX',
+  'Denver, CO',
+  'Seattle, WA',
+  'Chicago, IL',
+  'Atlanta, GA',
+  'Phoenix, AZ',
+] as const;
+const BED_OPTIONS = ['Any', '1+', '2+', '3+', '4+'] as const;
+const PILLS = [
+  { key: 'price', label: 'Price', hidden: 'hidden md:flex' },
+  { key: 'baths', label: 'Bathrooms', hidden: 'hidden lg:flex' },
+  { key: 'type', label: 'Type of home', hidden: 'hidden xl:flex' },
+] as const;
+
+const HEART = 'M12 20.5 4.9 13.6A4.6 4.6 0 0 1 11.4 7l.6.6.6-.6a4.6 4.6 0 0 1 6.5 6.6L12 20.5Z';
+---
+
+<div class:list={['flex flex-col items-center gap-3', className]}>
+  <div role="img" aria-label={label} class="search-demo w-full select-none" data-demo>
+    <div
+      aria-hidden="true"
+      class="relative overflow-hidden rounded-panel bg-canvas/80 p-3 shadow-window ring-glass sm:p-4"
+    >
+      <!-- The app's filter toolbar: pills that fill when they carry a value. -->
+      <div class="relative z-20 flex items-center gap-2 px-1">
+        <span class="relative">
+          <span class="d-pill d-city flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[0.8125rem] font-medium whitespace-nowrap ring-1 ring-line">
+            <span class="inline-grid">
+              <span class="d-city-off col-start-1 row-start-1">City</span>
+              <span class="d-city-on col-start-1 row-start-1">Seattle, WA</span>
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              class="size-3.5 opacity-70"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </span>
+          <span class="d-popover d-popover-city absolute top-11 left-0 flex w-44 flex-col rounded-xl bg-surface p-1.5 shadow-window ring-glass">
+            {CITY_OPTIONS.map((option) => (
+              <span
+                class:list={[
+                  'd-option flex h-8 items-center rounded-lg px-2.5 text-[0.8125rem] font-medium text-ink-2',
+                  option === 'Seattle, WA' && 'd-pick-city',
+                ]}
+              >
+                {option}
+              </span>
+            ))}
+          </span>
+        </span>
+        {PILLS.map((pill) => (
+          <span
+            class:list={[
+              'd-pill h-9 items-center gap-1.5 rounded-full px-3.5 text-[0.8125rem] font-medium whitespace-nowrap ring-1 ring-line',
+              pill.hidden,
+            ]}
+          >
+            {pill.label}
+            <svg
+              viewBox="0 0 24 24"
+              class="size-3.5 opacity-70"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </span>
+        )).slice(0, 1)}
+        <span class="relative">
+          <span class="d-pill d-beds flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[0.8125rem] font-medium whitespace-nowrap ring-1 ring-line">
+            <span class="inline-grid">
+              <span class="d-beds-off col-start-1 row-start-1">Bedrooms</span>
+              <span class="d-beds-on col-start-1 row-start-1">3+ beds</span>
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              class="size-3.5 opacity-70"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </span>
+          <span class="d-popover d-popover-beds absolute top-11 left-0 flex gap-1 rounded-xl bg-surface p-1.5 shadow-window ring-glass">
+            {BED_OPTIONS.map((option) => (
+              <span
+                class:list={[
+                  'd-option flex h-8 min-w-9 items-center justify-center rounded-full px-2 text-[0.8125rem] font-medium text-ink-2',
+                  option === '3+' && 'd-pick-beds',
+                ]}
+              >
+                {option}
+              </span>
+            ))}
+          </span>
+        </span>
+        {PILLS.slice(1).map((pill) => (
+          <span
+            class:list={[
+              'd-pill h-9 items-center gap-1.5 rounded-full px-3.5 text-[0.8125rem] font-medium whitespace-nowrap ring-1 ring-line',
+              pill.hidden,
+            ]}
+          >
+            {pill.label}
+            <svg
+              viewBox="0 0 24 24"
+              class="size-3.5 opacity-70"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </span>
+        ))}
+        <span class="d-pill flex h-9 items-center rounded-full px-3.5 text-[0.8125rem] font-medium whitespace-nowrap ring-1 ring-line">
+          More
+        </span>
+      </div>
+
+      <!-- The result line: the count, one chip per filter, Clear filters. -->
+      <div class="relative z-10 mt-3 mb-3 flex min-h-7 flex-wrap items-center gap-2 px-1 text-[0.8125rem] text-muted">
+        <span class="relative inline-grid tabular-nums">
+          <span class="d-count-0 col-start-1 row-start-1">{homes(DEMO_TOTALS.all)}</span>
+          <span class="d-count-1 col-start-1 row-start-1">{homes(DEMO_TOTALS.seattle)}</span>
+          <span class="d-count-2 col-start-1 row-start-1">{homes(12)}</span>
+        </span>
+        <span class="d-chip d-chip-city inline-flex h-7 items-center gap-1.5 rounded-full bg-surface-2 pr-1.5 pl-2.5 text-ink-2">
+          Seattle, WA
+          <span class="flex size-4 items-center justify-center rounded-full bg-line text-[0.625rem] text-ink-2">
+            ✕
+          </span>
+        </span>
+        <span class="d-chip d-chip-beds inline-flex h-7 items-center gap-1.5 rounded-full bg-surface-2 pr-1.5 pl-2.5 text-ink-2">
+          3+ beds
+          <span class="flex size-4 items-center justify-center rounded-full bg-line text-[0.625rem] text-ink-2">
+            ✕
+          </span>
+        </span>
+        <span class="d-clear font-semibold text-brand">Clear filters</span>
+      </div>
+
+      <!-- Results: one set in flow (it sets the height), the others on top. -->
+      <div class="d-viewport relative overflow-hidden">
+        {[
+          { set: ALL, name: 'd-set-0', flow: true, offset: 0 },
+          { set: SEATTLE, name: 'd-set-1', flow: false, offset: 3 },
+          { set: MATCHES, name: 'd-set-2', flow: false, offset: 6 },
+        ].map(({ set, name, flow, offset }) => (
+          <div
+            class:list={[
+              name,
+              'grid grid-cols-1 gap-3 sm:grid-cols-3',
+              !flow && 'absolute inset-x-0 top-0',
+            ]}
+          >
+            {set.map((home, index) => (
+              <div
+                class:list={[
+                  'd-card flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass',
+                  index % 3 === 0 ? 'flex' : 'hidden sm:flex',
+                ]}
+                style={`--k: ${index}`}
+              >
+                <div class="relative aspect-[4/3] bg-surface-2">
+                  <img
+                    src={photo(offset + index)}
+                    alt=""
+                    width="1200"
+                    height="800"
+                    loading="eager"
+                    fetchpriority={name === 'd-set-2' ? 'high' : 'auto'}
+                    decoding="async"
+                    class="size-full object-cover"
+                  />
+                  <span
+                    class:list={[
+                      'absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-surface shadow-card',
+                      name === 'd-set-2' && index === 0 ? 'text-danger-dot' : 'text-ink',
+                    ]}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      class="size-4.5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.75"
+                      stroke-linejoin="round"
+                    >
+                      <path d={HEART}></path>
+                    </svg>
+                    {name === 'd-set-2' && index === 0 && (
+                      <svg
+                        viewBox="0 0 24 24"
+                        class="d-heart-on absolute size-4.5"
+                        fill="currentColor"
+                        stroke="currentColor"
+                        stroke-width="1.75"
+                        stroke-linejoin="round"
+                      >
+                        <path d={HEART}></path>
+                      </svg>
+                    )}
+                  </span>
+                </div>
+                <div class="flex flex-col gap-1 p-4">
+                  <p class="text-lg font-semibold text-ink tabular-nums">{home.price}</p>
+                  <p class="truncate text-sm font-medium text-ink-2">{home.title}</p>
+                  <p class="text-[0.8125rem] text-muted">{home.facts}</p>
+                  <p class="truncate text-[0.8125rem] text-muted">{home.place}</p>
+                  <span class="mt-1.5 inline-flex w-fit items-center rounded-full bg-success-bg px-2 py-0.5 text-[0.6875rem] font-medium text-success-fg">
+                    {home.pill}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <!-- The pointer, with a ring that pulses on each click (wide screens only). -->
+      <span class="d-cursor absolute z-30 hidden sm:block">
+        <span class="d-click absolute -top-3 -left-3 size-7 rounded-full bg-brand/30"></span>
+        <svg
+          viewBox="0 0 24 24"
+          class="size-6 drop-shadow"
+          fill="var(--color-ink)"
+          stroke="var(--color-surface)"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+        >
+          <path d="M5.5 3.5 19 11.3l-6 1.6-3.3 5.6L5.5 3.5Z"></path>
+        </svg>
+      </span>
+      <!-- A breath between loops. -->
+      <span class="d-cover pointer-events-none absolute inset-0 z-40 bg-canvas"></span>
+    </div>
+  </div>
+  <div class="flex items-center gap-1">
+    <button
+      type="button"
+      data-demo-pause
+      aria-pressed="false"
+      class="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[0.8125rem] font-medium text-muted transition-colors hover:bg-surface hover:text-ink"
+    >
+      <svg viewBox="0 0 24 24" class="d-icon-pause size-4" fill="currentColor">
+        <path d="M7 5h4v14H7zM13 5h4v14h-4z"></path>
+      </svg>
+      <svg viewBox="0 0 24 24" class="d-icon-play size-4" fill="currentColor">
+        <path d="M7 4.5v15l13-7.5z"></path>
+      </svg>
+      <span class="d-label-pause">{controls.pause}</span>
+      <span class="d-label-play">{controls.play}</span>
+    </button>
+    <button
+      type="button"
+      data-demo-replay
+      class="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[0.8125rem] font-medium text-muted transition-colors hover:bg-surface hover:text-ink"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        class="size-4"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6M3.5 4v4h4"></path>
+      </svg>
+      {controls.replay}
+    </button>
+  </div>
+</div>
+
+<style>
+  /*
+   * One cycle for every part (8.6 s; percent = seconds × 11.6). Every element is a keyframe
+   * film over the whole cycle, so the loop stays in step; the cards' small `--k` delays shift a
+   * film by a fraction of a second, never its period.
+   *
+   * Beats: 5–12 % pointer to City · 13 % click, the list opens · 20 % Seattle · 24 % City fills,
+   * the count and the chip change, the Seattle homes rise in · 30–37 % pointer to Bedrooms ·
+   * 38 % click, the options open · 45 % 3+ · 48 % Bedrooms fills, 12 homes, the matches rise in ·
+   * 58 % a heart · 66–74 % the grid scrolls one row · 92–95 % the cover falls · 0–3 % it lifts.
+   */
+  .search-demo {
+    --cycle: 8.6s;
+  }
+
+  .search-demo[data-paused] * {
+    animation-play-state: paused !important;
+  }
+
+  .d-pill {
+    background: var(--color-surface);
+    color: var(--color-ink-2);
+  }
+  .d-city,
+  .d-beds {
+    position: relative;
+  }
+  .d-city-on,
+  .d-beds-on,
+  .d-popover,
+  .d-count-1,
+  .d-count-2,
+  .d-chip,
+  .d-clear,
+  .d-set-1,
+  .d-set-2,
+  .d-cover,
+  .d-cursor,
+  .d-heart-on,
+  .d-click {
+    opacity: 0;
+  }
+
+  /* The final frame, still: before the observer runs (or without JS), and under reduced motion. */
+  .search-demo:not([data-visible])
+    :is(.d-count-2, .d-chip, .d-clear, .d-city-on, .d-beds-on, .d-set-2, .d-heart-on),
+  .search-demo.d-still
+    :is(.d-count-2, .d-chip, .d-clear, .d-city-on, .d-beds-on, .d-set-2, .d-heart-on) {
+    opacity: 1;
+  }
+  .search-demo:not([data-visible]) :is(.d-count-0, .d-city-off, .d-beds-off, .d-set-0),
+  .search-demo.d-still :is(.d-count-0, .d-city-off, .d-beds-off, .d-set-0) {
+    opacity: 0;
+  }
+  .search-demo:not([data-visible]) :is(.d-city, .d-beds),
+  .search-demo.d-still :is(.d-city, .d-beds) {
+    background: var(--color-brand);
+    color: var(--color-on-brand);
+    --tw-ring-color: var(--color-brand);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .search-demo[data-visible]
+      :is(
+        .d-city,
+        .d-city-off,
+        .d-city-on,
+        .d-popover-city,
+        .d-pick-city,
+        .d-beds,
+        .d-beds-off,
+        .d-beds-on,
+        .d-popover-beds,
+        .d-pick-beds,
+        .d-count-0,
+        .d-count-1,
+        .d-count-2,
+        .d-chip-city,
+        .d-chip-beds,
+        .d-clear,
+        .d-set-0,
+        .d-set-1,
+        .d-set-2,
+        .d-heart-on,
+        .d-cursor,
+        .d-click,
+        .d-cover
+      ) {
+      animation-duration: var(--cycle);
+      animation-iteration-count: infinite;
+      animation-fill-mode: both;
+      animation-timing-function: linear;
+    }
+
+    .search-demo[data-visible] .d-cover {
+      animation-name: d-cover;
+    }
+    @keyframes d-cover {
+      0% {
+        opacity: 1;
+      }
+      3% {
+        opacity: 0;
+      }
+      92% {
+        opacity: 0;
+      }
+      95% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* The pointer: City (12 %), Seattle in the list (20 %), Bedrooms (37 %), 3+ (45 %), the heart (58 %). */
+    .search-demo[data-visible] .d-cursor {
+      animation-name: d-cursor;
+      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes d-cursor {
+      0% {
+        left: 55%;
+        top: 80%;
+        opacity: 0;
+      }
+      4% {
+        left: 55%;
+        top: 80%;
+        opacity: 0;
+      }
+      6% {
+        opacity: 1;
+      }
+      12% {
+        left: 7%;
+        top: 7%;
+      }
+      14% {
+        left: 7%;
+        top: 7%;
+      }
+      20% {
+        left: 10%;
+        top: 28%;
+      }
+      23% {
+        left: 10%;
+        top: 28%;
+      }
+      25% {
+        left: 12%;
+        top: 14%;
+      }
+      30% {
+        left: 12%;
+        top: 14%;
+      }
+      37% {
+        left: 27%;
+        top: 7%;
+      }
+      39% {
+        left: 27%;
+        top: 7%;
+      }
+      45% {
+        left: 32.5%;
+        top: 15.5%;
+      }
+      48% {
+        left: 32.5%;
+        top: 15.5%;
+      }
+      51% {
+        left: 34%;
+        top: 20%;
+      }
+      58% {
+        left: 31%;
+        top: 27%;
+      }
+      62% {
+        left: 31%;
+        top: 27%;
+        opacity: 1;
+      }
+      66% {
+        left: 40%;
+        top: 45%;
+        opacity: 0;
+      }
+      100% {
+        left: 55%;
+        top: 80%;
+        opacity: 0;
+      }
+    }
+    .search-demo[data-visible] .d-click {
+      animation-name: d-click;
+      animation-timing-function: ease-out;
+    }
+    @keyframes d-click {
+      0%,
+      12.9%,
+      14.5%,
+      20.9%,
+      22.5%,
+      37.9%,
+      39.5%,
+      45.9%,
+      47.5%,
+      58.9%,
+      60.5%,
+      100% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      13%,
+      21%,
+      38%,
+      46%,
+      59% {
+        opacity: 0.9;
+        transform: scale(0.4);
+      }
+      14%,
+      22%,
+      39%,
+      47%,
+      60% {
+        opacity: 0;
+        transform: scale(1.4);
+      }
+    }
+
+    /* City: the list opens at 14 %, Seattle lights at 21 %, the pill fills at 24 %. */
+    .search-demo[data-visible] .d-popover-city {
+      animation-name: d-popover-city;
+      animation-timing-function: var(--ease-out);
+    }
+    @keyframes d-popover-city {
+      0%,
+      13.5%,
+      100% {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.96);
+      }
+      15%,
+      23% {
+        opacity: 1;
+        transform: none;
+      }
+      24.5% {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.96);
+      }
+    }
+    .search-demo[data-visible] .d-pick-city {
+      animation-name: d-pick;
+      animation-timing-function: steps(1, end);
+    }
+    .search-demo[data-visible] .d-pick-beds {
+      animation-name: d-pick-beds;
+      animation-timing-function: steps(1, end);
+    }
+    @keyframes d-pick {
+      0%,
+      100% {
+        background: var(--color-surface);
+        color: var(--color-ink-2);
+      }
+      21.5%,
+      24% {
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+      }
+    }
+    .search-demo[data-visible] .d-city {
+      animation-name: d-fill-city;
+      animation-timing-function: steps(1, end);
+    }
+    @keyframes d-fill-city {
+      0%,
+      96%,
+      100% {
+        background: var(--color-surface);
+        color: var(--color-ink-2);
+        --tw-ring-color: var(--color-line);
+      }
+      24.5% {
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+        --tw-ring-color: var(--color-brand);
+      }
+    }
+    .search-demo[data-visible] .d-city-off {
+      animation-name: d-off-city;
+      animation-timing-function: steps(1, end);
+    }
+    .search-demo[data-visible] .d-city-on {
+      animation-name: d-on-city;
+      animation-timing-function: steps(1, end);
+    }
+    @keyframes d-off-city {
+      0%,
+      96.5%,
+      100% {
+        opacity: 1;
+      }
+      24.5% {
+        opacity: 0;
+      }
+    }
+    @keyframes d-on-city {
+      0%,
+      96%,
+      100% {
+        opacity: 0;
+      }
+      24.5% {
+        opacity: 1;
+      }
+    }
+
+    /* Bedrooms: the options open at 39 %, 3+ lights at 46 %, the pill fills at 48 %. */
+    .search-demo[data-visible] .d-popover-beds {
+      animation-name: d-popover-beds;
+      animation-timing-function: var(--ease-out);
+    }
+    @keyframes d-popover-beds {
+      0%,
+      38.5%,
+      100% {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.96);
+      }
+      40%,
+      47.5% {
+        opacity: 1;
+        transform: none;
+      }
+      49% {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.96);
+      }
+    }
+    @keyframes d-pick-beds {
+      0%,
+      100% {
+        background: var(--color-surface);
+        color: var(--color-ink-2);
+      }
+      46.5%,
+      48.5% {
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+      }
+    }
+    .search-demo[data-visible] .d-beds {
+      animation-name: d-fill-beds;
+      animation-timing-function: steps(1, end);
+    }
+    @keyframes d-fill-beds {
+      0%,
+      96%,
+      100% {
+        background: var(--color-surface);
+        color: var(--color-ink-2);
+        --tw-ring-color: var(--color-line);
+      }
+      49% {
+        background: var(--color-brand);
+        color: var(--color-on-brand);
+        --tw-ring-color: var(--color-brand);
+      }
+    }
+    .search-demo[data-visible] .d-beds-off {
+      animation-name: d-off-beds;
+      animation-timing-function: steps(1, end);
+    }
+    .search-demo[data-visible] .d-beds-on {
+      animation-name: d-on-beds;
+      animation-timing-function: steps(1, end);
+    }
+    @keyframes d-off-beds {
+      0%,
+      96.5%,
+      100% {
+        opacity: 1;
+      }
+      49% {
+        opacity: 0;
+      }
+    }
+    @keyframes d-on-beds {
+      0%,
+      96%,
+      100% {
+        opacity: 0;
+      }
+      49% {
+        opacity: 1;
+      }
+    }
+
+    /* The result line: 827 → 141 at 25 %, → 12 at 49 %; a chip per filter; Clear filters from the first. */
+    .search-demo[data-visible] .d-count-0 {
+      animation-name: d-count-0;
+      animation-timing-function: steps(1, end);
+    }
+    .search-demo[data-visible] .d-count-1 {
+      animation-name: d-count-1;
+      animation-timing-function: steps(1, end);
+    }
+    .search-demo[data-visible] .d-count-2 {
+      animation-name: d-count-2;
+      animation-timing-function: steps(1, end);
+    }
+    @keyframes d-count-0 {
+      0%,
+      97%,
+      100% {
+        opacity: 1;
+      }
+      25% {
+        opacity: 0;
+      }
+    }
+    @keyframes d-count-1 {
+      0%,
+      96.5%,
+      100% {
+        opacity: 0;
+      }
+      25%,
+      48.5% {
+        opacity: 1;
+      }
+      49% {
+        opacity: 0;
+      }
+    }
+    @keyframes d-count-2 {
+      0%,
+      96.5%,
+      100% {
+        opacity: 0;
+      }
+      49% {
+        opacity: 1;
+      }
+    }
+    .search-demo[data-visible] .d-chip-city,
+    .search-demo[data-visible] .d-clear {
+      animation-name: d-chip-city;
+      animation-timing-function: var(--ease-out);
+    }
+    .search-demo[data-visible] .d-chip-beds {
+      animation-name: d-chip-beds;
+      animation-timing-function: var(--ease-out);
+    }
+    @keyframes d-chip-city {
+      0%,
+      24.5%,
+      96.5%,
+      100% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      26%,
+      96% {
+        opacity: 1;
+        transform: none;
+      }
+    }
+    @keyframes d-chip-beds {
+      0%,
+      49%,
+      96.5%,
+      100% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      50.5%,
+      96% {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* The three pages of results: everything → Seattle at 25 % → the matches at 49 %. */
+    .search-demo[data-visible] .d-set-0 {
+      animation-name: d-set-0;
+      animation-timing-function: var(--ease-out);
+    }
+    @keyframes d-set-0 {
+      0%,
+      24%,
+      97%,
+      100% {
+        opacity: 1;
+        transform: none;
+      }
+      27%,
+      96.5% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+      }
+    }
+    .search-demo[data-visible] .d-set-1 {
+      animation-name: d-set-1;
+      animation-timing-function: var(--ease-out);
+    }
+    @keyframes d-set-1 {
+      0%,
+      25.5%,
+      52%,
+      100% {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      29%,
+      48% {
+        opacity: 1;
+        transform: none;
+      }
+    }
+    /* The cards carry their own film (a compound selector would outrank the single-class rules above). */
+    .search-demo[data-visible] .d-set-2 .d-card {
+      animation-name: d-card;
+      animation-duration: var(--cycle);
+      animation-iteration-count: infinite;
+      animation-fill-mode: both;
+      animation-timing-function: var(--ease-out);
+      animation-delay: calc(var(--k) * 90ms);
+    }
+    @keyframes d-card {
+      0%,
+      50%,
+      97%,
+      100% {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      54%,
+      96% {
+        opacity: 1;
+        transform: none;
+      }
+    }
+    .search-demo[data-visible] .d-set-2 {
+      animation-name: d-set-2;
+      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* The set itself stays visible; only its scroll is a film (the cards fade one by one). */
+    @keyframes d-set-2 {
+      0%,
+      66%,
+      97%,
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      74%,
+      96% {
+        opacity: 1;
+        transform: translateY(-50%);
+      }
+    }
+    .search-demo[data-visible] .d-heart-on {
+      animation-name: d-heart;
+      animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes d-heart {
+      0%,
+      59.5%,
+      97%,
+      100% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      61.5%,
+      96% {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .search-demo
+      :is(
+        .d-count-2,
+        .d-chip,
+        .d-clear,
+        .d-city-on,
+        .d-beds-on,
+        .d-set-2,
+        .d-set-2 .d-card,
+        .d-heart-on
+      ) {
+      opacity: 1;
+    }
+    .search-demo
+      :is(
+        .d-count-0,
+        .d-count-1,
+        .d-city-off,
+        .d-beds-off,
+        .d-set-0,
+        .d-set-1,
+        .d-cursor,
+        .d-cover,
+        .d-popover
+      ) {
+      opacity: 0;
+    }
+    .search-demo :is(.d-city, .d-beds) {
+      background: var(--color-brand);
+      color: var(--color-on-brand);
+      --tw-ring-color: var(--color-brand);
+    }
+  }
+
+  .d-icon-play,
+  .d-label-play {
+    display: none;
+  }
+  [aria-pressed='true'] :is(.d-icon-pause, .d-label-pause) {
+    display: none;
+  }
+  [aria-pressed='true'] .d-label-play {
+    display: inline;
+  }
+  [aria-pressed='true'] .d-icon-play {
+    display: block;
+  }
+</style>
+
+<script>
+  // The film starts once a tenth of the frame is in view (it is taller than most viewports), and
+  // the two buttons hold the only state CSS cannot: paused, and a restart.
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.setAttribute('data-visible', '');
+          observer.unobserve(entry.target);
+        }
+      }
+    },
+    { threshold: 0.1 },
+  );
+  for (const frame of document.querySelectorAll<HTMLElement>('[data-demo]')) {
+    observer.observe(frame);
+    const root = frame.parentElement;
+    const pause = root?.querySelector<HTMLButtonElement>('[data-demo-pause]');
+    const replay = root?.querySelector<HTMLButtonElement>('[data-demo-replay]');
+    pause?.addEventListener('click', () => {
+      const paused = frame.toggleAttribute('data-paused');
+      pause.setAttribute('aria-pressed', String(paused));
+    });
+    replay?.addEventListener('click', () => {
+      frame.removeAttribute('data-paused');
+      pause?.setAttribute('aria-pressed', 'false');
+      // Restarting every film: drop the gate, let the browser notice, put it back.
+      frame.removeAttribute('data-visible');
+      void frame.offsetWidth;
+      frame.setAttribute('data-visible', '');
+    });
+  }
+</script>
