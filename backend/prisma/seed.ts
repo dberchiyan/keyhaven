@@ -14,15 +14,19 @@ import {
   DEMO_TENANT,
   OTHER_AGENTS,
   OTHER_LANDLORDS,
+  OTHER_TENANTS,
   SEED_PASSWORD,
   type SeedPerson,
 } from './seed-data';
+import { seedActivity } from './seed-activity';
 import { seedListings } from './seed-listings';
 
 /**
  * Development seed (APP_ENV=dev only): the six cities, one agency, the showcase accounts (one
- * per role), more landlords and agents, and ~1,000 listings with photos. Idempotent — existing
- * rows are kept (people are matched by email, cities by slug, listings by their fixed ids).
+ * per role), more landlords, agents and renters, ~1,300 listings with photos, and the renters'
+ * visits and saves over the last months (the owners' insights). Idempotent — existing rows are
+ * kept (people are matched by email, cities by slug, listings by their fixed ids, activity by
+ * its unique keys).
  */
 const seedEnv = z.object({
   APP_ENV: z.literal('dev'),
@@ -104,6 +108,7 @@ const seed = async (): Promise<void> => {
         person(DEMO_ADMIN, UserRole.ADMIN),
         ...OTHER_AGENTS.map((agent) => person(agent, UserRole.AGENT, AGENCY.id)),
         ...OTHER_LANDLORDS.map((landlord) => person(landlord, UserRole.LANDLORD)),
+        ...OTHER_TENANTS.map((tenant) => person(tenant, UserRole.TENANT)),
       ],
       skipDuplicates: true,
     });
@@ -131,8 +136,13 @@ const seed = async (): Promise<void> => {
       },
       today,
     );
+    const activity = await seedActivity(
+      prisma,
+      [DEMO_TENANT, ...OTHER_TENANTS].map((tenant) => idOf(tenant.email)),
+      today,
+    );
     process.stdout.write(
-      `Seeded ${CITIES.length} cities, 1 agency, ${users.count} users, ${listings.listings} listings, ${listings.photos} photos (${listings.retired} photos replaced, ${listings.descriptions} descriptions refreshed; existing rows kept)\n`,
+      `Seeded ${CITIES.length} cities, 1 agency, ${users.count} users, ${listings.listings} listings, ${listings.photos} photos, ${activity.views} views, ${activity.saves} saves (${listings.retired} photos replaced, ${listings.descriptions} descriptions refreshed; existing rows kept)\n`,
     );
   } finally {
     await prisma.$disconnect();

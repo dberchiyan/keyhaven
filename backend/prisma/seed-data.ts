@@ -166,6 +166,20 @@ export const OTHER_LANDLORDS: SeedPerson[] = FIRST_NAMES.map((firstName, index) 
   };
 });
 
+/**
+ * 24 fictional renters (tenants) besides the showcase one: their visits and saves over the
+ * last months feed the owners' insights. Names are the landlords' pools re-paired, so no
+ * email collides with a landlord's.
+ */
+export const OTHER_TENANTS: SeedPerson[] = FIRST_NAMES.slice(0, 24).map((firstName, index) => {
+  const lastName = LAST_NAMES[(index + 13) % LAST_NAMES.length] ?? 'Smith';
+  return {
+    firstName,
+    lastName,
+    email: `${firstName}.${lastName}@renters.example`.toLowerCase(),
+  };
+});
+
 export interface SeedCity {
   id: string;
   name: string;
