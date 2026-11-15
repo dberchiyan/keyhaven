@@ -43,19 +43,20 @@ export const ListingCardSchema = z
     availableFrom: z.iso.date().nullable(),
     publishedAt: z.iso.datetime().nullable(),
     coverPhotoUrl: z.string().max(500).nullable(),
+    /** People who opened the page, one per person and day. */
+    viewCount: z.number().int().min(0),
     /** The viewer saved it (tenants); false for everyone else. */
     saved: z.boolean(),
   })
   .meta({ id: 'ListingCard' });
 
-/** A row of the owner's dashboard: the card plus its status, views and saves. */
+/** A row of the owner's dashboard: the card plus its status and saves. */
 export const ManagedListingCardSchema = z
   .object({
     ...ListingCardSchema.shape,
     status: ListingStatusSchema,
     /** A showcase row of the public demo: read-only, add your own listing instead. */
     demo: z.boolean(),
-    viewCount: z.number().int().min(0),
     saveCount: z.number().int().min(0),
   })
   .meta({ id: 'ManagedListingCard' });
@@ -129,7 +130,6 @@ export const ManagedListingSchema = z
     status: ListingStatusSchema,
     address: ListingAddressSchema,
     cityId: z.uuid(),
-    viewCount: z.number().int().min(0),
     saveCount: z.number().int().min(0),
     managedPhotos: z.array(ManagedPhotoSchema).max(40),
     createdAt: z.iso.datetime(),

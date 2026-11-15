@@ -625,6 +625,7 @@ export class ListingService {
       availableFrom: listing.availableFrom,
       publishedAt: listing.publishedAt,
       coverPhotoUrl: cover ? this.photoUrl(cover) : null,
+      viewCount: listing._count.views,
       saved,
     };
   }
@@ -643,7 +644,6 @@ export class ListingService {
       ...this.toCard(listing, false),
       status: toStatus(listing.status),
       demo: this.isDemo(listing),
-      viewCount: listing._count.views,
       saveCount: listing._count.savedBy,
     };
   }
@@ -678,7 +678,6 @@ export class ListingService {
       status: toStatus(listing.status),
       address: { line1: listing.addressLine1, line2: listing.addressLine2 },
       cityId: listing.cityId,
-      viewCount: listing._count.views,
       saveCount: listing._count.savedBy,
       managedPhotos: photos.map((photo) => this.toManagedPhoto(photo)),
       createdAt: listing.createdAt,

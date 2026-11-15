@@ -804,6 +804,7 @@ export interface components {
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
+            viewCount: number;
             saved: boolean;
         };
         /** @enum {string} */
@@ -863,6 +864,7 @@ export interface components {
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
+            viewCount: number;
             saved: boolean;
             demo: boolean;
             description: string;
@@ -896,10 +898,10 @@ export interface components {
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
+            viewCount: number;
             saved: boolean;
             status: components["schemas"]["ListingStatus_Output"];
             demo: boolean;
-            viewCount: number;
             saveCount: number;
         };
         /** @enum {string} */
@@ -957,6 +959,7 @@ export interface components {
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
+            viewCount: number;
             saved: boolean;
             demo: boolean;
             description: string;
@@ -975,7 +978,6 @@ export interface components {
             status: components["schemas"]["ListingStatus_Output"];
             /** Format: uuid */
             cityId: string;
-            viewCount: number;
             saveCount: number;
             managedPhotos: components["schemas"]["ManagedPhoto_Output"][];
             /** Format: date-time */

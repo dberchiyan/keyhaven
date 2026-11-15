@@ -92,9 +92,9 @@ describe('Listing insights', () => {
     const response = await landlord.get('/api/v1/managed-listings/insights');
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ totals: { views: 2, saves: 1 } });
-    const top = bodyOf(response).top as { listing: { id: string }; views: number; saves: number }[];
-    expect(top).toEqual([
-      { listing: expect.objectContaining({ id: f.landlordPublished }), views: 2, saves: 1 },
+    // toMatchObject on an array checks its length as well as each row.
+    expect(bodyOf(response).top).toMatchObject([
+      { listing: { id: f.landlordPublished }, views: 2, saves: 1 },
     ]);
     // The agency saw nothing: a quiet scope has empty totals and no top rows.
     const agency = await agent.get('/api/v1/managed-listings/insights');

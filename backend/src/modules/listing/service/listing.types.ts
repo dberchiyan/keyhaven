@@ -33,6 +33,8 @@ export interface ListingCard {
   availableFrom: Date | null;
   publishedAt: Date | null;
   coverPhotoUrl: string | null;
+  /** People who opened the page (one per person and day) — shown on every card. */
+  viewCount: number;
 }
 
 /** A row of the owner's dashboard. */
@@ -40,8 +42,7 @@ export interface ManagedListingCard extends ListingCard {
   status: ListingStatus;
   /** A showcase row of the public demo: read-only (false outside DEMO_MODE). */
   demo: boolean;
-  /** People who opened the page (one per person and day) and who saved it. */
-  viewCount: number;
+  /** People who saved it. */
   saveCount: number;
 }
 
@@ -100,7 +101,6 @@ export interface ManagedListing extends ListingDetail {
   status: ListingStatus;
   address: ListingAddress;
   cityId: string;
-  viewCount: number;
   saveCount: number;
   managedPhotos: ManagedPhoto[];
   createdAt: Date;

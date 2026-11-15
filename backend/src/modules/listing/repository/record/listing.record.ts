@@ -13,7 +13,7 @@ export type CityRecord = Prisma.CityGetPayload<{ select: typeof citySelect }>;
 /** Only finished uploads are shown, in their order. */
 const readyPhotos = { status: 'READY' } as const;
 
-/** A search result card: one photo (the cover), the public part of the address. */
+/** A search result card: one photo (the cover), the public part of the address, how many looked. */
 export const listingCardSelect = {
   id: true,
   title: true,
@@ -36,6 +36,8 @@ export const listingCardSelect = {
     orderBy: { position: 'asc' },
     take: 1,
   },
+  // One row per person and day (index `idx_listing_views_listing_id_viewed_on`).
+  _count: { select: { views: true } },
 } satisfies Prisma.ListingSelect;
 export type ListingCardRecord = Prisma.ListingGetPayload<{ select: typeof listingCardSelect }>;
 

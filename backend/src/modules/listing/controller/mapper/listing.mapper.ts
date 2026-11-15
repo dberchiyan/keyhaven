@@ -43,6 +43,7 @@ export const toListingCardResponse = (listing: ListingCard): CardItem => ({
   availableFrom: listing.availableFrom ? toDay(listing.availableFrom) : null,
   publishedAt: listing.publishedAt?.toISOString() ?? null,
   coverPhotoUrl: listing.coverPhotoUrl,
+  viewCount: listing.viewCount,
   saved: listing.saved,
 });
 
@@ -64,7 +65,6 @@ export const toManagedListingCardResponse = (listing: ManagedListingCard): Manag
   ...toListingCardResponse(listing),
   status: listing.status,
   demo: listing.demo,
-  viewCount: listing.viewCount,
   saveCount: listing.saveCount,
 });
 
@@ -117,7 +117,6 @@ export const toManagedListingResponse = (listing: ManagedListing): ManagedListin
   status: listing.status,
   address: listing.address,
   cityId: listing.cityId,
-  viewCount: listing.viewCount,
   saveCount: listing.saveCount,
   managedPhotos: listing.managedPhotos.map((photo) => ({
     id: photo.id,

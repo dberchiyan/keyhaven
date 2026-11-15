@@ -420,6 +420,10 @@ describe('Listings and search (M1)', () => {
       expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`))).toMatchObject({
         viewCount: 2,
       });
+      // Every card and page carries the count; the tenant's second visit today adds nothing.
+      expect(bodyOf(await tenant.get(`/api/v1/listings/${listingId}`))).toMatchObject({
+        viewCount: 2,
+      });
 
       // The digest: admins may run it now; the scheduler runs it daily.
       expect((await tenant.post('/api/v1/saved-search-digests')).status).toBe(403);
