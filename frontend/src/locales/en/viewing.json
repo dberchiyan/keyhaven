@@ -56,7 +56,10 @@
     },
     "confirm": "Confirm",
     "decline": "Decline",
-    "cancel": "Cancel viewing"
+    "cancel": "Cancel viewing",
+    "messageLister": "Message the lister",
+    "messageTenant": "Message the tenant",
+    "until": "to {{time}} {{zone}}"
   },
   "decision": {
     "note": "A note for the other side (optional)",
@@ -102,14 +105,20 @@
       "label": "Which viewings",
       "requests": "Requests",
       "upcoming": "Upcoming",
-      "all": "All"
+      "all": "All",
+      "requestsCount": "{{count}} to answer",
+      "upcomingCount": "{{count}} confirmed ahead"
     },
     "empty": {
       "requests": "No requests waiting",
       "upcoming": "Nothing confirmed ahead",
       "all": "No viewings yet"
     },
-    "emptyHint": "Open viewing hours on a listing and tenants can pick a time.",
+    "emptyHint": {
+      "requests": "New requests land here first — confirm or decline them within a day.",
+      "upcoming": "Confirmed visits appear here, day by day, with who comes when.",
+      "all": "Open viewing hours on a listing and tenants can pick a time."
+    },
     "pages": "Pages of viewings"
   },
   "listing": {
@@ -157,5 +166,9 @@
     "closeText": "Nothing more can be booked for this home. Viewings already requested or confirmed stay as they are.",
     "closeCancel": "Keep hours",
     "closeConfirm": "Close hours"
+  },
+  "agenda": {
+    "count_one": "{{count}} viewing",
+    "count_other": "{{count}} viewings"
   }
 }

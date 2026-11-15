@@ -24,6 +24,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { EmailModule } from './modules/email/email.module';
 import { ListingModule } from './modules/listing/listing.module';
+import { MessageModule } from './modules/message/message.module';
 import { SavedSearchModule } from './modules/saved-search/saved-search.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { UserModule } from './modules/user/user.module';
@@ -51,6 +52,7 @@ import { ViewingModule } from './modules/viewing/viewing.module';
     ListingModule,
     SavedSearchModule,
     ViewingModule,
+    MessageModule,
   ],
   providers: [
     // Guards run in registration order (security.md → Guards).

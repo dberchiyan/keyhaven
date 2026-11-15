@@ -1,3 +1,4 @@
+import ChevronRightOutlined from '@mui/icons-material/ChevronRightOutlined';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -13,15 +14,14 @@ import { InterestCounts } from './InterestCounts';
 import { ListingStatusBadge } from './ListingStatusBadge';
 import { ShowcaseBadge } from './ShowcaseBadge';
 
-/** Fixed widths, so columns never jump between pages and filters. */
+/** Fixed widths, so columns never jump between pages and filters; the place sits under the title. */
 const COLUMNS = [
-  { key: 'home', width: 'w-[30%]' },
-  { key: 'city', width: 'w-[13%]' },
-  { key: 'price', width: 'w-[10%]' },
-  { key: 'size', width: 'w-[13%]' },
-  { key: 'available', width: 'w-[12%]' },
-  { key: 'interest', width: 'w-[10%]' },
-  { key: 'status', width: 'w-[12%]' },
+  { key: 'home', width: 'w-[38%]' },
+  { key: 'price', width: 'w-[12%]' },
+  { key: 'size', width: 'w-[14%]' },
+  { key: 'available', width: 'w-[15%]' },
+  { key: 'interest', width: 'w-[11%]' },
+  { key: 'status', width: 'w-[10%]' },
 ] as const;
 
 export interface ManagedListingTableProps {
@@ -41,11 +41,14 @@ export function ManagedListingTable({ listings }: ManagedListingTableProps) {
               {t(`manage.table.${column.key}`)}
             </TableCell>
           ))}
+          <TableCell scope="col" className="w-12">
+            <span className="sr-only">{t('manage.table.open')}</span>
+          </TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
         {listings.map((listing) => (
-          <TableRow key={listing.id} hover className="relative">
+          <TableRow key={listing.id} hover className="group relative">
             <TableCell>
               <div className="flex items-center gap-3">
                 <div className="size-12 shrink-0 overflow-hidden rounded-md bg-badge-neutral-background">
@@ -73,27 +76,42 @@ export function ManagedListingTable({ listings }: ManagedListingTableProps) {
                     </Link>
                   </Typography>
                   <Typography variant="caption" color="textSecondary" className="block truncate">
-                    {listing.neighborhood ?? t(`facts.type.${listing.propertyType}`)}
+                    {[listing.neighborhood, `${listing.city.name}, ${listing.city.state}`]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </Typography>
                 </div>
               </div>
             </TableCell>
-            <TableCell className="truncate">{`${listing.city.name}, ${listing.city.state}`}</TableCell>
-            <TableCell className="app-tabular">{formatPrice(listing, i18n.language, t)}</TableCell>
+            <TableCell className="app-tabular whitespace-nowrap">
+              {formatPrice(listing, i18n.language, t)}
+            </TableCell>
             <TableCell className="app-tabular whitespace-nowrap">
               {`${formatBeds(listing.bedrooms, t)} · ${formatBaths(listing.bathrooms, t)}`}
             </TableCell>
-            <TableCell className="app-tabular truncate">
+            <TableCell className="app-tabular whitespace-nowrap">
               {formatAvailability(listing, i18n.language, t)}
             </TableCell>
             <TableCell className="whitespace-nowrap">
-              <InterestCounts views={listing.viewCount} saves={listing.saveCount} />
+              <InterestCounts
+                views={listing.viewCount}
+                saves={listing.saveCount}
+                {...(listing.status === 'PUBLISHED' ? {} : { className: 'text-text-secondary' })}
+              />
             </TableCell>
             <TableCell>
               <div className="flex flex-wrap gap-1">
                 <ListingStatusBadge status={listing.status} />
                 {listing.demo && <ShowcaseBadge />}
               </div>
+            </TableCell>
+            <TableCell align="right" className="pl-0">
+              {/* The row's affordance: it is a link; the chevron says so and brightens on hover. */}
+              <ChevronRightOutlined
+                aria-hidden
+                fontSize="small"
+                className="text-text-secondary transition-colors group-hover:text-text-primary"
+              />
             </TableCell>
           </TableRow>
         ))}

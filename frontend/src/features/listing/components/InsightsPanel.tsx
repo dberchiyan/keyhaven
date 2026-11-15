@@ -35,70 +35,84 @@ function TopListings({ rows }: TopListingsProps) {
           {t('insights.topEmpty')}
         </Typography>
       ) : (
-        <ol className="m-0 flex list-none flex-col divide-y divide-divider rounded-md border border-divider p-0">
-          {rows.map(({ listing, views, saves }, index) => (
-            <li key={listing.id} className="relative flex items-center gap-3 px-3 py-2.5">
-              <Typography
-                variant="subtitle2"
-                component="span"
-                color="textSecondary"
-                className="app-tabular w-5 shrink-0 text-right"
+        <ol className="m-0 flex list-none flex-col gap-1 p-0">
+          {rows.map(({ listing, views, saves }, index) => {
+            const peak = rows[0]?.views ?? 0;
+            const share = peak > 0 ? Math.max(4, Math.round((views / peak) * 100)) : 0;
+            return (
+              <li
+                key={listing.id}
+                className="hover:bg-action-hover relative flex items-center gap-3 rounded-md px-2 py-2"
               >
-                {index + 1}
-              </Typography>
-              <div className="size-12 shrink-0 overflow-hidden rounded-md bg-badge-neutral-background">
-                {listing.coverPhotoUrl && (
-                  <img
-                    src={listing.coverPhotoUrl}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                    width={96}
-                    height={96}
-                    className="size-full object-cover"
-                  />
-                )}
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <Typography variant="subtitle2" component="span" className="truncate">
-                  <Link
-                    to={managedListingPath(listing.id)}
-                    aria-label={t('manage.open', { title: listing.title })}
-                    className="text-inherit no-underline after:absolute after:inset-0 after:content-[''] hover:underline focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-primary"
-                  >
-                    {listing.title}
-                  </Link>
-                </Typography>
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <Typography variant="caption" color="textSecondary" className="truncate">
-                    {`${listing.city.name}, ${listing.city.state}`}
-                  </Typography>
-                  <ListingStatusBadge status={listing.status} />
-                </div>
-                {/* On a phone the counts go under the title; from `sm` they sit on the right. */}
                 <Typography
-                  variant="caption"
+                  variant="subtitle2"
+                  component="span"
                   color="textSecondary"
-                  className="app-tabular sm:hidden"
+                  className="app-tabular w-5 shrink-0 text-right"
                 >
-                  {t('insights.topCell', {
-                    views: number.format(views),
-                    saves: number.format(saves),
-                  })}
+                  {index + 1}
                 </Typography>
-              </div>
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                className="app-tabular hidden shrink-0 text-right sm:block"
-              >
-                {t('insights.topCell', {
-                  views: number.format(views),
-                  saves: number.format(saves),
-                })}
-              </Typography>
-            </li>
-          ))}
+                <div className="size-11 shrink-0 overflow-hidden rounded-md bg-badge-neutral-background">
+                  {listing.coverPhotoUrl && (
+                    <img
+                      src={listing.coverPhotoUrl}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      width={88}
+                      height={88}
+                      className="size-full object-cover"
+                    />
+                  )}
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <Typography variant="subtitle2" component="span" className="truncate">
+                      <Link
+                        to={managedListingPath(listing.id)}
+                        aria-label={t('manage.open', { title: listing.title })}
+                        className="text-inherit no-underline after:absolute after:inset-0 after:content-[''] hover:underline focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-primary"
+                      >
+                        {listing.title}
+                      </Link>
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="textSecondary"
+                      className="app-tabular shrink-0 whitespace-nowrap"
+                    >
+                      {t('insights.topCell', {
+                        views: number.format(views),
+                        saves: number.format(saves),
+                      })}
+                    </Typography>
+                  </div>
+                  {/* The share of the busiest home's views, as a bar: the ranking at a glance. */}
+                  <div className="flex items-center gap-2">
+                    <div
+                      aria-hidden
+                      className="bg-background-default h-1 flex-1 overflow-hidden rounded-full"
+                    >
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${share}%` }}
+                      />
+                    </div>
+                    <Typography
+                      variant="caption"
+                      color="textSecondary"
+                      className="w-24 shrink-0 truncate"
+                    >
+                      {`${listing.city.name}, ${listing.city.state}`}
+                    </Typography>
+                    {listing.status !== 'PUBLISHED' && (
+                      <ListingStatusBadge status={listing.status} />
+                    )}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ol>
       )}
     </section>

@@ -31,30 +31,32 @@ model ViewingSchedule {
 /// index `uq_viewings_listing_slot_active` is what rules out a double booking — and one active
 /// row per tenant and listing (`uq_viewings_tenant_listing_active`).
 model Viewing {
-  id             String    @id(map: "pk_viewings") @default(dbgenerated("uuidv7()")) @db.Uuid
-  listingId      String    @map("listing_id") @db.Uuid
-  listing        Listing   @relation(fields: [listingId], references: [id], onDelete: Restrict, map: "fk_viewings_listing_id")
-  tenantId       String    @map("tenant_id") @db.Uuid
-  tenant         User      @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "fk_viewings_tenant_id")
-  startsAt       DateTime  @map("starts_at") @db.Timestamptz(3)
-  endsAt         DateTime  @map("ends_at") @db.Timestamptz(3)
+  id             String         @id(map: "pk_viewings") @default(dbgenerated("uuidv7()")) @db.Uuid
+  listingId      String         @map("listing_id") @db.Uuid
+  listing        Listing        @relation(fields: [listingId], references: [id], onDelete: Restrict, map: "fk_viewings_listing_id")
+  tenantId       String         @map("tenant_id") @db.Uuid
+  tenant         User           @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "fk_viewings_tenant_id")
+  startsAt       DateTime       @map("starts_at") @db.Timestamptz(3)
+  endsAt         DateTime       @map("ends_at") @db.Timestamptz(3)
   /// REQUESTED | CONFIRMED | DECLINED | CANCELLED | EXPIRED — CHECK in migration.
-  status         String    @db.VarChar(16)
+  status         String         @db.VarChar(16)
   /// The tenant's note with the request (who they are, what they look for).
-  message        String?   @db.VarChar(500)
+  message        String?        @db.VarChar(500)
   /// The note that came with a decline or a cancellation.
-  note           String?   @db.VarChar(300)
+  note           String?        @db.VarChar(300)
   /// TENANT | OWNER — set with CANCELLED only (CHECK in migration).
-  cancelledBy    String?   @map("cancelled_by") @db.VarChar(16)
+  cancelledBy    String?        @map("cancelled_by") @db.VarChar(16)
   /// When the request was answered, cancelled or expired; null while it waits.
-  decidedAt      DateTime? @map("decided_at") @db.Timestamptz(3)
+  decidedAt      DateTime?      @map("decided_at") @db.Timestamptz(3)
   /// The day-before reminder went out (confirmed viewings only).
-  reminderSentAt DateTime? @map("reminder_sent_at") @db.Timestamptz(3)
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
-  createdBy      String?   @map("created_by") @db.Uuid
-  updatedBy      String?   @map("updated_by") @db.Uuid
-  version        Int       @default(0)
+  reminderSentAt DateTime?      @map("reminder_sent_at") @db.Timestamptz(3)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy      String?        @map("created_by") @db.Uuid
+  updatedBy      String?        @map("updated_by") @db.Uuid
+  version        Int            @default(0)
+  /// The conversation once the viewing was confirmed (message module).
+  thread         ViewingThread?
 
   @@index([listingId, startsAt], map: "idx_viewings_listing_id_starts_at")
   @@index([tenantId, startsAt], map: "idx_viewings_tenant_id_starts_at")

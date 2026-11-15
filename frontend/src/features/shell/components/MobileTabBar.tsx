@@ -4,12 +4,14 @@ import HomeWorkOutlined from '@mui/icons-material/HomeWorkOutlined';
 import PersonOutlineOutlined from '@mui/icons-material/PersonOutlineOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import SellOutlined from '@mui/icons-material/SellOutlined';
+import Badge from '@mui/material/Badge';
 import Typography from '@mui/material/Typography';
 import type { ComponentType } from 'react';
 import type { SvgIconProps } from '@mui/material/SvgIcon';
 import { useTranslation } from 'react-i18next';
 import { Link, matchPath, useLocation, useSearchParams } from 'react-router';
 import { useAccess, useCurrentUser } from '@/features/auth';
+import { useUnreadMessages } from '@/features/message';
 import { cn } from '@/shared/lib/cn';
 import { browseSearch, parseBrowseParams } from '@/shared/lib/listingSearch';
 import { PATHS, settingsPath } from '@/shared/lib/paths';
@@ -35,6 +37,10 @@ export function MobileTabBar() {
   const can = useAccess();
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
+  // A tenant's unread messages sit on the account tab: the inbox is reached from the account
+  // menu, a viewing's card, or the header on wider screens.
+  const unread = useUnreadMessages(Boolean(user) && can('viewing.book'));
+  const unreadCount = unread.data?.unread ?? 0;
   if (matchPath(PATHS.listing, pathname)) {
     return null;
   }
@@ -96,12 +102,23 @@ export function MobileTabBar() {
               <Link
                 to={tab.to}
                 aria-current={tab.active ? 'page' : undefined}
+                aria-label={
+                  tab.key === 'account' && unreadCount > 0
+                    ? t('tabBar.accountUnread', { count: unreadCount })
+                    : undefined
+                }
                 className={cn(
                   'flex min-h-14 flex-col items-center justify-center gap-0.5 no-underline transition-colors',
                   tab.active ? 'text-primary' : 'text-text-secondary',
                 )}
               >
-                <Icon aria-hidden fontSize="small" />
+                <Badge
+                  badgeContent={tab.key === 'account' ? unreadCount : 0}
+                  color="secondary"
+                  max={99}
+                >
+                  <Icon aria-hidden fontSize="small" />
+                </Badge>
                 <Typography variant="caption" component="span" className="font-medium">
                   {t(`tabBar.${tab.key}`, user ? {} : { context: 'visitor' })}
                 </Typography>

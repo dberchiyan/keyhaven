@@ -38,6 +38,11 @@
     "photoRejected": "The file is not the photo that was announced — upload a JPEG, PNG or WebP",
     "photoOrderMismatch": "The order must list every photo once — reload and try again"
   },
+  "message": {
+    "notConfirmed": "Messages open once the lister confirms the viewing",
+    "closed": "This conversation is closed — the viewing was cancelled",
+    "threadFull": "This conversation is full ({max} messages) — continue by email"
+  },
   "registration": {
     "emailTaken": "An account with this email already exists — sign in instead"
   },

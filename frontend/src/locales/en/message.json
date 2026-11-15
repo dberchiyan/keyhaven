@@ -1,0 +1,56 @@
+{
+  "pageTitle": "Messages",
+  "title": "Messages",
+  "subtitle": "Talk to the other side of a confirmed viewing — questions before the visit, next steps after it.",
+  "retry": "Try again",
+  "inbox": {
+    "title": "Conversations",
+    "loading": "Loading conversations",
+    "empty": "No conversations yet",
+    "emptyHintTenant": "Once a lister confirms your viewing, you can write to them here.",
+    "emptyHintOwner": "Confirm a viewing request and the tenant can write to you here.",
+    "youWrote": "You: {{text}}",
+    "noMessages": "Viewing {{when}} · say hello",
+    "closed": "Conversation closed",
+    "rowUnread_one": "{{name}}, {{count}} unread message",
+    "rowUnread_other": "{{name}}, {{count}} unread messages",
+    "filterLabel": "Which conversations",
+    "filter": {
+      "all": "All",
+      "unread": "Unread"
+    },
+    "allRead": "All caught up",
+    "allReadHint": "Nothing unread — every conversation is up to date."
+  },
+  "thread": {
+    "label": "Conversation",
+    "loading": "Loading the conversation",
+    "back": "Back to conversations",
+    "messages": "Messages",
+    "when": "Viewing {{when}} {{zone}}",
+    "kind": {
+      "TENANT": "Tenant",
+      "LANDLORD": "Landlord",
+      "AGENCY": "Agency"
+    },
+    "empty": "Say hello to {{name}}",
+    "emptyHint": "Ask about parking, the move-in day, the neighbourhood — anything before the visit.",
+    "closed": "This conversation is closed: the viewing was cancelled.",
+    "pick": "Pick a conversation",
+    "pickHint": "Every confirmed viewing has one. Choose it on the left to read and write.",
+    "seen": "Seen",
+    "new": "New",
+    "newLabel": "New messages below",
+    "behind_one": "{{count}} new message",
+    "behind_other": "{{count}} new messages"
+  },
+  "composer": {
+    "label": "Write a message",
+    "field": "Message",
+    "placeholder": "Message {{name}}…",
+    "send": "Send",
+    "hint": "Enter sends · Shift+Enter for a new line",
+    "remaining_one": "{{count}} character left",
+    "remaining_other": "{{count}} characters left"
+  }
+}

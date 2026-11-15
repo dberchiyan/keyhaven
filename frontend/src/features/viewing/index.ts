@@ -6,3 +6,5 @@ export { BookViewingSection } from './components/BookViewingSection';
 export { ListingViewingsSection } from './components/ListingViewingsSection';
 export { ScheduleSection } from './components/ScheduleSection';
 export { useViewingSummary } from './hooks/useViewingQueries';
+export { ViewingStatusBadge } from './components/ViewingStatusBadge';
+export { displayStatus, formatSlot, formatSlotDate, zoneName } from './format';

@@ -13,6 +13,9 @@ export const PATHS = {
   saved: '/saved',
   /** A tenant's viewings, or the owner's viewings dashboard. */
   viewings: '/viewings',
+  /** The inbox, and one viewing's conversation. */
+  messages: '/messages',
+  conversation: '/messages/:viewingId',
   newListing: '/manage/new',
   managedListing: '/manage/:listingId',
   editListing: '/manage/:listingId/edit',
@@ -35,3 +38,7 @@ export const editListingPath = (listingId: string): string =>
 /** `/settings/<section>` — one section of Settings. */
 export const settingsPath = (section: string): string =>
   PATHS.settingsSection.replace(':section', encodeURIComponent(section));
+
+/** `/messages/:viewingId` — the conversation of one viewing. */
+export const conversationPath = (viewingId: string): string =>
+  PATHS.conversation.replace(':viewingId', encodeURIComponent(viewingId));

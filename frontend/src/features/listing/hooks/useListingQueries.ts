@@ -83,17 +83,58 @@ export const useSavedListings = (params: SavedListParams) =>
  * Save or unsave a home. Reversible, so it is not optimistic either way: the heart flips when
  * the server answered, and every list that shows the heart is read again.
  */
+/** A cached object that carries a heart: a card, a detail, or a list of them. */
+interface Hearted {
+  id: string;
+  saved: boolean;
+}
+const isHearted = (value: unknown): value is Hearted =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as { id?: unknown }).id === 'string' &&
+  typeof (value as { saved?: unknown }).saved === 'boolean';
+
+/**
+ * The same home may sit in several cached queries at once (a search page, the strips, the
+ * detail, the saved list): every one of them gets the new heart, whatever its shape.
+ */
+const withHeart = (data: unknown, listingId: string, saved: boolean): unknown => {
+  if (Array.isArray(data)) {
+    return data.map((item) => withHeart(item, listingId, saved));
+  }
+  if (isHearted(data)) {
+    return data.id === listingId ? { ...data, saved } : data;
+  }
+  if (typeof data === 'object' && data !== null && 'content' in data) {
+    return { ...data, content: withHeart(data.content, listingId, saved) };
+  }
+  return data;
+};
+
+/**
+ * Optimistic (a save is reversible): every cached heart of the home flips at once and flips
+ * back on an error; the saved list is read again afterwards (its membership changed).
+ */
 export const useToggleSaved = () => {
   const queryClient = useQueryClient();
   return useMutation<unknown, ApiError, { listingId: string; saved: boolean }>({
     mutationFn: ({ listingId, saved }) =>
       saved ? savedListingApi.unsave(listingId) : savedListingApi.save(listingId),
-    onSuccess: async (_result, { listingId }) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: listingKeys.searches() }),
-        queryClient.invalidateQueries({ queryKey: listingKeys.saved() }),
-        queryClient.invalidateQueries({ queryKey: listingKeys.detail(listingId) }),
-      ]);
+    onMutate: async ({ listingId, saved }) => {
+      await queryClient.cancelQueries({ queryKey: listingKeys.all });
+      const before = queryClient.getQueriesData({ queryKey: listingKeys.all });
+      queryClient.setQueriesData({ queryKey: listingKeys.all }, (data: unknown) =>
+        withHeart(data, listingId, !saved),
+      );
+      return before;
+    },
+    onError: (_error, _variables, context) => {
+      for (const [key, data] of (context ?? []) as [readonly unknown[], unknown][]) {
+        queryClient.setQueryData(key, data);
+      }
+    },
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: listingKeys.saved() });
     },
   });
 };

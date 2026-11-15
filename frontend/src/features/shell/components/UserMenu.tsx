@@ -1,4 +1,5 @@
 import EventAvailableOutlined from '@mui/icons-material/EventAvailableOutlined';
+import ForumOutlined from '@mui/icons-material/ForumOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import PersonOutlineOutlined from '@mui/icons-material/PersonOutlineOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
@@ -20,6 +21,7 @@ import { ThemeModeSwitch } from './ThemeModeSwitch';
 
 const LINKS = [
   { key: 'viewings', to: PATHS.viewings, icon: EventAvailableOutlined },
+  { key: 'messages', to: PATHS.messages, icon: ForumOutlined },
   { key: 'profile', to: settingsPath('account'), icon: PersonOutlineOutlined },
   { key: 'securityDevices', to: settingsPath('security'), icon: ShieldOutlined },
   { key: 'settings', to: PATHS.settings, icon: SettingsOutlined },

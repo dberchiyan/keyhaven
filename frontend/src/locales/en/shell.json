@@ -5,7 +5,9 @@
     "browse": "Browse homes",
     "settings": "Settings",
     "viewings": "Viewings",
-    "withBadge": "{{label}} — {{count}} to answer"
+    "withBadge": "{{label}} — {{count}} to answer",
+    "messages": "Messages",
+    "withUnread": "{{label}} — {{count}} unread"
   },
   "menu": {
     "open": "Open menu",
@@ -24,7 +26,8 @@
     "settings": "Settings",
     "roleAt": "{{role}} · {{agency}}",
     "demoReset": "Public demo · resets daily at 00:00 Kyiv time",
-    "viewings": "Viewings"
+    "viewings": "Viewings",
+    "messages": "Messages"
   },
   "role": {
     "TENANT": "Tenant",
@@ -45,7 +48,9 @@
     "saved": "Saved",
     "dashboard": "Dashboard",
     "viewings": "Viewings",
-    "landing": "About Keyhaven"
+    "landing": "About Keyhaven",
+    "messages": "Messages",
+    "messagesUnread": "Messages, {{count}} unread"
   },
   "footer": {
     "tagline": "Homes to rent and to buy in six US cities.",
@@ -80,6 +85,7 @@
     "dashboard": "Dashboard",
     "account": "Account",
     "account_visitor": "Sign in",
-    "viewings": "Viewings"
+    "viewings": "Viewings",
+    "accountUnread": "Account, {{count}} unread messages"
   }
 }

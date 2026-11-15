@@ -1,4 +1,5 @@
 import EventAvailableOutlined from '@mui/icons-material/EventAvailableOutlined';
+import ForumOutlined from '@mui/icons-material/ForumOutlined';
 import HomeWorkOutlined from '@mui/icons-material/HomeWorkOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
@@ -6,6 +7,7 @@ import type { SvgIconProps } from '@mui/material/SvgIcon';
 import type { ComponentType } from 'react';
 import type { AccessPart } from '@/features/auth';
 import { BrowsePage, HomePage } from '@/features/listing';
+import { MessagesPage } from '@/features/message';
 import { SettingsPage } from '@/features/settings';
 import { ViewingsPage } from '@/features/viewing';
 import { PATHS } from '@/shared/lib/paths';
@@ -13,6 +15,7 @@ import { PATHS } from '@/shared/lib/paths';
 export const NavSection = {
   LISTINGS: 'listings',
   VIEWINGS: 'viewings',
+  MESSAGES: 'messages',
   BROWSE: 'browse',
   SETTINGS: 'settings',
 } as const;
@@ -27,8 +30,8 @@ export interface NavItem {
   placement: 'main' | 'bottom';
   /** Other paths that count as this section (a listing's management page under Listings). */
   alsoActiveOn?: readonly string[];
-  /** A figure on the icon: requests waiting for an answer. */
-  badge?: 'viewingRequests';
+  /** A figure on the icon: requests waiting for an answer, or unread messages. */
+  badge?: 'viewingRequests' | 'unreadMessages';
   /** Loads the page's code on hover or focus, so the click renders at once. */
   preload: () => Promise<unknown>;
 }
@@ -52,6 +55,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
     placement: 'main',
     badge: 'viewingRequests',
     preload: ViewingsPage.preload,
+  },
+  {
+    section: NavSection.MESSAGES,
+    path: PATHS.messages,
+    icon: ForumOutlined,
+    access: 'section.messages',
+    placement: 'main',
+    alsoActiveOn: [PATHS.conversation],
+    badge: 'unreadMessages',
+    preload: MessagesPage.preload,
   },
   {
     section: NavSection.BROWSE,

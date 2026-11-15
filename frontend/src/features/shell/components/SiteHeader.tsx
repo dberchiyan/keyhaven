@@ -1,8 +1,10 @@
+import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, useLocation, useSearchParams } from 'react-router';
 import { useAccess, useCurrentUser } from '@/features/auth';
+import { useUnreadMessages } from '@/features/message';
 import { BrandMark } from '@/shared/components/BrandMark';
 import { cn } from '@/shared/lib/cn';
 import {
@@ -108,6 +110,7 @@ export function SiteHeader() {
                   {t('shell:site.viewings')}
                 </Button>
               )}
+              {can('viewing.book') && <MessagesLink />}
               {can('home.manage') && (
                 <Button component={Link} to={PATHS.home} variant="text">
                   {t('shell:site.dashboard')}
@@ -136,6 +139,26 @@ export function SiteHeader() {
   );
 }
 
+/** The tenant's way to the inbox, with the unread count (listers have it in the sidebar). */
+function MessagesLink() {
+  const { t } = useTranslation('shell');
+  const unread = useUnreadMessages();
+  const count = unread.data?.unread ?? 0;
+  return (
+    <Button
+      component={NavLink}
+      to={PATHS.messages}
+      variant="text"
+      aria-label={count > 0 ? t('site.messagesUnread', { count }) : undefined}
+      className="hidden sm:inline-flex"
+    >
+      <Badge badgeContent={count} color="secondary" max={99} className="pr-1">
+        {t('site.messages')}
+      </Badge>
+    </Button>
+  );
+}
+
 interface TabsProps {
   activeTab: Tab | null;
   params: BrowseParams;
@@ -155,8 +178,10 @@ function Tabs({ activeTab, params }: TabsProps) {
               aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'inline-flex min-h-9 flex-1 items-center justify-center rounded-full px-4 no-underline transition-colors hover:text-text-primary',
+                // A solid forest pill, as the sidebar's active item: a paper pill on the paper
+                // header's cream track was hard to tell from its neighbours.
                 isActive
-                  ? 'bg-background-paper text-text-primary shadow-[0_1px_2px_var(--mui-palette-shadow-soft)]'
+                  ? 'bg-primary text-primary-contrast-text hover:text-primary-contrast-text'
                   : 'text-text-secondary',
               )}
             >

@@ -398,17 +398,16 @@ describe('Listings and search (M1)', () => {
       // The tenant opens it: no address, one view counted (once per day).
       const page = await tenant.get(`/api/v1/listings/${listingId}`);
       expect(page.status).toBe(200);
-      // Five comparable rentals in Testville (the fixtures' published apartments at $1,500, the
-      // showcase rows included): the median comes from the city, and $2,200.50 is 47 % above it.
+      // The comparable rentals in Testville are the fixtures' published apartments at $1,500
+      // (five per test file, this one's and those of the files that ran before it): the median
+      // comes from the city, and $2,200.50 is 47 % above it.
       expect(page.body).toMatchObject({
         address: null,
-        priceContext: {
-          scope: 'CITY',
-          sample: 5,
-          median: { amount: '1500.0000' },
-          differencePercent: 47,
-        },
+        priceContext: { scope: 'CITY', median: { amount: '1500.0000' }, differencePercent: 47 },
       });
+      const context = bodyOf(page).priceContext as { sample: number };
+      expect(context.sample).toBeGreaterThanOrEqual(5);
+      expect(context.sample % 5).toBe(0);
       await tenant.get(`/api/v1/listings/${listingId}`);
       expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`))).toMatchObject({
         viewCount: 1,

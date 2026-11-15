@@ -179,7 +179,9 @@
         "price,desc": "Price: high to low",
         "price,asc": "Price: low to high",
         "title,asc": "Title A–Z"
-      }
+      },
+      "count_one": "{{count}} listing",
+      "count_other": "{{count}} listings"
     },
     "count_one": "{{formatted}} listing",
     "count_other": "{{formatted}} listings",
@@ -192,7 +194,8 @@
       "status": "Status",
       "updated": "Last changed",
       "interest": "Interest",
-      "price": "Price"
+      "price": "Price",
+      "open": "Open"
     },
     "open": "Open {{title}}",
     "empty": "No listings here",
@@ -210,7 +213,17 @@
       "agency": "Every agent of {{agency}} manages these listings together.",
       "all": "Listings of every landlord and agency."
     },
-    "new": "New listing"
+    "new": "New listing",
+    "summary": {
+      "total_one": "{{formatted}} listing",
+      "total_other": "{{formatted}} listings",
+      "PUBLISHED": "{{formatted}} published",
+      "DRAFT": "{{formatted}} in draft",
+      "UNPUBLISHED": "{{formatted}} unpublished",
+      "SUSPENDED": "{{formatted}} suspended"
+    },
+    "first": "List your first home",
+    "firstHint": "A listing starts as a draft only you can see; add photos and publish it when it is ready."
   },
   "managed": {
     "pageTitle": "{{title}} · Keyhaven",
@@ -372,7 +385,6 @@
   },
   "showcase": {
     "badge": "Showcase",
-    "add": "Add listing",
     "dashboard": {
       "title": "Showcase listings are read-only",
       "text": "The seeded homes stay as they are. Add a listing of your own to edit, publish and upload photos — everything added is wiped at the daily reset, 00:00 Kyiv time."
@@ -423,5 +435,20 @@
     "error": "The insights could not be loaded.",
     "retry": "Try again",
     "titleHintAll": "Who looked at the homes on Keyhaven and who saved one, day by day"
+  },
+  "attention": {
+    "label": "Needs your attention",
+    "requests_one": "{{formatted}} viewing request",
+    "requests_other": "{{formatted}} viewing requests",
+    "requestsHint": "Waiting for your answer",
+    "messages_one": "{{formatted}} unread message",
+    "messages_other": "{{formatted}} unread messages",
+    "messagesHint": "From tenants with a confirmed viewing",
+    "drafts_one": "{{formatted}} draft",
+    "drafts_other": "{{formatted}} drafts",
+    "draftsHint": "Not on the site yet — finish and publish",
+    "upcoming_one": "{{formatted}} visit ahead",
+    "upcoming_other": "{{formatted}} visits ahead",
+    "upcomingHint": "Confirmed viewings, day by day"
   }
 }

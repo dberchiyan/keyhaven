@@ -4,6 +4,14 @@ import { z } from 'zod';
 
 export const City_Output = /* @__PURE__ */ z.object({ "id": z.string(), "name": z.string(), "state": z.string(), "slug": z.string(), "timeZone": z.string() });
 export const CitiesResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(City_Output) });
+export const MessageSide_Output = /* @__PURE__ */ z.enum(["TENANT", "OWNER"]);
+export const ConversationListing_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "coverPhotoUrl": z.string().nullable(), "neighborhood": z.string().nullable(), "city": z.object({ "name": z.string(), "state": z.string(), "timeZone": z.string() }), "address": z.object({ "line1": z.string(), "line2": z.string().nullable() }).nullable() });
+export const Counterpart_Output = /* @__PURE__ */ z.object({ "name": z.string(), "kind": z.enum(["TENANT", "LANDLORD", "AGENCY"]) });
+export const Message_Output = /* @__PURE__ */ z.object({ "id": z.string(), "viewingId": z.string(), "side": MessageSide_Output, "sender": z.object({ "id": z.string(), "firstName": z.string(), "lastName": z.string() }), "body": z.string(), "createdAt": z.string() });
+export const ConversationDetailResponse_Output = /* @__PURE__ */ z.object({ "viewingId": z.string(), "status": z.enum(["REQUESTED", "CONFIRMED", "DECLINED", "CANCELLED", "EXPIRED"]), "startsAt": z.string(), "endsAt": z.string(), "open": z.boolean(), "side": MessageSide_Output, "listing": ConversationListing_Output, "counterpart": Counterpart_Output, "lastMessage": z.object({ "body": z.string(), "side": MessageSide_Output, "createdAt": z.string() }).nullable(), "messageCount": z.number().int(), "unread": z.number().int(), "readAt": z.string().nullable(), "seenAt": z.string().nullable(), "messages": z.array(Message_Output) });
+export const Conversation_Output = /* @__PURE__ */ z.object({ "viewingId": z.string(), "status": z.enum(["REQUESTED", "CONFIRMED", "DECLINED", "CANCELLED", "EXPIRED"]), "startsAt": z.string(), "endsAt": z.string(), "open": z.boolean(), "side": MessageSide_Output, "listing": ConversationListing_Output, "counterpart": Counterpart_Output, "lastMessage": z.object({ "body": z.string(), "side": MessageSide_Output, "createdAt": z.string() }).nullable(), "messageCount": z.number().int(), "unread": z.number().int(), "readAt": z.string().nullable(), "seenAt": z.string().nullable() });
+export const ConversationListResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(Conversation_Output) });
+export const ConversationSummaryResponse_Output = /* @__PURE__ */ z.object({ "unread": z.number().int() });
 export const UserRole_Output = /* @__PURE__ */ z.enum(["TENANT", "LANDLORD", "AGENT", "ADMIN"]);
 export const CurrentUserResponse_Output = /* @__PURE__ */ z.object({ "id": z.string(), "email": z.string(), "firstName": z.string(), "lastName": z.string(), "phone": z.string().nullable(), "role": UserRole_Output, "emailVerifiedAt": z.string().nullable(), "agency": z.object({ "id": z.string(), "name": z.string() }).nullable(), "idleTimeoutMinutes": z.number().int(), "demoRestricted": z.boolean(), "demoMode": z.boolean() });
 export const DigestSummaryResponse_Output = /* @__PURE__ */ z.object({ "searches": z.number().int(), "emails": z.number().int() });
@@ -31,8 +39,10 @@ export const ManagedListingPageResponse_Output = /* @__PURE__ */ z.object({ "con
 export const PhotoStatus_Output = /* @__PURE__ */ z.enum(["PENDING", "READY"]);
 export const ManagedPhoto_Output = /* @__PURE__ */ z.object({ "id": z.string(), "url": z.string().nullable(), "status": PhotoStatus_Output, "position": z.number().int().nullable() });
 export const ManagedListingResponse_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "propertyType": PropertyType_Output, "kind": ListingKind_Output, "price": Money_Output, "bedrooms": z.number().int(), "bathrooms": z.string(), "sizeSqft": z.number().int(), "city": City_Output, "neighborhood": z.string().nullable(), "availableFrom": z.string().nullable(), "publishedAt": z.string().nullable(), "coverPhotoUrl": z.string().nullable(), "viewCount": z.number().int(), "saved": z.boolean(), "demo": z.boolean(), "description": z.string(), "furnished": z.boolean(), "petsAllowed": z.boolean(), "parking": z.boolean(), "zip": z.string(), "photos": z.array(z.object({ "id": z.string(), "url": z.string() })), "listedBy": ListedBy_Output, "address": ListingAddress_Output, "priceContext": PriceContext_Output.nullable(), "status": ListingStatus_Output, "cityId": z.string(), "saveCount": z.number().int(), "managedPhotos": z.array(ManagedPhoto_Output), "createdAt": z.string(), "updatedAt": z.string(), "version": z.number().int() });
+export const MessageResponse_Output = /* @__PURE__ */ z.object({ "id": z.string(), "viewingId": z.string(), "side": MessageSide_Output, "sender": z.object({ "id": z.string(), "firstName": z.string(), "lastName": z.string() }), "body": z.string(), "createdAt": z.string() });
 export const PasswordResetRequestResponse_Output = /* @__PURE__ */ z.object({ "email": z.string() });
 export const PhotoIntentResponse_Output = /* @__PURE__ */ z.object({ "photoId": z.string(), "uploadUrl": z.string(), "headers": z.record(z.string(), z.string()), "expiresAt": z.string() });
+export const ReadReceiptResponse_Output = /* @__PURE__ */ z.object({ "readAt": z.string().nullable() });
 export const SavedListingResponse_Output = /* @__PURE__ */ z.object({ "listingId": z.string(), "saved": z.boolean() });
 export const SavedSearchCriteria_Output = /* @__PURE__ */ z.object({ "kind": z.enum(["RENT", "SALE"]).optional(), "type": z.enum(["APARTMENT", "HOUSE", "CONDO", "TOWNHOUSE", "STUDIO"]).optional(), "city": z.string().optional(), "priceMin": z.string().optional(), "priceMax": z.string().optional(), "beds": z.number().int().optional(), "baths": z.string().optional(), "pets": z.boolean().optional(), "furnished": z.boolean().optional(), "parking": z.boolean().optional(), "availableBy": z.string().optional(), "q": z.string().optional() });
 export const SavedSearch_Output = /* @__PURE__ */ z.object({ "id": z.string(), "name": z.string(), "criteria": SavedSearchCriteria_Output, "emailAlerts": z.boolean(), "lastNotifiedAt": z.string().nullable(), "createdAt": z.string(), "version": z.number().int() });
@@ -67,6 +77,7 @@ export const RESPONSE_SCHEMAS: readonly { method: string; pattern: RegExp; schem
   { method: 'post', pattern: /^\/api\/v1\/auth\/password-resets$/, schema: CurrentUserResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/auth\/security-log$/, schema: SecurityLogResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/auth\/sessions$/, schema: SessionsResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/conversations\/summary$/, schema: ConversationSummaryResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings\/insights$/, schema: ManagedInsightsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings\/status-counts$/, schema: ListingStatusCountsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-viewings\/summary$/, schema: ViewingSummaryResponse_Output },
@@ -85,6 +96,9 @@ export const RESPONSE_SCHEMAS: readonly { method: string; pattern: RegExp; schem
   { method: 'post', pattern: /^\/api\/v1\/viewings\/[^/]+\/cancellation$/, schema: ViewingResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/viewings\/[^/]+\/confirmation$/, schema: ViewingResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/viewings\/[^/]+\/declination$/, schema: ViewingResponse_Output },
+  { method: 'post', pattern: /^\/api\/v1\/viewings\/[^/]+\/message-reads$/, schema: ReadReceiptResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/viewings\/[^/]+\/messages$/, schema: ConversationDetailResponse_Output },
+  { method: 'post', pattern: /^\/api\/v1\/viewings\/[^/]+\/messages$/, schema: MessageResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/listings\/[^/]+$/, schema: ListingDetailResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings\/[^/]+$/, schema: ManagedListingResponse_Output },
   { method: 'put', pattern: /^\/api\/v1\/managed-listings\/[^/]+$/, schema: ManagedListingResponse_Output },
@@ -92,6 +106,7 @@ export const RESPONSE_SCHEMAS: readonly { method: string; pattern: RegExp; schem
   { method: 'put', pattern: /^\/api\/v1\/saved-searches\/[^/]+$/, schema: SavedSearchResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/viewings\/[^/]+$/, schema: ViewingResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/cities$/, schema: CitiesResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/conversations$/, schema: ConversationListResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/listing-cards$/, schema: ListingCardsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/listings$/, schema: ListingPageResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings$/, schema: ManagedListingPageResponse_Output },

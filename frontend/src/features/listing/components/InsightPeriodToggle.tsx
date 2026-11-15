@@ -11,7 +11,10 @@ export interface InsightPeriodToggleProps {
   onChange: (period: InsightPeriod) => void;
 }
 
-/** 7 / 30 / 90 days — the window of every figure and chart of the insights block. */
+/**
+ * 7 / 30 / 90 days — the window of every figure and chart of the insights block. On a phone the
+ * three options share the whole width equally; from `sm` the control is as wide as its labels.
+ */
 export function InsightPeriodToggle({ period, onChange }: InsightPeriodToggleProps) {
   const { t } = useTranslation('listing');
   return (
@@ -26,9 +29,10 @@ export function InsightPeriodToggle({ period, onChange }: InsightPeriodTogglePro
           onChange(value);
         }
       }}
+      className="w-full sm:w-auto"
     >
       {INSIGHT_PERIODS.map((option) => (
-        <ToggleButton key={option} value={option}>
+        <ToggleButton key={option} value={option} className="flex-1 sm:flex-none">
           {t(`insights.periods.${option}`)}
         </ToggleButton>
       ))}

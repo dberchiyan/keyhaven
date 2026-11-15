@@ -29,6 +29,7 @@ model User {
   listingViews    ListingView[]
   savedSearches   SavedSearch[]
   viewings        Viewing[]
+  viewingMessages ViewingMessage[]
 
   @@unique([email], map: "uq_users_email")
   @@index([agencyId], map: "idx_users_agency_id")

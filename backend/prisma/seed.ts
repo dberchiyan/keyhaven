@@ -20,6 +20,7 @@ import {
 } from './seed-data';
 import { seedActivity } from './seed-activity';
 import { seedListings } from './seed-listings';
+import { seedMessages } from './seed-messages';
 import { seedViewings } from './seed-viewings';
 
 /**
@@ -149,8 +150,14 @@ const seed = async (): Promise<void> => {
       OTHER_TENANTS.map((tenant) => idOf(tenant.email)),
       now,
     );
+    const messages = await seedMessages(
+      prisma,
+      idOf(DEMO_TENANT.email),
+      idOf(DEMO_LANDLORD.email),
+      now,
+    );
     process.stdout.write(
-      `Seeded ${CITIES.length} cities, 1 agency, ${users.count} users, ${listings.listings} listings, ${listings.photos} photos, ${activity.views} views, ${activity.saves} saves, ${viewings.schedules} viewing schedules, ${viewings.viewings} viewings (${listings.retired} photos replaced, ${listings.descriptions} descriptions refreshed; existing rows kept)\n`,
+      `Seeded ${CITIES.length} cities, 1 agency, ${users.count} users, ${listings.listings} listings, ${listings.photos} photos, ${activity.views} views, ${activity.saves} saves, ${viewings.schedules} viewing schedules, ${viewings.viewings} viewings, ${messages.threads} conversations with ${messages.messages} messages (${listings.retired} photos replaced, ${listings.descriptions} descriptions refreshed; existing rows kept)\n`,
     );
   } finally {
     await prisma.$disconnect();

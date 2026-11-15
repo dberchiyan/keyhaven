@@ -5,6 +5,7 @@ import enAuth from '@/locales/en/auth.json';
 import enCommon from '@/locales/en/common.json';
 import enErrors from '@/locales/en/errors.json';
 import enListing from '@/locales/en/listing.json';
+import enMessage from '@/locales/en/message.json';
 import enSavedSearch from '@/locales/en/savedSearch.json';
 import enSettings from '@/locales/en/settings.json';
 import enShell from '@/locales/en/shell.json';
@@ -21,6 +22,7 @@ export const resources = {
     errors: enErrors,
     auth: enAuth,
     listing: enListing,
+    message: enMessage,
     savedSearch: enSavedSearch,
     settings: enSettings,
     shell: enShell,

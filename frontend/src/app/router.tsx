@@ -17,6 +17,7 @@ import {
   ManagedListingPage,
   SavedPage,
 } from '@/features/listing';
+import { MessagesPage } from '@/features/message';
 import { SettingsPage } from '@/features/settings';
 import { ViewingsPage } from '@/features/viewing';
 import { AppLayout, RoleLayout, SiteLayout } from '@/features/shell';
@@ -63,6 +64,13 @@ export const router = createBrowserRouter([
           {
             element: <RequireAccess part="section.viewings" />,
             children: [{ path: PATHS.viewings, element: route(<ViewingsPage />) }],
+          },
+          {
+            element: <RequireAccess part="section.messages" />,
+            children: [
+              { path: PATHS.messages, element: route(<MessagesPage />) },
+              { path: PATHS.conversation, element: route(<MessagesPage />) },
+            ],
           },
           {
             element: <RequireAccess part="section.settings" />,

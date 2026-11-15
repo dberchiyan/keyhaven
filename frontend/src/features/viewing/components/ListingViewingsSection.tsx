@@ -7,7 +7,7 @@ import { Link as RouterLink } from 'react-router';
 import { useAccess } from '@/features/auth';
 import { PATHS } from '@/shared/lib/paths';
 import { useListingViewings } from '../hooks/useViewingQueries';
-import { ViewingCard } from './ViewingCard';
+import { ViewingAgenda } from './ViewingAgenda';
 import { ViewingError, ViewingListLoading } from './ViewingListStates';
 
 export interface ListingViewingsSectionProps {
@@ -41,18 +41,12 @@ export function ListingViewingsSection({ listingId }: ListingViewingsSectionProp
             {t('listing.empty')}
           </Typography>
         ) : (
-          <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 xl:grid-cols-2">
-            {viewings.data.map((viewing) => (
-              <li key={viewing.id}>
-                <ViewingCard
-                  viewing={viewing}
-                  audience="owner"
-                  canDecide={can('viewing.decide')}
-                  hideListing
-                />
-              </li>
-            ))}
-          </ul>
+          <ViewingAgenda
+            viewings={viewings.data}
+            audience="owner"
+            canDecide={can('viewing.decide')}
+            hideListing
+          />
         )}
       </CardContent>
     </Card>

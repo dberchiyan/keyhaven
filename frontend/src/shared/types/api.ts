@@ -829,6 +829,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's inbox: a conversation per confirmed viewing (their own, their homes' or all for admins), latest message first (at most 100) */
+        get: operations["MessageController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Unread messages over the whole inbox (the badge) */
+        get: operations["MessageController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/viewings/{viewingId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One conversation with its whole thread: its tenant, the home’s owner or an admin */
+        get: operations["MessageController_find"];
+        put?: never;
+        /** Write to the other side of a confirmed viewing (its tenant or the home’s owner); a cancelled viewing’s conversation is closed */
+        post: operations["MessageController_send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/viewings/{viewingId}/message-reads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The caller read the conversation: its unread messages are cleared */
+        post: operations["MessageController_markRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1483,6 +1552,127 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
             version: number;
+        };
+        Conversation_Output: {
+            /** Format: uuid */
+            viewingId: string;
+            /** @enum {string} */
+            status: "REQUESTED" | "CONFIRMED" | "DECLINED" | "CANCELLED" | "EXPIRED";
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            open: boolean;
+            side: components["schemas"]["MessageSide_Output"];
+            listing: components["schemas"]["ConversationListing_Output"];
+            counterpart: components["schemas"]["Counterpart_Output"];
+            lastMessage: {
+                body: string;
+                side: components["schemas"]["MessageSide_Output"];
+                /** Format: date-time */
+                createdAt: string;
+            } | null;
+            messageCount: number;
+            unread: number;
+            /** Format: date-time */
+            readAt: string | null;
+            /** Format: date-time */
+            seenAt: string | null;
+        };
+        /** @enum {string} */
+        MessageSide_Output: "TENANT" | "OWNER";
+        ConversationListing_Output: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            coverPhotoUrl: string | null;
+            neighborhood: string | null;
+            city: {
+                name: string;
+                state: string;
+                timeZone: string;
+            };
+            address: {
+                line1: string;
+                line2: string | null;
+            } | null;
+        };
+        Counterpart_Output: {
+            name: string;
+            /** @enum {string} */
+            kind: "TENANT" | "LANDLORD" | "AGENCY";
+        };
+        ConversationListResponse_Output: {
+            content: components["schemas"]["Conversation_Output"][];
+        };
+        ConversationSummaryResponse_Output: {
+            unread: number;
+        };
+        Message_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            viewingId: string;
+            side: components["schemas"]["MessageSide_Output"];
+            sender: {
+                /** Format: uuid */
+                id: string;
+                firstName: string;
+                lastName: string;
+            };
+            body: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ConversationDetailResponse_Output: {
+            /** Format: uuid */
+            viewingId: string;
+            /** @enum {string} */
+            status: "REQUESTED" | "CONFIRMED" | "DECLINED" | "CANCELLED" | "EXPIRED";
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt: string;
+            open: boolean;
+            side: components["schemas"]["MessageSide_Output"];
+            listing: components["schemas"]["ConversationListing_Output"];
+            counterpart: components["schemas"]["Counterpart_Output"];
+            lastMessage: {
+                body: string;
+                side: components["schemas"]["MessageSide_Output"];
+                /** Format: date-time */
+                createdAt: string;
+            } | null;
+            messageCount: number;
+            unread: number;
+            /** Format: date-time */
+            readAt: string | null;
+            /** Format: date-time */
+            seenAt: string | null;
+            messages: components["schemas"]["Message_Output"][];
+        };
+        SendMessageRequest: {
+            body: string;
+        };
+        MessageResponse_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            viewingId: string;
+            side: components["schemas"]["MessageSide_Output"];
+            sender: {
+                /** Format: uuid */
+                id: string;
+                firstName: string;
+                lastName: string;
+            };
+            body: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ReadReceiptResponse_Output: {
+            /** Format: date-time */
+            readAt: string | null;
         };
     };
     responses: never;
@@ -4482,6 +4672,270 @@ export interface operations {
                 };
             };
             /** @description FORBIDDEN | EMAIL_NOT_VERIFIED | DEMO_READ_ONLY */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    MessageController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationListResponse_Output"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    MessageController_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationSummaryResponse_Output"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    MessageController_find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetailResponse_Output"];
+                };
+            };
+            /** @description INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    MessageController_send: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description UUID per logical operation, reused on retry */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MessageResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IDEMPOTENCY_KEY_REUSED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    MessageController_markRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadReceiptResponse_Output"];
+                };
+            };
+            /** @description INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
             403: {
                 headers: {
                     [name: string]: unknown;

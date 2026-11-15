@@ -5,10 +5,10 @@ import { useNavigate } from 'react-router';
 import { PATHS } from '@/shared/lib/paths';
 import { isUpcoming } from '../format';
 import { useOwnViewings } from '../hooks/useViewingQueries';
-import { ViewingCard } from './ViewingCard';
+import { ViewingAgenda } from './ViewingAgenda';
 import { ViewingEmpty, ViewingError, ViewingListLoading } from './ViewingListStates';
 
-/** A tenant's viewings: what lies ahead (soonest first), then what was answered or passed. */
+/** A tenant's viewings: what lies ahead as an agenda by day, then what was answered or passed. */
 export function MyViewingsSection() {
   const { t } = useTranslation('viewing');
   const navigate = useNavigate();
@@ -35,8 +35,8 @@ export function MyViewingsSection() {
     .sort((left, right) => left.startsAt.localeCompare(right.startsAt));
   const past = own.data.filter((viewing) => !isUpcoming(viewing, now));
   return (
-    <div className="flex flex-col gap-8">
-      <section aria-labelledby="viewings-upcoming" className="flex flex-col gap-3">
+    <div className="flex flex-col gap-10">
+      <section aria-labelledby="viewings-upcoming" className="flex flex-col gap-4">
         <Typography id="viewings-upcoming" variant="h6" component="h2">
           {t('mine.upcoming', { count: upcoming.length })}
         </Typography>
@@ -45,27 +45,15 @@ export function MyViewingsSection() {
             {t('mine.noneUpcoming')}
           </Typography>
         ) : (
-          <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 lg:grid-cols-2">
-            {upcoming.map((viewing) => (
-              <li key={viewing.id}>
-                <ViewingCard viewing={viewing} audience="tenant" />
-              </li>
-            ))}
-          </ul>
+          <ViewingAgenda viewings={upcoming} audience="tenant" />
         )}
       </section>
       {past.length > 0 && (
-        <section aria-labelledby="viewings-past" className="flex flex-col gap-3">
+        <section aria-labelledby="viewings-past" className="flex flex-col gap-4">
           <Typography id="viewings-past" variant="h6" component="h2">
             {t('mine.past', { count: past.length })}
           </Typography>
-          <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 lg:grid-cols-2">
-            {past.map((viewing) => (
-              <li key={viewing.id}>
-                <ViewingCard viewing={viewing} audience="tenant" />
-              </li>
-            ))}
-          </ul>
+          <ViewingAgenda viewings={past} audience="tenant" />
         </section>
       )}
     </div>

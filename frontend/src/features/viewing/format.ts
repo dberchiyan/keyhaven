@@ -91,3 +91,35 @@ export const displayStatus = (
 export const isUpcoming = (viewing: Pick<Viewing, 'status' | 'startsAt'>, now: number): boolean =>
   (viewing.status === 'REQUESTED' || viewing.status === 'CONFIRMED') &&
   new Date(viewing.startsAt).getTime() > now;
+
+/** The home's local calendar day of an instant, `YYYY-MM-DD` (the agenda groups by it). */
+export const zonedDayOf = (iso: string, timeZone: string): string => {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(iso));
+  const part = (type: string): string => parts.find((item) => item.type === type)?.value ?? '';
+  return `${part('year')}-${part('month')}-${part('day')}`;
+};
+
+/** "Today", "Tomorrow", "Yesterday" for a local day near now (in the home's zone), else null. */
+export const relativeDayName = (
+  day: string,
+  timeZone: string,
+  now: number,
+  locale: string,
+): string | null => {
+  const today = zonedDayOf(new Date(now).toISOString(), timeZone);
+  const offsets = [-1, 0, 1] as const;
+  for (const offset of offsets) {
+    const candidate = zonedDayOf(new Date(now + offset * 86_400_000).toISOString(), timeZone);
+    if (candidate === day) {
+      return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(offset, 'day');
+    }
+  }
+  return today === day
+    ? new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(0, 'day')
+    : null;
+};

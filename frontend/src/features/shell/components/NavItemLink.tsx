@@ -5,6 +5,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import { useTranslation } from 'react-i18next';
 import { matchPath, NavLink, useLocation, useMatch } from 'react-router';
+import { useUnreadMessages } from '@/features/message';
 import { useViewingSummary } from '@/features/viewing';
 import { cn } from '@/shared/lib/cn';
 import type { NavItem } from '../navigation';
@@ -26,10 +27,19 @@ export function NavItemLink({ item, isCollapsed, onNavigate }: NavItemLinkProps)
     useMatch({ path: item.path, end: exact }) !== null ||
     (item.alsoActiveOn ?? []).some((path) => matchPath(path, pathname) !== null);
   const summary = useViewingSummary(item.badge === 'viewingRequests');
-  const count = item.badge === 'viewingRequests' ? (summary.data?.requested ?? 0) : 0;
+  const unread = useUnreadMessages(item.badge === 'unreadMessages');
+  const count =
+    item.badge === 'viewingRequests'
+      ? (summary.data?.requested ?? 0)
+      : item.badge === 'unreadMessages'
+        ? (unread.data?.unread ?? 0)
+        : 0;
   const label =
     count > 0
-      ? t('nav.withBadge', { label: t(`nav.${item.section}`), count })
+      ? t(item.badge === 'unreadMessages' ? 'nav.withUnread' : 'nav.withBadge', {
+          label: t(`nav.${item.section}`),
+          count,
+        })
       : t(`nav.${item.section}`);
   const Icon = item.icon;
 

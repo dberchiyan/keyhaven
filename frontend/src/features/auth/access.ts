@@ -25,6 +25,8 @@ export const ACCESS = {
   'home.manage': LISTERS,
   /** Viewings: a tenant's own, or the owner's dashboard of them — one route, two pages. */
   'section.viewings': EVERYONE,
+  /** Messages: the conversation of every confirmed viewing — everyone signed in has an inbox. */
+  'section.messages': EVERYONE,
   /** Asking for a viewing (the backend also needs a verified email). */
   'viewing.book': TENANTS,
   /** The viewings dashboard: landlords (their homes'), agents (the agency's), admins (all). */
