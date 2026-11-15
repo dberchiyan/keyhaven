@@ -9,6 +9,7 @@ import { Link } from 'react-router';
 import { managedListingPath } from '@/shared/lib/paths';
 import { formatAvailability, formatBaths, formatBeds, formatPrice } from '../format';
 import type { ManagedListingCard } from '../types';
+import { InterestCounts } from './InterestCounts';
 import { ListingStatusBadge } from './ListingStatusBadge';
 import { ShowcaseBadge } from './ShowcaseBadge';
 
@@ -85,11 +86,8 @@ export function ManagedListingTable({ listings }: ManagedListingTableProps) {
             <TableCell className="app-tabular truncate">
               {formatAvailability(listing, i18n.language, t)}
             </TableCell>
-            <TableCell className="app-tabular truncate">
-              {t('manage.table.interestCell', {
-                views: listing.viewCount,
-                saves: listing.saveCount,
-              })}
+            <TableCell className="whitespace-nowrap">
+              <InterestCounts views={listing.viewCount} saves={listing.saveCount} />
             </TableCell>
             <TableCell>
               <div className="flex flex-wrap gap-1">

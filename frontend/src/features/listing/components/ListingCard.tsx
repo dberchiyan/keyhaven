@@ -6,13 +6,14 @@ import { Link } from 'react-router';
 import { listingPath } from '@/shared/lib/paths';
 import { formatAvailability, formatBaths, formatBeds, formatPrice, formatSize } from '../format';
 import type { ListingCard as ListingCardData } from '../types';
+import { InterestCounts } from './InterestCounts';
 import { SaveButton } from './SaveButton';
 
 export interface ListingCardProps {
   listing: ListingCardData;
 }
 
-/** One search result: the cover photo, the price, facts and where. The title is a stretched link. */
+/** One search result: the cover photo, the price, facts, where and how many looked. The title is a stretched link. */
 export function ListingCard({ listing }: ListingCardProps) {
   const { t, i18n } = useTranslation('listing');
   const where = [listing.neighborhood, `${listing.city.name}, ${listing.city.state}`]
@@ -69,13 +70,18 @@ export function ListingCard({ listing }: ListingCardProps) {
         <Typography variant="body2" color="textSecondary" className="truncate">
           {where}
         </Typography>
-        <Typography
-          variant="caption"
-          component="span"
-          className="font-medium mt-auto self-start rounded-full bg-badge-active-background px-2.5 py-1 text-badge-active-text"
-        >
-          {formatAvailability(listing, i18n.language, t)}
-        </Typography>
+        <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+          <Typography
+            variant="caption"
+            component="span"
+            className="font-medium rounded-full bg-badge-active-background px-2.5 py-1 text-badge-active-text"
+          >
+            {formatAvailability(listing, i18n.language, t)}
+          </Typography>
+          <Typography variant="caption" component="span" color="textSecondary">
+            <InterestCounts views={listing.viewCount} />
+          </Typography>
+        </div>
       </div>
     </Card>
   );

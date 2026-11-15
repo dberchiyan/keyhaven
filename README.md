@@ -69,6 +69,7 @@ only reaches the backend log, so a new account cannot publish yet.
 - **Catalogue** — 1,000 homes for rent and 300 for sale across Austin, Denver, Seattle, Chicago,
   Atlanta and Phoenix, with six months of seeded views and saves behind them. Filters: city, type, price, beds, baths, pets, furnished, parking, move-in
   date; sort by newest or price; everything in the URL. Text search tolerates typos (`pg_trgm`).
+  Every card shows how many people have looked at the home.
 - **Listing page** — photos, price and price per sq ft, the price against the median of comparable
   homes ("8% below typical for a house in Wallingford"), facts, amenities, location (the street
   only after a confirmed viewing), who lists it, similar homes nearby. The catalogue remembers

@@ -33,7 +33,11 @@
     "availableFrom": "Available {{date}}",
     "open": "Open {{title}}",
     "noPhoto": "No photo yet",
-    "forSale": "For sale"
+    "forSale": "For sale",
+    "views_one": "{{count}} view",
+    "views_other": "{{count}} views",
+    "saves_one": "{{count}} save",
+    "saves_other": "{{count}} saves"
   },
   "facts": {
     "studio": "Studio",
@@ -186,7 +190,6 @@
       "status": "Status",
       "updated": "Last changed",
       "interest": "Interest",
-      "interestCell": "{{views}} views · {{saves}} saves",
       "price": "Price"
     },
     "open": "Open {{title}}",

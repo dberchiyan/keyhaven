@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { managedListingPath } from '@/shared/lib/paths';
 import { formatAvailability, formatBaths, formatBeds, formatPrice } from '../format';
 import type { ManagedListingCard } from '../types';
+import { InterestCounts } from './InterestCounts';
 import { ListingStatusBadge } from './ListingStatusBadge';
 import { ShowcaseBadge } from './ShowcaseBadge';
 
@@ -55,11 +56,8 @@ export function ManagedListingCards({ listings }: ManagedListingCardsProps) {
             <Typography variant="caption" color="textSecondary">
               {`${listing.city.name}, ${listing.city.state} · ${formatAvailability(listing, i18n.language, t)}`}
             </Typography>
-            <Typography variant="caption" color="textSecondary" className="app-tabular">
-              {t('manage.table.interestCell', {
-                views: listing.viewCount,
-                saves: listing.saveCount,
-              })}
+            <Typography variant="caption" color="textSecondary">
+              <InterestCounts views={listing.viewCount} saves={listing.saveCount} />
             </Typography>
           </div>
         </li>
