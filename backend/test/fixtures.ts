@@ -12,6 +12,8 @@ export const PASSWORD = 'Test-Password-2026!';
 
 export interface Fixtures {
   tenant: { id: string; email: string };
+  /** A second renter: two people racing for one viewing slot. */
+  otherTenant: { id: string; email: string };
   landlord: { id: string; email: string };
   otherLandlord: { id: string; email: string };
   agent: { id: string; email: string };
@@ -84,6 +86,7 @@ export const createFixtures = async (run: string): Promise<Fixtures> => {
       return { id: created.id, email };
     };
     const tenant = await user('tenant', UserRole.TENANT);
+    const otherTenant = await user('other-tenant', UserRole.TENANT);
     const landlord = await user('landlord', UserRole.LANDLORD);
     const otherLandlord = await user('other-landlord', UserRole.LANDLORD);
     const agent = await user('agent', UserRole.AGENT, agency.id);
@@ -126,6 +129,7 @@ export const createFixtures = async (run: string): Promise<Fixtures> => {
     };
     return {
       tenant,
+      otherTenant,
       landlord,
       otherLandlord,
       agent,
