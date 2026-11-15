@@ -2,6 +2,7 @@ import { RouterProvider } from 'react-router';
 import { AUTH_SESSION_ENDPOINTS, type LoginLocationState } from '@/features/auth';
 import { setSessionLostHandler } from '@/shared/api/client';
 import { PATHS } from '@/shared/lib/paths';
+import { LiveEvents } from './LiveEvents';
 import { Providers } from './providers';
 import { queryClient } from './queryClient';
 import { router } from './router';
@@ -23,6 +24,7 @@ setSessionLostHandler((_code, config) => {
 export function App() {
   return (
     <Providers>
+      <LiveEvents />
       <RouterProvider router={router} />
     </Providers>
   );

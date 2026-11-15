@@ -17,6 +17,8 @@ import { AuditField, auditValue } from '../../audit/service/audit-change';
 import { AuditService } from '../../audit/service/audit.service';
 import type { EmailMessage } from '../../email/service/email-sender';
 import { EmailSender } from '../../email/service/email-sender';
+import { EventService } from '../../event/service/event.service';
+import { LiveEventType } from '../../event/service/live-event';
 import { isListingKind, ListingKind } from '../../listing/service/listing-kind';
 import { ListingStatus } from '../../listing/service/listing-status';
 import { ObjectStorage } from '../../storage/service/object-storage';
@@ -89,6 +91,7 @@ export class ViewingService {
     private readonly viewingRepository: ViewingRepository,
     private readonly auditService: AuditService,
     private readonly emailSender: EmailSender,
+    private readonly events: EventService,
     private readonly storage: ObjectStorage,
     private readonly config: AppConfigService,
     @InjectPinoLogger(ViewingService.name) private readonly logger: PinoLogger,
@@ -188,7 +191,11 @@ export class ViewingService {
     }
     const id = await this.claimSlot(principal, listing, command, schedule.slotMinutes);
     const { viewing, owner } = await this.load(id, 'OWNER');
-    // After commit (data.md → Transactions): the owner learns of the request by email.
+    // After commit (data.md → Transactions): the owner's open tabs and inbox learn of the request.
+    this.events.publishToOwner(listing.landlordId, listing.agencyId, {
+      type: LiveEventType.VIEWING_CHANGED,
+      viewingId: id,
+    });
     await this.deliver(owner && viewingRequestedEmail(owner, viewing, this.appUrl()), id);
     return hideFromTenant(viewing);
   }
@@ -238,8 +245,9 @@ export class ViewingService {
   async decide(principal: Principal, viewingId: string, decision: Decision): Promise<Viewing> {
     const audience = audienceOf(principal);
     const changed = await this.applyDecision(principal, viewingId, decision, audience);
-    const { viewing, owner } = await this.load(viewingId, 'OWNER');
+    const { viewing, owner, record } = await this.load(viewingId, 'OWNER');
     if (changed) {
+      this.publishChanged(record);
       await this.notifyDecision(viewing, owner, decision.transition, audience);
     }
     return audience === 'TENANT' ? hideFromTenant(viewing) : viewing;
@@ -409,6 +417,10 @@ export class ViewingService {
         continue;
       }
       expired += 1;
+      const record = await this.viewingRepository.findById(row.id);
+      if (record) {
+        this.publishChanged(record);
+      }
       await this.auditService.record({
         action: AuditAction.VIEWING_EXPIRED,
         actorUserId: null,
@@ -459,12 +471,22 @@ export class ViewingService {
     return sent;
   }
 
-  private async load(viewingId: string, audience: ViewingAudience): Promise<Mapped> {
+  private async load(
+    viewingId: string,
+    audience: ViewingAudience,
+  ): Promise<Mapped & { record: ViewingRecord }> {
     const record = await this.viewingRepository.findById(viewingId);
     if (!record) {
       throw new ResourceNotFoundException();
     }
-    return this.toMapped(record, audience);
+    return { ...this.toMapped(record, audience), record };
+  }
+
+  /** Both sides' open tabs: the tenant's, and the owner's (landlord / agency). */
+  private publishChanged(record: ViewingRecord): void {
+    const event = { type: LiveEventType.VIEWING_CHANGED, viewingId: record.id } as const;
+    this.events.publishToUser(record.tenantId, event);
+    this.events.publishToOwner(record.listing.landlordId, record.listing.agencyId, event);
   }
 
   /** A failed delivery is logged, never thrown: the viewing is already what the client sees. */

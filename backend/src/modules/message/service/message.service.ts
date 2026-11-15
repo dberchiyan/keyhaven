@@ -9,6 +9,8 @@ import {
 import type { Principal } from '../../../common/security/principal';
 import type { EmailMessage } from '../../email/service/email-sender';
 import { EmailSender } from '../../email/service/email-sender';
+import { EventService } from '../../event/service/event.service';
+import { LiveEventType } from '../../event/service/live-event';
 import { ObjectStorage } from '../../storage/service/object-storage';
 import { UserRole } from '../../user/service/user-role';
 import { isViewingStatus, ViewingStatus } from '../../viewing/service/viewing-status';
@@ -38,6 +40,7 @@ export class MessageService {
   constructor(
     private readonly messageRepository: MessageRepository,
     private readonly emailSender: EmailSender,
+    private readonly events: EventService,
     private readonly storage: ObjectStorage,
     private readonly config: AppConfigService,
     @InjectPinoLogger(MessageService.name) private readonly logger: PinoLogger,
@@ -81,10 +84,15 @@ export class MessageService {
     const side = sideOf(principal);
     const { record, unreadBefore } = await this.append(principal.userId, side, command);
     const message = toMessage(record);
-    if (unreadBefore === 0) {
-      // After commit (data.md → Transactions): the first unread message of a run is announced.
-      const conversation = await this.messageRepository.findConversation(command.viewingId);
-      if (conversation) {
+    // After commit (data.md → Transactions): the other side's open tabs learn of it at once, and
+    // the first unread message of a run is announced by email.
+    const conversation = await this.messageRepository.findConversation(command.viewingId);
+    if (conversation) {
+      this.publish(conversation, otherSide(side), {
+        type: LiveEventType.MESSAGE_CREATED,
+        viewingId: command.viewingId,
+      });
+      if (unreadBefore === 0) {
         const recipient = recipientOf(conversation, otherSide(side));
         await this.deliver(
           recipient &&
@@ -99,6 +107,22 @@ export class MessageService {
       }
     }
     return message;
+  }
+
+  /** A live event to one side of a conversation: the tenant's tabs, or the owner's (landlord / agency). */
+  private publish(
+    record: ConversationRecord,
+    side: MessageSide,
+    event: {
+      type: typeof LiveEventType.MESSAGE_CREATED | typeof LiveEventType.MESSAGE_READ;
+      viewingId: string;
+    },
+  ): void {
+    if (side === MessageSide.TENANT) {
+      this.events.publishToUser(record.tenant.id, event);
+    } else {
+      this.events.publishToOwner(record.listing.landlordId, record.listing.agencyId, event);
+    }
   }
 
   /**
@@ -144,7 +168,18 @@ export class MessageService {
   /** The caller read the thread: safe to repeat; nothing to mark before the first message. */
   async markRead(principal: Principal, viewingId: string): Promise<ReadReceipt> {
     const now = new Date();
-    const marked = await this.messageRepository.markRead(viewingId, sideOf(principal), now);
+    const side = sideOf(principal);
+    const marked = await this.messageRepository.markRead(viewingId, side, now);
+    if (marked) {
+      // The other side sees "Seen" under what they wrote.
+      const conversation = await this.messageRepository.findConversation(viewingId);
+      if (conversation) {
+        this.publish(conversation, otherSide(side), {
+          type: LiveEventType.MESSAGE_READ,
+          viewingId,
+        });
+      }
+    }
     return { readAt: marked ? now : null };
   }
 

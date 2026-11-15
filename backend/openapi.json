@@ -55,6 +55,33 @@
         ]
       }
     },
+    "/api/v1/events": {
+      "get": {
+        "operationId": "EventController_stream",
+        "parameters": [],
+        "responses": {
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Live events for the caller (Server-Sent Events): new messages, reads, viewing changes, a heartbeat every 25 s",
+        "tags": [
+          "Events"
+        ]
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "operationId": "AuthController_login",

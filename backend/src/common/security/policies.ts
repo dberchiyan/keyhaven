@@ -148,6 +148,8 @@ export const can = {
   ),
   /** The viewings dashboard: landlords (their homes'), agents (the agency's), admins (all). */
   manageViewings: policy([], (principal) => isAdmin(principal) || isLister(principal)),
+  /** The live event stream: anyone signed in gets their own events (the service scopes them). */
+  subscribeEvents: policy([], () => true),
   /** The inbox: anyone signed in — tenants their viewings' conversations, listers their homes', admins all (read only). */
   viewConversations: policy([], () => true),
   /**

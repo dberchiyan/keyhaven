@@ -23,6 +23,7 @@ import { SessionGuard } from './common/security/session.guard';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { EmailModule } from './modules/email/email.module';
+import { EventModule } from './modules/event/event.module';
 import { ListingModule } from './modules/listing/listing.module';
 import { MessageModule } from './modules/message/message.module';
 import { SavedSearchModule } from './modules/saved-search/saved-search.module';
@@ -47,6 +48,7 @@ import { ViewingModule } from './modules/viewing/viewing.module';
     UserModule,
     AuditModule,
     EmailModule,
+    EventModule,
     AuthModule,
     StorageModule,
     ListingModule,

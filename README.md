@@ -105,7 +105,7 @@ frontend/  React 19 · Vite · MUI 9 + Tailwind 4 · TanStack Query · React Rou
 backend/   NestJS 11 · Prisma 7 · PostgreSQL 18 · Zod 4 · pino · argon2id · Jest + supertest
 ```
 
-- Modular monolith: `user`, `audit`, `email`, `auth`, `storage`, `listing`, `saved-search`, `viewing`, `message`;
+- Modular monolith: `user`, `audit`, `email`, `event` (live updates over Server-Sent Events), `auth`, `storage`, `listing`, `saved-search`, `viewing`, `message`;
   controller → service → repository, explicit `select` everywhere.
 - Every handler is `@Public()` or `@Authorize(policy)`; the catalogue's policies are public-scoped
   (a session only adds "saved"); foreign ids answer 403 or 404 — see `backend/test/access.spec.ts`.

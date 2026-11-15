@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PG_SESSION_OPTIONS } from '../src/common/persistence/pg-pool';
 import { PrismaClient } from '../src/generated/prisma/client';
+import { EventService } from '../src/modules/event/service/event.service';
+import type { LiveEvent } from '../src/modules/event/service/live-event';
 import { bodyOf, Client, createTestApp, type TestApp } from './app';
 import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
 import { testDatabaseUrl } from './test-database';
@@ -121,10 +123,23 @@ describe('Messages (a conversation per confirmed viewing)', () => {
       ],
     });
 
+    // The landlord's open tab hears of the message at once (the live channel), the stray
+    // other landlord's does not.
+    const events = testApp.app.get(EventService);
+    const heard: LiveEvent[] = [];
+    const strangerHeard: LiveEvent[] = [];
+    const stream = events.subscribe(f.landlord.id, null).subscribe((event) => heard.push(event));
+    const strangerStream = events
+      .subscribe(f.otherLandlord.id, null)
+      .subscribe((event) => strangerHeard.push(event));
     const first = await tenant.postIdempotent(messages(viewingId), {
       body: 'Hi! Is parking included in the rent?',
     });
     expect(first.status).toBe(200);
+    expect(heard).toContainEqual({ type: 'message.created', viewingId });
+    expect(strangerHeard).toEqual([]);
+    stream.unsubscribe();
+    strangerStream.unsubscribe();
     expect(first.body).toMatchObject({
       side: 'TENANT',
       sender: { firstName: 'tenant' },

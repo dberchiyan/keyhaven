@@ -8,3 +8,4 @@ export { ScheduleSection } from './components/ScheduleSection';
 export { useViewingSummary } from './hooks/useViewingQueries';
 export { ViewingStatusBadge } from './components/ViewingStatusBadge';
 export { displayStatus, formatSlot, formatSlotDate, zoneName } from './format';
+export { viewingKeys } from './hooks/queryKeys';
