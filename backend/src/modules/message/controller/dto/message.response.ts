@@ -4,9 +4,10 @@ import { VIEWING_STATUSES } from '../../../viewing/service/viewing-status';
 import {
   MAX_CONVERSATIONS,
   MAX_MESSAGE_LENGTH,
+  MAX_SUBJECT_LENGTH,
   MAX_THREAD_MESSAGES,
 } from '../../service/message-limits';
-import { COUNTERPART_KINDS, MESSAGE_SIDES } from '../../service/message-side';
+import { CONVERSATION_KINDS, COUNTERPART_KINDS, MESSAGE_SIDES } from '../../service/message-side';
 
 export const MessageSideSchema = z.enum(MESSAGE_SIDES).meta({ id: 'MessageSide' });
 
@@ -31,7 +32,7 @@ const ConversationListingSchema = z
 export const MessageSchema = z
   .object({
     id: z.uuid(),
-    viewingId: z.uuid(),
+    conversationId: z.uuid(),
     side: MessageSideSchema,
     sender: z.object({
       id: z.uuid(),
@@ -43,18 +44,31 @@ export const MessageSchema = z
   })
   .meta({ id: 'Message' });
 
-/** One viewing's conversation as the caller's side sees it. */
+/** One conversation as the caller's side sees it: a viewing's thread, or a request to Keyhaven. */
 export const ConversationSchema = z
   .object({
-    viewingId: z.uuid(),
-    status: z.enum(VIEWING_STATUSES),
-    startsAt: z.iso.datetime(),
-    endsAt: z.iso.datetime(),
-    /** Both sides can write (the viewing is confirmed, ahead or held); otherwise read only. */
+    id: z.uuid(),
+    kind: z.enum(CONVERSATION_KINDS).meta({ id: 'ConversationKind' }),
+    /** Both sides can write: a confirmed viewing (ahead or held), or a request not closed. */
     open: z.boolean(),
     /** The caller's side: the client tells its own messages apart by it. */
     side: MessageSideSchema,
-    listing: ConversationListingSchema,
+    viewing: z
+      .object({
+        id: z.uuid(),
+        status: z.enum(VIEWING_STATUSES),
+        startsAt: z.iso.datetime(),
+        endsAt: z.iso.datetime(),
+      })
+      .nullable(),
+    support: z
+      .object({
+        subject: z.string().max(MAX_SUBJECT_LENGTH),
+        openedAt: z.iso.datetime(),
+        closedAt: z.iso.datetime().nullable(),
+      })
+      .nullable(),
+    listing: ConversationListingSchema.nullable(),
     counterpart: z
       .object({ name: z.string().max(200), kind: z.enum(COUNTERPART_KINDS) })
       .meta({ id: 'Counterpart' }),

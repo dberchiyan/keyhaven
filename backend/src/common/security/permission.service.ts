@@ -96,6 +96,23 @@ export class PermissionService {
     return count > 0;
   }
 
+  /** A conversation with this id: a viewing's (its thread may not exist yet) or a support request's. */
+  async conversationExists(conversationId: string): Promise<boolean> {
+    const [viewings, conversations] = await Promise.all([
+      this.prisma.viewing.count({ where: { id: conversationId } }),
+      this.prisma.conversation.count({ where: { id: conversationId } }),
+    ]);
+    return viewings + conversations > 0;
+  }
+
+  /** The support request was opened by the caller. */
+  async isOwnSupportConversation(userId: string, conversationId: string): Promise<boolean> {
+    const count = await this.prisma.conversation.count({
+      where: { id: conversationId, kind: 'SUPPORT', openedById: userId },
+    });
+    return count > 0;
+  }
+
   async isOwnSavedSearch(userId: string, savedSearchId: string): Promise<boolean> {
     const count = await this.prisma.savedSearch.count({ where: { id: savedSearchId, userId } });
     return count > 0;

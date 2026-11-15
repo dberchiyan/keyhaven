@@ -8,7 +8,7 @@ import { useSendMessage } from './useMessageQueries';
  * reuses it; a sent message gets a fresh one), the server's answer on the reserved line.
  */
 export const useComposer = (
-  viewingId: string,
+  conversationId: string,
 ): {
   draft: string;
   setDraft: (value: string) => void;
@@ -20,7 +20,7 @@ export const useComposer = (
 } => {
   const [draft, setDraft] = useState('');
   const [key, setKey] = useState(() => crypto.randomUUID());
-  const send = useSendMessage(viewingId);
+  const send = useSendMessage(conversationId);
   const errorRef = useRef<HTMLParagraphElement>(null);
 
   const submit = (): void => {

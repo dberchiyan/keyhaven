@@ -33,10 +33,16 @@ export interface Recipient {
   firstName: string;
 }
 
+/** What the conversation is about, in a few words: the home and the viewing, or the request's subject. */
+const topicOf = (conversation: Conversation): string =>
+  conversation.viewing && conversation.listing
+    ? `${conversation.listing.title} (viewing ${formatSlot(conversation.viewing.startsAt, conversation.listing.city.timeZone)})`
+    : `your request “${conversation.support?.subject ?? ''}”`;
+
 /**
- * To the other side: someone wrote in the conversation of a confirmed viewing. Sent only when the
- * recipient had nothing unread there (one email per run of messages, not one per message).
- * Every interpolated value is escaped (security.md → Injection).
+ * To the other side: someone wrote in a conversation. Sent only when the recipient had nothing
+ * unread there (one email per run of messages, not one per message). Every interpolated value
+ * is escaped (security.md → Injection).
  */
 export const newMessageEmail = (
   recipient: Recipient,
@@ -46,21 +52,27 @@ export const newMessageEmail = (
 ): EmailMessage => {
   const heading = 'You have a new message';
   const greeting = `Hi ${recipient.firstName},`;
-  const sender = `${message.sender.firstName} ${message.sender.lastName}`;
-  const when = formatSlot(conversation.startsAt, conversation.listing.city.timeZone);
+  const sender =
+    conversation.kind === 'SUPPORT' && message.side === 'RESPONDER'
+      ? 'Keyhaven'
+      : `${message.sender.firstName} ${message.sender.lastName}`;
   const lines = [
-    `${sender} wrote about ${conversation.listing.title} (viewing ${when}):`,
+    `${sender} wrote about ${topicOf(conversation)}:`,
     `“${excerptOf(message.body)}”`,
     'Answer in Keyhaven — replies to this email are not read.',
   ];
-  const action = {
-    label: 'Open the conversation',
-    url: `${appUrl}/messages/${conversation.viewingId}`,
-  };
-  const footer = 'You get this email because of a confirmed viewing on Keyhaven.';
+  const action = { label: 'Open the conversation', url: `${appUrl}/messages/${conversation.id}` };
+  const footer =
+    conversation.kind === 'SUPPORT'
+      ? 'You get this email because you wrote to Keyhaven.'
+      : 'You get this email because of a confirmed viewing on Keyhaven.';
+  const subject =
+    conversation.kind === 'SUPPORT'
+      ? `Keyhaven answered: ${conversation.support?.subject ?? ''}`
+      : `New message: ${conversation.listing?.title ?? ''}`;
   return {
     to: recipient.email,
-    subject: `New message: ${conversation.listing.title}`,
+    subject,
     text: `${greeting}\n\n${heading}\n\n${lines.join('\n')}\n\n${action.label}: ${action.url}\n\n${footer}`,
     html: `<!doctype html><html lang="en"><body style="font-family:system-ui,sans-serif;line-height:1.5;color:#1f2933">
 <h1 style="font-size:20px">${escapeHtml(heading)}</h1>

@@ -160,7 +160,7 @@ export function ListingSummaryCard({ listing, actions }: ListingSummaryCardProps
           )}
         </ul>
 
-        <div className="bg-background-default flex flex-col rounded-lg">
+        <div className="flex flex-col rounded-lg bg-background">
           <dl className="m-0 grid grid-cols-4 divide-x divide-divider">
             {facts.map((fact) => (
               <div

@@ -91,7 +91,7 @@ function TopListings({ rows }: TopListingsProps) {
                   <div className="flex items-center gap-2">
                     <div
                       aria-hidden
-                      className="bg-background-default h-1 flex-1 overflow-hidden rounded-full"
+                      className="h-1 flex-1 overflow-hidden rounded-full bg-background"
                     >
                       <div
                         className="h-full rounded-full bg-primary"

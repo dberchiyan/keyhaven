@@ -106,6 +106,13 @@
     "body": {
       "required": "Write a message first",
       "tooLong": "A message must be at most {max} characters"
+    },
+    "subject": {
+      "required": "Say what it is about",
+      "tooLong": "The subject must be at most {max} characters"
+    },
+    "listingId": {
+      "invalid": "Choose a home from the list"
     }
   },
   "viewing": {

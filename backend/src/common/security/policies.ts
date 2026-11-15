@@ -153,15 +153,41 @@ export const can = {
   /** The inbox: anyone signed in — tenants their viewings' conversations, listers their homes', admins all (read only). */
   viewConversations: policy([], () => true),
   /**
-   * Writing in a viewing's conversation, or marking it read: the viewing's tenant or the home's
-   * owner (landlord / agency agent) — someone else's is 403, admins read only. Whether the viewing
-   * is confirmed is the service's rule (422).
+   * One conversation: a viewing's — its tenant, the home's owner (landlord / agency agent), an
+   * admin — or a support request's — who opened it, or an admin. Someone else's is 403; an
+   * unknown id 404 to admins.
    */
-  messageViewing: policy(['viewingId'], async (principal, args, permissions) =>
-    isTenant(principal)
-      ? await permissions.isOwnViewing(principal.userId, args.viewingId ?? '')
-      : isLister(principal) &&
-        (await permissions.isOwnListingViewing(principal, args.viewingId ?? '')),
+  viewConversation: policy(['conversationId'], async (principal, args, permissions) =>
+    isAdmin(principal)
+      ? orNotFound(await permissions.conversationExists(args.conversationId ?? ''))
+      : (await permissions.isOwnSupportConversation(principal.userId, args.conversationId ?? '')) ||
+        (isTenant(principal)
+          ? await permissions.isOwnViewing(principal.userId, args.conversationId ?? '')
+          : isLister(principal) &&
+            (await permissions.isOwnListingViewing(principal, args.conversationId ?? ''))),
+  ),
+  /**
+   * Writing, or marking read: the same people as reading. Whether the conversation is open —
+   * a confirmed viewing, a support request not closed — and that the staff only reads a
+   * viewing's thread are the service's rules (422).
+   */
+  messageConversation: policy(['conversationId'], async (principal, args, permissions) =>
+    isAdmin(principal)
+      ? orNotFound(await permissions.conversationExists(args.conversationId ?? ''))
+      : (await permissions.isOwnSupportConversation(principal.userId, args.conversationId ?? '')) ||
+        (isTenant(principal)
+          ? await permissions.isOwnViewing(principal.userId, args.conversationId ?? '')
+          : isLister(principal) &&
+            (await permissions.isOwnListingViewing(principal, args.conversationId ?? ''))),
+  ),
+  /** Writing to Keyhaven: any member (tenant, landlord, agent) — the staff answers, it does not ask. */
+  startConversation: policy([], (principal) => !isAdmin(principal)),
+  /** Closing and reopening a support request: the staff; an unknown id is 404. */
+  manageConversation: policy(
+    ['conversationId'],
+    async (principal, args, permissions) =>
+      isAdmin(principal) &&
+      orNotFound(await permissions.conversationExists(args.conversationId ?? '')),
   ),
   /** Saved homes are a tenant's thing. */
   viewSavedListings: policy([], isTenant),

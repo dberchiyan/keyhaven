@@ -9,7 +9,7 @@ import { MESSAGE_MAX } from '../api/messageApi';
 import { useComposer } from '../hooks/useComposer';
 
 export interface MessageComposerProps {
-  viewingId: string;
+  conversationId: string;
   /** Who reads it — the placeholder names them. */
   counterpart: string;
 }
@@ -19,10 +19,10 @@ export interface MessageComposerProps {
  * the count when the limit nears. With a keyboard, Enter sends and Shift+Enter breaks a line (a
  * hint says so); on a touch screen Enter is a new line and the button sends, as every chat does.
  */
-export function MessageComposer({ viewingId, counterpart }: MessageComposerProps) {
+export function MessageComposer({ conversationId, counterpart }: MessageComposerProps) {
   const { t } = useTranslation(['message', 'errors']);
   const { draft, setDraft, submit, isPending, errorCode, remaining, errorRef } =
-    useComposer(viewingId);
+    useComposer(conversationId);
   // Behaviour CSS cannot express (ux.md): which key sends.
   const isTouch = useMediaQuery('(pointer: coarse)');
   const nearLimit = remaining < 100;
@@ -62,7 +62,10 @@ export function MessageComposer({ viewingId, counterpart }: MessageComposerProps
             }
           }}
           slotProps={{
-            htmlInput: { maxLength: MESSAGE_MAX, 'aria-describedby': `${viewingId}-composer-hint` },
+            htmlInput: {
+              maxLength: MESSAGE_MAX,
+              'aria-describedby': `${conversationId}-composer-hint`,
+            },
             inputLabel: { className: 'sr-only' },
           }}
         />
@@ -84,7 +87,7 @@ export function MessageComposer({ viewingId, counterpart }: MessageComposerProps
           variant="caption"
           color={errorCode ? 'error' : 'textSecondary'}
           role={errorCode ? 'alert' : undefined}
-          id={`${viewingId}-composer-hint`}
+          id={`${conversationId}-composer-hint`}
           className="outline-none"
         >
           {errorCode

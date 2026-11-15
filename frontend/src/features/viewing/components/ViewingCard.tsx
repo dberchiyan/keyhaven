@@ -215,7 +215,7 @@ export function ViewingCard({
           </Typography>
         )}
         {(viewing.message || viewing.note) && (
-          <div className="bg-background-default flex flex-col gap-1 rounded-md px-3 py-2">
+          <div className="flex flex-col gap-1 rounded-md bg-background px-3 py-2">
             {viewing.message && (
               <Typography variant="body2" color="textSecondary" className="whitespace-pre-line">
                 {t(audience === 'owner' ? 'viewing:card.theirNote' : 'viewing:card.yourNote', {

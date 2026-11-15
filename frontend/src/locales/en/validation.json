@@ -115,5 +115,15 @@
       "tooMany": "At most {{max}} blocked days",
       "duplicate": "That day is already blocked"
     }
+  },
+  "message": {
+    "subject": {
+      "required": "Say what it is about",
+      "tooLong": "The subject must be at most {{max}} characters"
+    },
+    "body": {
+      "required": "Write a message first",
+      "tooLong": "A message must be at most {{max}} characters"
+    }
   }
 }

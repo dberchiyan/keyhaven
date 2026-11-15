@@ -1,39 +1,55 @@
-/// The conversation that belongs to one viewing: it opens once the owner confirmed the viewing
-/// (nobody can write to a stranger — the user's rule against spam) and stays readable after the
-/// viewing was held or cancelled. One row per viewing, created with its first message; it keeps
-/// when each side last read it. The owner's side is one inbox: the landlord, or every agent of
-/// the agency. No `version`: no client replaces the row, the read markers only move forward.
-model ViewingThread {
-  viewingId     String           @id(map: "pk_viewing_threads") @map("viewing_id") @db.Uuid
-  /// Cascade: the thread means nothing without its viewing (viewings are never deleted anyway).
-  viewing       Viewing          @relation(fields: [viewingId], references: [id], onDelete: Cascade, map: "fk_viewing_threads_viewing_id")
-  lastMessageAt DateTime         @map("last_message_at") @db.Timestamptz(3)
-  /// Kept with every insert, so the thread's cap costs no count.
-  messageCount  Int              @default(0) @map("message_count")
-  tenantReadAt  DateTime?        @map("tenant_read_at") @db.Timestamptz(3)
-  ownerReadAt   DateTime?        @map("owner_read_at") @db.Timestamptz(3)
-  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
-  messages      ViewingMessage[]
+/// A conversation between two sides. Either the thread of one viewing (`kind = VIEWING`, its id
+/// is the viewing's id, created with the first message once the owner confirmed — nobody can
+/// write to a stranger, the user's rule against spam), or a member's request to Keyhaven
+/// (`kind = SUPPORT`: a subject, who opened it, optionally the home it is about; admins answer
+/// and close it). The requester's side is the tenant (viewing) or the member (support); the
+/// responder's side the home's owner — the landlord or every agent of the agency — or the staff.
+/// No `version`: no client replaces the row, the read markers only move forward.
+model Conversation {
+  id              String    @id(map: "pk_conversations") @default(dbgenerated("uuidv7()")) @db.Uuid
+  /// VIEWING | SUPPORT — CHECK in migration.
+  kind            String    @db.VarChar(16)
+  /// The viewing (equal to `id` — CHECK), for `VIEWING` only. Cascade: the thread means nothing without it.
+  viewingId       String?   @unique(map: "uq_conversations_viewing_id") @map("viewing_id") @db.Uuid
+  viewing         Viewing?  @relation(fields: [viewingId], references: [id], onDelete: Cascade, map: "fk_conversations_viewing_id")
+  /// `SUPPORT` only (CHECK): what it is about, in the member's words.
+  subject         String?   @db.VarChar(120)
+  openedById      String?   @map("opened_by") @db.Uuid
+  openedBy        User?     @relation("ConversationOpener", fields: [openedById], references: [id], onDelete: Restrict, map: "fk_conversations_opened_by")
+  /// `SUPPORT` only: the home the request is about, when there is one.
+  listingId       String?   @map("listing_id") @db.Uuid
+  listing         Listing?  @relation(fields: [listingId], references: [id], onDelete: Restrict, map: "fk_conversations_listing_id")
+  /// `SUPPORT` only: closed by the staff (read-only until reopened).
+  closedAt        DateTime? @map("closed_at") @db.Timestamptz(3)
+  lastMessageAt   DateTime  @map("last_message_at") @db.Timestamptz(3)
+  /// Kept with every insert, so the conversation's cap costs no count.
+  messageCount    Int       @default(0) @map("message_count")
+  requesterReadAt DateTime? @map("requester_read_at") @db.Timestamptz(3)
+  responderReadAt DateTime? @map("responder_read_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  messages        Message[]
 
-  @@index([lastMessageAt], map: "idx_viewing_threads_last_message_at")
-  @@map("viewing_threads")
+  @@index([lastMessageAt], map: "idx_conversations_last_message_at")
+  @@index([kind, lastMessageAt], map: "idx_conversations_kind_last_message_at")
+  @@index([openedById, lastMessageAt], map: "idx_conversations_opened_by_last_message_at")
+  @@map("conversations")
 }
 
-/// One message of a viewing's conversation. Immutable (data.md): who wrote it, which side they
-/// were on, the text, when — nothing is edited or deleted.
-model ViewingMessage {
-  id        String        @id(map: "pk_viewing_messages") @default(dbgenerated("uuidv7()")) @db.Uuid
-  viewingId String        @map("viewing_id") @db.Uuid
-  thread    ViewingThread @relation(fields: [viewingId], references: [viewingId], onDelete: Cascade, map: "fk_viewing_messages_viewing_id")
-  senderId  String        @map("sender_id") @db.Uuid
-  sender    User          @relation(fields: [senderId], references: [id], onDelete: Restrict, map: "fk_viewing_messages_sender_id")
-  /// TENANT | OWNER — the side that wrote it (CHECK in migration); unread counts are per side.
-  side      String        @db.VarChar(16)
-  body      String        @db.VarChar(2000)
-  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+/// One message of a conversation. Immutable (data.md): who wrote it, which side they were on,
+/// the text, when — nothing is edited or deleted.
+model Message {
+  id             String       @id(map: "pk_messages") @default(dbgenerated("uuidv7()")) @db.Uuid
+  conversationId String       @map("conversation_id") @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade, map: "fk_messages_conversation_id")
+  senderId       String       @map("sender_id") @db.Uuid
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Restrict, map: "fk_messages_sender_id")
+  /// REQUESTER | RESPONDER — the side that wrote it (CHECK in migration); unread counts are per side.
+  side           String       @db.VarChar(16)
+  body           String       @db.VarChar(2000)
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  @@index([viewingId, createdAt], map: "idx_viewing_messages_viewing_id_created_at")
-  @@index([senderId], map: "idx_viewing_messages_sender_id")
-  @@map("viewing_messages")
+  @@index([conversationId, createdAt], map: "idx_messages_conversation_id_created_at")
+  @@index([senderId], map: "idx_messages_sender_id")
+  @@map("messages")
 }

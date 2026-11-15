@@ -3,9 +3,10 @@ import { env } from '@/shared/config/env';
 
 /** What the server pushes (backend `modules/event/service/live-event.ts`); ids only. */
 const liveEventSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('message.created'), viewingId: z.string() }),
-  z.object({ type: z.literal('message.read'), viewingId: z.string() }),
+  z.object({ type: z.literal('message.created'), conversationId: z.string() }),
+  z.object({ type: z.literal('message.read'), conversationId: z.string() }),
   z.object({ type: z.literal('viewing.changed'), viewingId: z.string() }),
+  z.object({ type: z.literal('conversation.changed'), conversationId: z.string() }),
   z.object({ type: z.literal('ping') }),
 ]);
 export type LiveEvent = z.infer<typeof liveEventSchema>;

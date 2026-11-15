@@ -13,6 +13,8 @@ export interface MessageBubbleProps {
   position: RunPosition;
   /** The other side read the thread after this message (own messages only). */
   seen: boolean;
+  /** What to call the sender instead of their full name (the staff: "Alex · Keyhaven"). */
+  senderLabel?: string;
 }
 
 /** Literal class names so Tailwind sees them: the corner towards the next bubble of a run is tight. */
@@ -35,7 +37,7 @@ const CORNERS: Record<'own' | 'other', Record<RunPosition, string>> = {
  * One message: the text; the sender's name above the first of the other side's run, the time
  * (and "Seen" for one's own) under the last of a run.
  */
-export function MessageBubble({ message, own, position, seen }: MessageBubbleProps) {
+export function MessageBubble({ message, own, position, seen, senderLabel }: MessageBubbleProps) {
   const { t, i18n } = useTranslation('message');
   const time = formatMessageTime(message.createdAt, i18n.language);
   const headsRun = position === 'single' || position === 'first';
@@ -51,7 +53,7 @@ export function MessageBubble({ message, own, position, seen }: MessageBubblePro
       {/* The arbitrary widths: a bubble never spans the pane, as every chat reads. */}
       {headsRun && !own && (
         <Typography variant="caption" color="textSecondary" className="px-3">
-          {message.sender.firstName} {message.sender.lastName}
+          {senderLabel ?? `${message.sender.firstName} ${message.sender.lastName}`}
         </Typography>
       )}
       <div

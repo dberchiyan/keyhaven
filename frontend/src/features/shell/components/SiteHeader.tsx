@@ -168,7 +168,7 @@ interface TabsProps {
 function Tabs({ activeTab, params }: TabsProps) {
   const { t } = useTranslation('shell');
   return (
-    <ul className="bg-background-default m-0 flex list-none gap-0.5 rounded-full border border-divider p-0.5">
+    <ul className="m-0 flex list-none gap-0.5 rounded-full border border-divider bg-background p-0.5">
       {TABS.map((tab) => {
         const isActive = tab === activeTab;
         return (

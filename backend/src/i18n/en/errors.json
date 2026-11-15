@@ -41,6 +41,10 @@
   "message": {
     "notConfirmed": "Messages open once the lister confirms the viewing",
     "closed": "This conversation is closed — the viewing was cancelled",
+    "supportClosed": "Keyhaven closed this request — start a new one if there is more",
+    "staffReadOnly": "Keyhaven staff read viewings' conversations but do not write in them",
+    "notSupport": "Only a request to Keyhaven can be closed or reopened",
+    "tooManyOpen": "You have {max} requests open with Keyhaven — wait for an answer before another",
     "threadFull": "This conversation is full ({max} messages) — continue by email"
   },
   "registration": {

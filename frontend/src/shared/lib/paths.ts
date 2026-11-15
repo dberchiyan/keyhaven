@@ -13,9 +13,9 @@ export const PATHS = {
   saved: '/saved',
   /** A tenant's viewings, or the owner's viewings dashboard. */
   viewings: '/viewings',
-  /** The inbox, and one viewing's conversation. */
+  /** The inbox, and one conversation (a viewing's thread, or a request to Keyhaven). */
   messages: '/messages',
-  conversation: '/messages/:viewingId',
+  conversation: '/messages/:conversationId',
   newListing: '/manage/new',
   managedListing: '/manage/:listingId',
   editListing: '/manage/:listingId/edit',
@@ -39,6 +39,6 @@ export const editListingPath = (listingId: string): string =>
 export const settingsPath = (section: string): string =>
   PATHS.settingsSection.replace(':section', encodeURIComponent(section));
 
-/** `/messages/:viewingId` — the conversation of one viewing. */
-export const conversationPath = (viewingId: string): string =>
-  PATHS.conversation.replace(':viewingId', encodeURIComponent(viewingId));
+/** `/messages/:conversationId` — one conversation (a viewing's thread has the viewing's id). */
+export const conversationPath = (conversationId: string): string =>
+  PATHS.conversation.replace(':conversationId', encodeURIComponent(conversationId));

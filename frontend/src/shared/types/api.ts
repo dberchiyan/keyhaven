@@ -853,10 +853,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The caller's inbox: a conversation per confirmed viewing (their own, their homes' or all for admins), latest message first (at most 100) */
+        /** The caller's inbox: a conversation per confirmed viewing (their own, their homes' or all for admins) and their requests to Keyhaven (all of them for admins), latest message first (at most 100) */
         get: operations["MessageController_list"];
         put?: never;
-        post?: never;
+        /** Write to Keyhaven (any member): a subject, the first message, optionally the home it is about; at most 5 requests open at once */
+        post: operations["MessageController_start"];
         delete?: never;
         options?: never;
         head?: never;
@@ -880,17 +881,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/viewings/{viewingId}/messages": {
+    "/api/v1/conversations/{conversationId}/messages": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** One conversation with its whole thread: its tenant, the home’s owner or an admin */
+        /** One conversation with its whole thread: its two sides, or an admin (every viewing thread, every request) */
         get: operations["MessageController_find"];
         put?: never;
-        /** Write to the other side of a confirmed viewing (its tenant or the home’s owner); a cancelled viewing’s conversation is closed */
+        /** Write to the other side: a confirmed viewing’s tenant or owner (the staff only reads those), or a request’s member or the staff; a cancelled viewing’s or a closed request’s conversation is read-only */
         post: operations["MessageController_send"];
         delete?: never;
         options?: never;
@@ -898,7 +899,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/viewings/{viewingId}/message-reads": {
+    "/api/v1/conversations/{conversationId}/message-reads": {
         parameters: {
             query?: never;
             header?: never;
@@ -909,6 +910,40 @@ export interface paths {
         put?: never;
         /** The caller read the conversation: its unread messages are cleared */
         post: operations["MessageController_markRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversationId}/closure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close a request to Keyhaven (the staff): read-only until reopened */
+        post: operations["MessageController_close"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{conversationId}/reopening": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reopen a closed request to Keyhaven (the staff) */
+        post: operations["MessageController_reopen"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1572,16 +1607,28 @@ export interface components {
         };
         Conversation_Output: {
             /** Format: uuid */
-            viewingId: string;
-            /** @enum {string} */
-            status: "REQUESTED" | "CONFIRMED" | "DECLINED" | "CANCELLED" | "EXPIRED";
-            /** Format: date-time */
-            startsAt: string;
-            /** Format: date-time */
-            endsAt: string;
+            id: string;
+            kind: components["schemas"]["ConversationKind_Output"];
             open: boolean;
             side: components["schemas"]["MessageSide_Output"];
-            listing: components["schemas"]["ConversationListing_Output"];
+            viewing: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                status: "REQUESTED" | "CONFIRMED" | "DECLINED" | "CANCELLED" | "EXPIRED";
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string;
+            } | null;
+            support: {
+                subject: string;
+                /** Format: date-time */
+                openedAt: string;
+                /** Format: date-time */
+                closedAt: string | null;
+            } | null;
+            listing: components["schemas"]["ConversationListing_Output"] | null;
             counterpart: components["schemas"]["Counterpart_Output"];
             lastMessage: {
                 body: string;
@@ -1597,7 +1644,9 @@ export interface components {
             seenAt: string | null;
         };
         /** @enum {string} */
-        MessageSide_Output: "TENANT" | "OWNER";
+        ConversationKind_Output: "VIEWING" | "SUPPORT";
+        /** @enum {string} */
+        MessageSide_Output: "REQUESTER" | "RESPONDER";
         ConversationListing_Output: {
             /** Format: uuid */
             id: string;
@@ -1617,7 +1666,7 @@ export interface components {
         Counterpart_Output: {
             name: string;
             /** @enum {string} */
-            kind: "TENANT" | "LANDLORD" | "AGENCY";
+            kind: "TENANT" | "LANDLORD" | "AGENT" | "AGENCY" | "KEYHAVEN";
         };
         ConversationListResponse_Output: {
             content: components["schemas"]["Conversation_Output"][];
@@ -1625,11 +1674,17 @@ export interface components {
         ConversationSummaryResponse_Output: {
             unread: number;
         };
+        StartConversationRequest: {
+            subject: string;
+            body: string;
+            /** Format: uuid */
+            listingId?: string | null;
+        };
         Message_Output: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            viewingId: string;
+            conversationId: string;
             side: components["schemas"]["MessageSide_Output"];
             sender: {
                 /** Format: uuid */
@@ -1643,16 +1698,28 @@ export interface components {
         };
         ConversationDetailResponse_Output: {
             /** Format: uuid */
-            viewingId: string;
-            /** @enum {string} */
-            status: "REQUESTED" | "CONFIRMED" | "DECLINED" | "CANCELLED" | "EXPIRED";
-            /** Format: date-time */
-            startsAt: string;
-            /** Format: date-time */
-            endsAt: string;
+            id: string;
+            kind: components["schemas"]["ConversationKind_Output"];
             open: boolean;
             side: components["schemas"]["MessageSide_Output"];
-            listing: components["schemas"]["ConversationListing_Output"];
+            viewing: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                status: "REQUESTED" | "CONFIRMED" | "DECLINED" | "CANCELLED" | "EXPIRED";
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string;
+            } | null;
+            support: {
+                subject: string;
+                /** Format: date-time */
+                openedAt: string;
+                /** Format: date-time */
+                closedAt: string | null;
+            } | null;
+            listing: components["schemas"]["ConversationListing_Output"] | null;
             counterpart: components["schemas"]["Counterpart_Output"];
             lastMessage: {
                 body: string;
@@ -1675,7 +1742,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            viewingId: string;
+            conversationId: string;
             side: components["schemas"]["MessageSide_Output"];
             sender: {
                 /** Format: uuid */
@@ -4765,6 +4832,86 @@ export interface operations {
             };
         };
     };
+    MessageController_start: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description UUID per logical operation, reused on retry */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartConversationRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetailResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IDEMPOTENCY_KEY_REUSED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     MessageController_summary: {
         parameters: {
             query?: never;
@@ -4983,6 +5130,134 @@ export interface operations {
             };
             /** @description RESOURCE_NOT_FOUND */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    MessageController_close: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetailResponse_Output"];
+                };
+            };
+            /** @description INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    MessageController_reopen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationDetailResponse_Output"];
+                };
+            };
+            /** @description INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -7,7 +7,7 @@ import type {
 
 export const toMessageResponse = (message: Message): MessageBody => ({
   id: message.id,
-  viewingId: message.viewingId,
+  conversationId: message.conversationId,
   side: message.side,
   sender: {
     id: message.sender.id,
@@ -19,24 +19,39 @@ export const toMessageResponse = (message: Message): MessageBody => ({
 });
 
 export const toConversationResponse = (conversation: Conversation): ConversationBody => ({
-  viewingId: conversation.viewingId,
-  status: conversation.status,
-  startsAt: conversation.startsAt.toISOString(),
-  endsAt: conversation.endsAt.toISOString(),
+  id: conversation.id,
+  kind: conversation.kind,
   open: conversation.open,
   side: conversation.side,
-  listing: {
-    id: conversation.listing.id,
-    title: conversation.listing.title,
-    coverPhotoUrl: conversation.listing.coverPhotoUrl,
-    neighborhood: conversation.listing.neighborhood,
-    city: {
-      name: conversation.listing.city.name,
-      state: conversation.listing.city.state,
-      timeZone: conversation.listing.city.timeZone,
-    },
-    address: conversation.listing.address,
-  },
+  viewing: conversation.viewing
+    ? {
+        id: conversation.viewing.id,
+        status: conversation.viewing.status,
+        startsAt: conversation.viewing.startsAt.toISOString(),
+        endsAt: conversation.viewing.endsAt.toISOString(),
+      }
+    : null,
+  support: conversation.support
+    ? {
+        subject: conversation.support.subject,
+        openedAt: conversation.support.openedAt.toISOString(),
+        closedAt: conversation.support.closedAt?.toISOString() ?? null,
+      }
+    : null,
+  listing: conversation.listing
+    ? {
+        id: conversation.listing.id,
+        title: conversation.listing.title,
+        coverPhotoUrl: conversation.listing.coverPhotoUrl,
+        neighborhood: conversation.listing.neighborhood,
+        city: {
+          name: conversation.listing.city.name,
+          state: conversation.listing.city.state,
+          timeZone: conversation.listing.city.timeZone,
+        },
+        address: conversation.listing.address,
+      }
+    : null,
   counterpart: { name: conversation.counterpart.name, kind: conversation.counterpart.kind },
   lastMessage: conversation.lastMessage
     ? {

@@ -23,6 +23,7 @@ export function LiveEvents() {
       switch (event.type) {
         case 'message.created':
         case 'message.read':
+        case 'conversation.changed':
           void queryClient.invalidateQueries({ queryKey: messageKeys.all });
           return;
         case 'viewing.changed':

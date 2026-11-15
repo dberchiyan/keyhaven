@@ -17,7 +17,7 @@ export function BrandMark({ className }: BrandMarkProps) {
       <rect width="48" height="48" rx="12" className="fill-primary" />
       <path
         d="M24 9 9 22h4v14h9V26h4v10h9V22h4z"
-        className="dark:fill-background-default fill-primary-contrast-text"
+        className="fill-primary-contrast-text dark:fill-background"
       />
       <circle cx="24" cy="20" r="2.4" className="fill-primary" />
     </svg>

@@ -1,5 +1,5 @@
 import type { PrismaClient } from '../src/generated/prisma/client';
-import { MessageSide } from '../src/modules/message/service/message-side';
+import { ConversationKind, MessageSide } from '../src/modules/message/service/message-side';
 import { ViewingStatus } from '../src/modules/viewing/service/viewing-status';
 
 const HOUR_MS = 3_600_000;
@@ -65,20 +65,23 @@ interface ThreadPlan {
 
 /**
  * A few conversations for the demo: the showcase tenant chatting with the showcase landlord about
- * a viewing ahead (his last line unread for her) and about one that took place, and three renters'
- * questions waiting for the landlord (his badge). Idempotent: a viewing that has a thread is
- * skipped, so a second run adds nothing.
+ * a viewing ahead (his last line unread for her) and about one that took place, three renters'
+ * questions waiting for the landlord (his badge), and two requests to Keyhaven (one answered, one
+ * waiting for the staff). Idempotent: a viewing that has a thread is skipped and the requests are
+ * seeded once, so a second run adds nothing.
  */
 export const seedMessages = async (
   prisma: PrismaClient,
   demoTenantId: string,
   demoLandlordId: string,
+  demoAgentId: string,
+  demoAdminId: string,
   now: Date,
 ): Promise<{ threads: number; messages: number }> => {
   const confirmed = await prisma.viewing.findMany({
     where: {
       status: ViewingStatus.CONFIRMED,
-      thread: null,
+      conversation: null,
       listing: { landlordId: demoLandlordId },
     },
     select: { id: true, tenantId: true, startsAt: true, endsAt: true },
@@ -131,7 +134,7 @@ export const seedMessages = async (
       at += line.after * MINUTE_MS;
       return {
         senderId: line.side === 'TENANT' ? plan.tenantId : demoLandlordId,
-        side: line.side === 'TENANT' ? MessageSide.TENANT : MessageSide.OWNER,
+        side: line.side === 'TENANT' ? MessageSide.REQUESTER : MessageSide.RESPONDER,
         body: line.body,
         createdAt: new Date(at),
       };
@@ -140,19 +143,112 @@ export const seedMessages = async (
     if (!last) {
       continue;
     }
-    await prisma.viewingThread.create({
+    await prisma.conversation.create({
       data: {
+        id: plan.viewingId,
+        kind: ConversationKind.VIEWING,
         viewingId: plan.viewingId,
         lastMessageAt: last.createdAt,
         messageCount: rows.length,
-        tenantReadAt: plan.readBy.includes('TENANT') ? last.createdAt : readUpToOwn(rows, 'TENANT'),
-        ownerReadAt: plan.readBy.includes('OWNER') ? last.createdAt : readUpToOwn(rows, 'OWNER'),
+        requesterReadAt: plan.readBy.includes('TENANT')
+          ? last.createdAt
+          : readUpToOwn(rows, MessageSide.REQUESTER),
+        responderReadAt: plan.readBy.includes('OWNER')
+          ? last.createdAt
+          : readUpToOwn(rows, MessageSide.RESPONDER),
         messages: { createMany: { data: rows } },
       },
-      select: { viewingId: true },
+      select: { id: true },
     });
     threads += 1;
     messages += rows.length;
+  }
+  // Requests to Keyhaven: the showcase landlord's, answered (his reply unread for the staff),
+  // and the showcase agent's, waiting — so the admin's inbox has work on day one.
+  const supportOpen = await prisma.conversation.count({
+    where: { kind: ConversationKind.SUPPORT },
+  });
+  if (supportOpen === 0) {
+    const requests: {
+      openedById: string;
+      subject: string;
+      lines: readonly Line[];
+      readBy: readonly ('REQUESTER' | 'RESPONDER')[];
+      base: Date;
+    }[] = [
+      {
+        openedById: demoLandlordId,
+        subject: 'Changing the address of a published home',
+        base: new Date(now.getTime() - 3 * 86_400_000),
+        lines: [
+          {
+            side: 'TENANT',
+            body: 'Hi! I published my LoHi apartment with the wrong unit number. Can I fix the address without unpublishing it?',
+            after: 0,
+          },
+          {
+            side: 'OWNER',
+            body: 'Hi Daniel — yes: open the listing, choose Edit details and change the address; the home stays on the site. Tenants with a confirmed viewing get the corrected address by email.',
+            after: 140,
+          },
+          {
+            side: 'TENANT',
+            body: 'Done, thank you! One more thing: can I change the city as well?',
+            after: 60,
+          },
+        ],
+        readBy: ['REQUESTER'],
+      },
+      {
+        openedById: demoAgentId,
+        subject: 'Adding a colleague to Harborline Realty',
+        base: new Date(now.getTime() - 5 * HOUR_MS),
+        lines: [
+          {
+            side: 'TENANT',
+            body: 'A new agent joined us this week. How do we add her to the agency so she can manage our listings?',
+            after: 0,
+          },
+        ],
+        readBy: ['REQUESTER'],
+      },
+    ];
+    for (const request of requests) {
+      let at = request.base.getTime();
+      const rows = request.lines.map((line) => {
+        at += line.after * MINUTE_MS;
+        return {
+          senderId: line.side === 'TENANT' ? request.openedById : demoAdminId,
+          side: line.side === 'TENANT' ? MessageSide.REQUESTER : MessageSide.RESPONDER,
+          body: line.body,
+          createdAt: new Date(at),
+        };
+      });
+      const last = rows[rows.length - 1];
+      if (!last) {
+        continue;
+      }
+      await prisma.conversation.create({
+        data: {
+          kind: ConversationKind.SUPPORT,
+          subject: request.subject,
+          openedById: request.openedById,
+          createdAt: rows[0]?.createdAt ?? last.createdAt,
+          lastMessageAt: last.createdAt,
+          messageCount: rows.length,
+          requesterReadAt: request.readBy.includes('REQUESTER')
+            ? last.createdAt
+            : readUpToOwn(rows, MessageSide.REQUESTER),
+          responderReadAt: request.readBy.includes('RESPONDER')
+            ? last.createdAt
+            : readUpToOwn(rows, MessageSide.RESPONDER),
+          messages: { createMany: { data: rows } },
+        },
+        select: { id: true },
+      });
+      threads += 1;
+      messages += rows.length;
+    }
   }
   return { threads, messages };
 };

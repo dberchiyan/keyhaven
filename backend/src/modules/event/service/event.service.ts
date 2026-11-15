@@ -11,6 +11,8 @@ const MAX_STREAMS_PER_USER = 10;
 interface Stream {
   userId: string;
   agencyId: string | null;
+  /** Keyhaven staff: they share the support inbox. */
+  isAdmin: boolean;
   subject: Subject<LiveEvent>;
   openedAt: number;
 }
@@ -29,10 +31,10 @@ export class EventService implements OnApplicationShutdown {
   constructor(@InjectPinoLogger(EventService.name) private readonly logger: PinoLogger) {}
 
   /** A stream for this person: their events, with a heartbeat; torn down when the browser leaves. */
-  subscribe(userId: string, agencyId: string | null): Observable<LiveEvent> {
+  subscribe(userId: string, agencyId: string | null, isAdmin: boolean): Observable<LiveEvent> {
     return new Observable<LiveEvent>((observer) => {
       const subject = new Subject<LiveEvent>();
-      const stream: Stream = { userId, agencyId, subject, openedAt: Date.now() };
+      const stream: Stream = { userId, agencyId, isAdmin, subject, openedAt: Date.now() };
       const subscription = subject.subscribe(observer);
       const own = [...this.streams]
         .filter((candidate) => candidate.userId === userId)
@@ -70,6 +72,15 @@ export class EventService implements OnApplicationShutdown {
         (landlordId !== null && stream.userId === landlordId) ||
         (agencyId !== null && stream.agencyId === agencyId)
       ) {
+        stream.subject.next(event);
+      }
+    }
+  }
+
+  /** To every admin's tabs (the support inbox is theirs together). */
+  publishToAdmins(event: LiveEvent): void {
+    for (const stream of this.streams) {
+      if (stream.isAdmin) {
         stream.subject.next(event);
       }
     }

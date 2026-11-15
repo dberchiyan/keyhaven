@@ -10,13 +10,13 @@ import { ConversationList } from '../components/ConversationList';
 import { ConversationPane } from '../components/ConversationPane';
 
 /**
- * `/messages` and `/messages/:viewingId`: the inbox beside the open conversation from `md`; a
+ * `/messages` and `/messages/:conversationId`: the inbox beside the open conversation from `md`; a
  * phone shows one or the other (the thread's header has the way back).
  */
 export default function MessagesPage() {
   const { t } = useTranslation('message');
-  const { viewingId } = useParams<{ viewingId: string }>();
-  const open = viewingId ?? null;
+  const { conversationId } = useParams<{ conversationId: string }>();
+  const open = conversationId ?? null;
   useDocumentTitle(t('pageTitle'));
   const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
   return (
@@ -60,7 +60,7 @@ export default function MessagesPage() {
           className={cn('flex min-w-0 flex-1 flex-col', !open && 'hidden md:flex')}
         >
           {open ? (
-            <ConversationPane key={open} viewingId={open} />
+            <ConversationPane key={open} conversationId={open} />
           ) : (
             <div className="m-auto flex max-w-sm flex-col items-center gap-2 px-4 text-center">
               <ForumOutlined aria-hidden fontSize="large" color="disabled" />

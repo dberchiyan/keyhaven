@@ -27,6 +27,10 @@ export const ACCESS = {
   'section.viewings': EVERYONE,
   /** Messages: the conversation of every confirmed viewing — everyone signed in has an inbox. */
   'section.messages': EVERYONE,
+  /** Writing to Keyhaven: members ask, the staff answers. */
+  'message.start': ['TENANT', 'LANDLORD', 'AGENT'],
+  /** Closing and reopening a request: the staff. */
+  'message.manage': ADMINS,
   /** Asking for a viewing (the backend also needs a verified email). */
   'viewing.book': TENANTS,
   /** The viewings dashboard: landlords (their homes'), agents (the agency's), admins (all). */

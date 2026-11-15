@@ -87,7 +87,8 @@ only reaches the backend log, so a new account cannot publish yet.
   a **Viewings** dashboard: confirm or decline requests, cancel, see who comes when. No double
   booking: a partial unique index on live viewings decides a race. A **Messages** inbox with
   the unread count on the sidebar; one email per run of unread messages.
-- **Admins** — suspend a listing; the Interest block and the viewings dashboard cover the whole site.
+- **Admins** — suspend a listing; the Interest block and the viewings dashboard cover the whole
+  site; answer members' requests in Messages ("Write to Keyhaven" from any inbox) and close them.
 - **Accounts** — sign-up, email verification, sign-in, password reset, sessions, a security log.
   Server-side sessions, CSRF double-submit, rate limits, deny-by-default authorisation.
 

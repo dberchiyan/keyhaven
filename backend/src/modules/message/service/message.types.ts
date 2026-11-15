@@ -1,5 +1,5 @@
 import type { ViewingStatus } from '../../viewing/service/viewing-status';
-import type { CounterpartKind, MessageSide } from './message-side';
+import type { ConversationKind, CounterpartKind, MessageSide } from './message-side';
 
 export interface ConversationListing {
   id: string;
@@ -7,11 +7,11 @@ export interface ConversationListing {
   coverPhotoUrl: string | null;
   neighborhood: string | null;
   city: { name: string; state: string; timeZone: string };
-  /** The exact address: the owner's side always, the tenant's while the viewing is confirmed. */
+  /** The exact address: the owner's side always, the tenant's while the viewing is confirmed; never on a support request. */
   address: { line1: string; line2: string | null } | null;
 }
 
-/** The person or agency on the other end. */
+/** The person, agency or staff on the other end. */
 export interface Counterpart {
   name: string;
   kind: CounterpartKind;
@@ -23,17 +23,18 @@ export interface MessagePreview {
   createdAt: Date;
 }
 
-/** One viewing's conversation as the caller's side sees it. */
+/** One conversation as the caller's side sees it: a viewing's thread, or a request to Keyhaven. */
 export interface Conversation {
-  viewingId: string;
-  status: ViewingStatus;
-  startsAt: Date;
-  endsAt: Date;
-  /** Confirmed (ahead or held): both sides can write. Cancelled: read only. */
+  id: string;
+  kind: ConversationKind;
+  /** Both sides can write: a confirmed viewing (ahead or held), or a support request not closed. */
   open: boolean;
   /** The caller's side — the client tells its own messages apart by it. */
   side: MessageSide;
-  listing: ConversationListing;
+  viewing: { id: string; status: ViewingStatus; startsAt: Date; endsAt: Date } | null;
+  support: { subject: string; openedAt: Date; closedAt: Date | null } | null;
+  /** The viewing's home, or the home a support request is about (if any). */
+  listing: ConversationListing | null;
   counterpart: Counterpart;
   lastMessage: MessagePreview | null;
   messageCount: number;
@@ -46,7 +47,7 @@ export interface Conversation {
 
 export interface Message {
   id: string;
-  viewingId: string;
+  conversationId: string;
   side: MessageSide;
   sender: { id: string; firstName: string; lastName: string };
   body: string;
@@ -67,13 +68,30 @@ export interface ReadReceipt {
 }
 
 export interface SendMessageCommand {
-  viewingId: string;
+  conversationId: string;
   body: string;
 }
 
-/** Whose conversations the inbox lists — the caller's scope, in the query, never a filter afterwards. */
-export type ConversationScope =
+export interface StartConversationCommand {
+  subject: string;
+  body: string;
+  listingId: string | null;
+}
+
+/** Whose viewings' conversations the inbox lists — in the query, never a filter afterwards. */
+export type ViewingScope =
   | { kind: 'TENANT'; tenantId: string }
   | { kind: 'LANDLORD'; landlordId: string }
   | { kind: 'AGENCY'; agencyId: string }
   | { kind: 'ALL' };
+
+/** Whose support requests: one's own, or (the staff) all of them. */
+export type SupportScope = { kind: 'OWN'; userId: string } | { kind: 'ALL' };
+
+/** What the inbox needs of the caller: both scopes, and the side they take in each kind. */
+export interface InboxScope {
+  viewing: ViewingScope;
+  viewingSide: MessageSide;
+  support: SupportScope;
+  supportSide: MessageSide;
+}

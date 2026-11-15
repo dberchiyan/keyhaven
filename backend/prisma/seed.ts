@@ -154,6 +154,8 @@ const seed = async (): Promise<void> => {
       prisma,
       idOf(DEMO_TENANT.email),
       idOf(DEMO_LANDLORD.email),
+      idOf(DEMO_AGENT.email),
+      idOf(DEMO_ADMIN.email),
       now,
     );
     process.stdout.write(

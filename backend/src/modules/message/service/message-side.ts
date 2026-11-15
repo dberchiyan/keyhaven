@@ -1,5 +1,9 @@
-/** Who wrote a message — mirrored by ck_viewing_messages_side. The owner's side is one inbox: the landlord, or every agent of the agency. */
-export const MessageSide = { TENANT: 'TENANT', OWNER: 'OWNER' } as const;
+/**
+ * Who wrote a message — mirrored by ck_messages_side. The requester is the tenant of a viewing or
+ * the member who asked Keyhaven; the responder the home's owner (the landlord, or every agent of
+ * the agency — one inbox) or the staff.
+ */
+export const MessageSide = { REQUESTER: 'REQUESTER', RESPONDER: 'RESPONDER' } as const;
 export type MessageSide = (typeof MessageSide)[keyof typeof MessageSide];
 export const MESSAGE_SIDES = Object.values(MessageSide) as [MessageSide, ...MessageSide[]];
 
@@ -7,13 +11,23 @@ export const isMessageSide = (value: string): value is MessageSide =>
   (MESSAGE_SIDES as readonly string[]).includes(value);
 
 export const otherSide = (side: MessageSide): MessageSide =>
-  side === MessageSide.TENANT ? MessageSide.OWNER : MessageSide.TENANT;
+  side === MessageSide.REQUESTER ? MessageSide.RESPONDER : MessageSide.REQUESTER;
 
-/** Who the caller talks to: a tenant, or the home's landlord or agency. */
+/** Mirrored by ck_conversations_kind. */
+export const ConversationKind = { VIEWING: 'VIEWING', SUPPORT: 'SUPPORT' } as const;
+export type ConversationKind = (typeof ConversationKind)[keyof typeof ConversationKind];
+export const CONVERSATION_KINDS = Object.values(ConversationKind) as [
+  ConversationKind,
+  ...ConversationKind[],
+];
+
+/** Who the caller talks to: a tenant, a landlord, an agent, an agency's inbox, or Keyhaven. */
 export const CounterpartKind = {
   TENANT: 'TENANT',
   LANDLORD: 'LANDLORD',
+  AGENT: 'AGENT',
   AGENCY: 'AGENCY',
+  KEYHAVEN: 'KEYHAVEN',
 } as const;
 export type CounterpartKind = (typeof CounterpartKind)[keyof typeof CounterpartKind];
 export const COUNTERPART_KINDS = Object.values(CounterpartKind) as [

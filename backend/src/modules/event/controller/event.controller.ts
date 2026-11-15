@@ -7,6 +7,7 @@ import { CurrentPrincipal } from '../../../common/security/current-principal.dec
 import { can } from '../../../common/security/policies';
 import type { Principal } from '../../../common/security/principal';
 import { Authorize } from '../../../common/security/security.decorators';
+import { UserRole } from '../../user/service/user-role';
 import { EventService } from '../service/event.service';
 
 /** A stream lives as long as the tab: its duration is never "slow". */
@@ -31,7 +32,7 @@ export class EventController {
   @ApiErrors('UNAUTHORIZED', 'SESSION_EXPIRED')
   stream(@CurrentPrincipal() principal: Principal): Observable<MessageEvent> {
     return this.events
-      .subscribe(principal.userId, principal.agencyId)
+      .subscribe(principal.userId, principal.agencyId, principal.hasAuthority(UserRole.ADMIN))
       .pipe(map((event) => ({ data: event })));
   }
 }

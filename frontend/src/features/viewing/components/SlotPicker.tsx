@@ -196,7 +196,7 @@ export function SlotPicker({ listingId, selected, onSelect, disabled, children }
                 className={cn(
                   'flex aspect-square flex-col items-center justify-center gap-0.5 rounded-lg border border-transparent',
                   count === 0 && 'text-text-disabled',
-                  count > 0 && !isActive && 'bg-background-default hover:border-primary',
+                  count > 0 && !isActive && 'bg-background hover:border-primary',
                   isActive && 'bg-primary text-primary-contrast-text',
                   cell.day === today && !isActive && 'border-divider',
                 )}
