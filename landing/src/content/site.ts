@@ -46,18 +46,19 @@ export const DEMO = {
       name: 'Maya Lopez',
       email: 'maya.lopez@keyhaven.example',
       summary: 'Looking for a home.',
-      items: [
-        'Saved homes and searches',
-        'A daily email with new matches',
-        'Viewings (next release)',
-      ],
+      items: ['Saved homes and searches', 'A daily email with new matches', 'Viewings'],
     },
     {
       role: 'Landlord',
       name: 'Daniel Reyes',
       email: 'daniel.reyes@keyhaven.example',
       summary: 'Lists their own homes.',
-      items: ['Create and edit listings', 'Upload and reorder photos', 'Views and saves per home'],
+      items: [
+        'Create and edit listings',
+        'Upload and reorder photos',
+        'Views and saves per home',
+        'Viewing hours and requests',
+      ],
     },
     {
       role: 'Agent · Harborline Realty',

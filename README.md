@@ -74,12 +74,17 @@ only reaches the backend log, so a new account cannot publish yet.
   homes ("8% below typical for a house in Wallingford"), facts, amenities, location (the street
   only after a confirmed viewing), who lists it, similar homes nearby. The catalogue remembers
   what you opened.
-- **Tenants** — a heart on every home; a saved search emails new matches daily at 08:00 UTC.
+- **Tenants** — a heart on every home; a saved search emails new matches daily at 08:00 UTC;
+  **book a viewing** from the lister's hours (a week of local days, the free times, a note), see
+  it confirmed with the exact address, cancel it; reminders the day before.
 - **Landlords and agents** — create and edit listings, upload and reorder up to 20 photos (straight
   to object storage), publish / unpublish. Agents share their agency's listings. **Interest**:
   views and saves per day over 7 / 30 / 90 days against the period before, the save rate, the
-  most viewed homes — for the whole dashboard and for each listing.
-- **Admins** — suspend a listing; the Interest block covers the whole site.
+  most viewed homes — for the whole dashboard and for each listing. **Viewing hours** per
+  listing (slot length, notice, horizon, weekly ranges in the home's time zone, days off) and
+  a **Viewings** dashboard: confirm or decline requests, cancel, see who comes when. No double
+  booking: a partial unique index on live viewings decides a race.
+- **Admins** — suspend a listing; the Interest block and the viewings dashboard cover the whole site.
 - **Accounts** — sign-up, email verification, sign-in, password reset, sessions, a security log.
   Server-side sessions, CSRF double-submit, rate limits, deny-by-default authorisation.
 
@@ -97,7 +102,7 @@ frontend/  React 19 · Vite · MUI 9 + Tailwind 4 · TanStack Query · React Rou
 backend/   NestJS 11 · Prisma 7 · PostgreSQL 18 · Zod 4 · pino · argon2id · Jest + supertest
 ```
 
-- Modular monolith: `user`, `audit`, `email`, `auth`, `storage`, `listing`, `saved-search`;
+- Modular monolith: `user`, `audit`, `email`, `auth`, `storage`, `listing`, `saved-search`, `viewing`;
   controller → service → repository, explicit `select` everywhere.
 - Every handler is `@Public()` or `@Authorize(policy)`; the catalogue's policies are public-scoped
   (a session only adds "saved"); foreign ids answer 403 or 404 — see `backend/test/access.spec.ts`.

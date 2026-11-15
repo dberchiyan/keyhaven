@@ -200,7 +200,7 @@ export const LANDING = {
         text: 'Pick a free slot, the landlord confirms, and the exact address is shared with you. The street stays private until then.',
       },
     ] satisfies readonly Step[],
-    note: 'Viewing booking arrives in the next release; the rest is live today.',
+    note: 'All of it is live today, viewings included — book one on any home with hours.',
   },
   owners: {
     eyebrow: 'For landlords and agents',
@@ -249,7 +249,7 @@ export const LANDING = {
     items: [
       {
         q: 'Do I need an account to browse?',
-        a: 'No. Every published home, the search and the listing pages are open to everyone. A free tenant account is needed only to save homes and searches, and later to book viewings.',
+        a: 'No. Every published home, the search and the listing pages are open to everyone. A free tenant account is needed only to save homes and searches, and to book viewings.',
       },
       {
         q: 'Are the homes and people real?',
