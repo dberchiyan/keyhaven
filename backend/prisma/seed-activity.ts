@@ -5,12 +5,16 @@ import { LISTING_COUNT, SALE_LISTING_COUNT } from './seed-listings';
 
 /**
  * Views and saves of the showcase listings over the last months, so the owners' insights have
- * something to show on day one: each published home draws its own daily interest (more right
- * after publishing and at weekends), most visits come from anonymous visitors, some from the
- * seeded renters, and a share of the visits ends in a save. Every row is deterministic and
- * carries a unique key (visitor + day, person + day, person + home), so a re-run adds nothing.
+ * something to show on day one: each published home draws a random total of views (never under
+ * `MIN_VIEWS`, a long tail above), spread over its days on the site with more right after
+ * publishing and at weekends; most visits come from anonymous visitors, some from the seeded
+ * renters, and a share of the visits ends in a save. Every row is deterministic and carries a
+ * unique key (visitor + day, person + day, person + home), so a re-run adds nothing.
  */
 const HISTORY_DAYS = 180;
+/** Every showcase home has at least this many views (user decision, 2026-11-15); the spread above it. */
+const MIN_VIEWS = 250;
+const VIEWS_SPREAD = 1250;
 const DAY_MS = 86_400_000;
 /** Rows per createMany statement. */
 const BATCH = 1000;
@@ -76,27 +80,41 @@ export const seedActivity = async (
   const historyStart = new Date(today.getTime() - (HISTORY_DAYS - 1) * DAY_MS);
 
   listings.forEach((listing, listingIndex) => {
-    // How much this home pulls per day, on its own.
-    const interest = 0.25 + roll() * 2;
+    // The home's total: squaring skews most homes towards the minimum, a few far above it.
+    const target = MIN_VIEWS + Math.floor(roll() ** 2 * VIEWS_SPREAD);
     const publishedOn = utcDay(listing.publishedAt ?? today);
     const firstDay = publishedOn > historyStart ? publishedOn : historyStart;
-    for (let day = firstDay, dayIndex = 0; day <= today; day = new Date(day.getTime() + DAY_MS)) {
-      dayIndex += 1;
+    // Each day's share of the total: fresh, weekend and a dash of noise; today is still young.
+    const days: { day: Date; weight: number }[] = [];
+    for (let day = firstDay; day <= today; day = new Date(day.getTime() + DAY_MS)) {
       const age = Math.round((day.getTime() - publishedOn.getTime()) / DAY_MS);
       const weekday = day.getUTCDay();
-      const expected =
-        interest *
+      const weight =
         (weekday === 0 || weekday === 6 ? 1.25 : 1) *
         (age < 10 ? 1.8 : age < 30 ? 1.1 : 0.85) *
-        // Today is still young when the seed runs.
-        (day.getTime() === today.getTime() ? 0.35 : 1);
-      const count = Math.floor(expected * (0.4 + roll() * 1.2));
+        (day.getTime() === today.getTime() ? 0.35 : 1) *
+        (0.4 + roll() * 1.2);
+      days.push({ day, weight });
+    }
+    const totalWeight = days.reduce((sum, entry) => sum + entry.weight, 0);
+    let cumulativeWeight = 0;
+    let allocated = 0;
+    days.forEach(({ day, weight }, dayIndex) => {
+      // Cumulative rounding: the day counts add up to the target exactly.
+      cumulativeWeight += weight;
+      const count = Math.round((target * cumulativeWeight) / totalWeight) - allocated;
+      allocated += count;
       const dayIso = day.toISOString().slice(0, 10);
+      let renters = 0;
       for (let visit = 0; visit < count; visit += 1) {
         const createdAt = new Date(day.getTime() + Math.floor((6 + roll() * 16) * 60) * 60_000);
-        const byRenter = roll() < RENTER_SHARE;
-        // Distinct renters within a day (the per-day unique on person + home).
-        const renterId = at(tenantIds, listingIndex * 7 + dayIndex * 3 + visit);
+        // Distinct renters within a day (the per-day unique on person + home): once every seeded
+        // renter has been here today, the rest are visitors, so the total stays what was drawn.
+        const byRenter = roll() < RENTER_SHARE && renters < tenantIds.length;
+        const renterId = at(tenantIds, listingIndex * 7 + dayIndex * 3 + renters);
+        if (byRenter) {
+          renters += 1;
+        }
         viewRows.push({
           listingId: listing.id,
           userId: byRenter ? renterId : null,
@@ -112,7 +130,7 @@ export const seedActivity = async (
           }
         }
       }
-    }
+    });
   });
 
   let views = 0;
