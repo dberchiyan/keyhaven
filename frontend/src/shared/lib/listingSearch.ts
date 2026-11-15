@@ -46,6 +46,7 @@ const filtersUrlSchema = z.object({
   furnished: flag.optional().catch(undefined),
   parking: flag.optional().catch(undefined),
   availableBy: z.iso.date().optional().catch(undefined),
+  // An empty `?q=` (the landing's search box sent nothing) is no filter at all.
   q: z.string().max(SEARCH_TEXT_MAX_LENGTH).optional().catch(undefined),
 });
 
@@ -60,7 +61,8 @@ export interface BrowseParams extends SearchFilters {
 }
 
 const read = (searchParams: URLSearchParams, key: string): string | undefined =>
-  searchParams.get(key) ?? undefined;
+  // An empty value (`?q=` from the landing's search box) is no filter at all.
+  searchParams.get(key) || undefined;
 
 export const parseBrowseParams = (searchParams: URLSearchParams): BrowseParams => {
   const filters = filtersUrlSchema.parse(
