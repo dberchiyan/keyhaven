@@ -1,5 +1,7 @@
+import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
 import MailOutlined from '@mui/icons-material/MailOutlined';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { formatPrice } from '../format';
@@ -10,10 +12,12 @@ export interface ListingActionBarProps {
   listing: ListingDetail;
   /** The contact link: a mailto with the subject filled in. */
   contactHref: string;
+  /** The booking block on the page: with it, booking is the bar's main action. */
+  bookHref?: string;
 }
 
-/** The phone's bottom bar on a listing page: the price, the heart and the contact button. */
-export function ListingActionBar({ listing, contactHref }: ListingActionBarProps) {
+/** The phone's bottom bar on a listing page: the price, the heart, contact and (when open) booking. */
+export function ListingActionBar({ listing, contactHref, bookHref }: ListingActionBarProps) {
   const { t, i18n } = useTranslation('listing');
   return (
     // The arbitrary padding: the home indicator's safe area on phones (ux.md).
@@ -34,9 +38,28 @@ export function ListingActionBar({ listing, contactHref }: ListingActionBarProps
             title={listing.title}
             className="border border-divider"
           />
-          <Button href={contactHref} variant="contained" startIcon={<MailOutlined aria-hidden />}>
-            {t('detail.contact')}
-          </Button>
+          {bookHref ? (
+            <>
+              <IconButton
+                href={contactHref}
+                aria-label={t('detail.contact')}
+                className="border border-divider"
+              >
+                <MailOutlined aria-hidden />
+              </IconButton>
+              <Button
+                href={bookHref}
+                variant="contained"
+                startIcon={<CalendarMonthOutlined aria-hidden />}
+              >
+                {t('detail.book')}
+              </Button>
+            </>
+          ) : (
+            <Button href={contactHref} variant="contained" startIcon={<MailOutlined aria-hidden />}>
+              {t('detail.contact')}
+            </Button>
+          )}
         </div>
       </div>
     </div>

@@ -90,5 +90,30 @@
   },
   "kind": {
     "required": "Choose whether the home is for rent or for sale"
+  },
+  "viewing": {
+    "message": {
+      "tooLong": "The note must be at most {{max}} characters"
+    },
+    "note": {
+      "tooLong": "The note must be at most {{max}} characters"
+    },
+    "slot": {
+      "required": "Pick a time"
+    }
+  },
+  "schedule": {
+    "windows": {
+      "required": "Open at least one day",
+      "order": "The end must come after the start",
+      "overlap": "Time ranges on the same day must not overlap",
+      "tooShort": "A range must fit at least one viewing",
+      "tooMany": "At most {{max}} ranges a day"
+    },
+    "blockedDays": {
+      "invalid": "Enter a date",
+      "tooMany": "At most {{max}} blocked days",
+      "duplicate": "That day is already blocked"
+    }
   }
 }

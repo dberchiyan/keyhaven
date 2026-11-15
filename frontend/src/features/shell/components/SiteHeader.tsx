@@ -84,6 +84,16 @@ export function SiteHeader() {
                   {t('shell:site.saved')}
                 </Button>
               )}
+              {can('viewing.book') && (
+                <Button
+                  component={NavLink}
+                  to={PATHS.viewings}
+                  variant="text"
+                  className="hidden sm:inline-flex"
+                >
+                  {t('shell:site.viewings')}
+                </Button>
+              )}
               {can('home.manage') && (
                 <Button component={Link} to={PATHS.home} variant="text">
                   {t('shell:site.dashboard')}

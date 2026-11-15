@@ -9,6 +9,7 @@ import enSavedSearch from '@/locales/en/savedSearch.json';
 import enSettings from '@/locales/en/settings.json';
 import enShell from '@/locales/en/shell.json';
 import enValidation from '@/locales/en/validation.json';
+import enViewing from '@/locales/en/viewing.json';
 
 export const SUPPORTED_LOCALES = ['en'] as const;
 export const DEFAULT_NAMESPACE = 'common';
@@ -23,6 +24,7 @@ export const resources = {
     savedSearch: enSavedSearch,
     settings: enSettings,
     shell: enShell,
+    viewing: enViewing,
   },
 } as const;
 

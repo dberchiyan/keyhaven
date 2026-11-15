@@ -18,6 +18,7 @@ import {
   SavedPage,
 } from '@/features/listing';
 import { SettingsPage } from '@/features/settings';
+import { ViewingsPage } from '@/features/viewing';
 import { AppLayout, RoleLayout, SiteLayout } from '@/features/shell';
 import { PageLoader } from '@/shared/components/PageLoader';
 import { RouteErrorBoundary } from '@/shared/components/RouteErrorBoundary';
@@ -58,6 +59,10 @@ export const router = createBrowserRouter([
           {
             element: <RequireAccess part="section.saved" />,
             children: [{ path: PATHS.saved, element: route(<SavedPage />) }],
+          },
+          {
+            element: <RequireAccess part="section.viewings" />,
+            children: [{ path: PATHS.viewings, element: route(<ViewingsPage />) }],
           },
           {
             element: <RequireAccess part="section.settings" />,

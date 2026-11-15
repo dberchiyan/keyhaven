@@ -2,10 +2,11 @@ import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
 import MailOutlined from '@mui/icons-material/MailOutlined';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
-import Typography from '@mui/material/Typography';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router';
+import { BookViewingSection } from '@/features/viewing';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { usePageHeadingFocus } from '@/shared/hooks/usePageHeadingFocus';
 import { PATHS } from '@/shared/lib/paths';
@@ -15,6 +16,7 @@ import { ListingDetailView } from '../components/ListingDetailView';
 import { ListingError } from '../components/ListingStates';
 import { SimilarHomes } from '../components/SimilarHomes';
 import { SaveButton } from '../components/SaveButton';
+import { listingKeys } from '../hooks/queryKeys';
 import { useListing } from '../hooks/useListingQueries';
 import { rememberViewed } from '../lib/recentlyViewed';
 
@@ -23,6 +25,7 @@ export default function ListingPage() {
   const { t } = useTranslation('listing');
   const { listingId = '' } = useParams();
   const listing = useListing(listingId);
+  const queryClient = useQueryClient();
   const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
   // The browser's own "recently viewed" (a signed-in person's also comes from the server).
   useEffect(() => {
@@ -84,23 +87,27 @@ export default function ListingPage() {
                 className="border border-divider"
               />
             </div>
-            {/* M2 brings viewing slots; until then the button says so instead of hiding. */}
+            {/* An in-page link: the booking block sits under the details. */}
             <Button
+              href="#book-viewing"
               variant="outlined"
               size="large"
-              disabled
               startIcon={<CalendarMonthOutlined aria-hidden />}
             >
-              {`${t('detail.book')} — ${t('detail.bookSoon')}`}
+              {t('detail.book')}
             </Button>
-            <Typography variant="caption" color="textSecondary">
-              {t('detail.bookHint')}
-            </Typography>
           </div>
         }
       />
+      <BookViewingSection
+        listing={listing.data}
+        onChanged={() => {
+          // A confirmed viewing reveals the address: the home is read again.
+          void queryClient.invalidateQueries({ queryKey: listingKeys.detail(listing.data.id) });
+        }}
+      />
       <SimilarHomes listing={listing.data} />
-      <ListingActionBar listing={listing.data} contactHref={contactHref} />
+      <ListingActionBar listing={listing.data} contactHref={contactHref} bookHref="#book-viewing" />
     </DetailPageFrame>
   );
 }

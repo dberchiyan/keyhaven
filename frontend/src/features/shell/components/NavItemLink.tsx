@@ -1,9 +1,11 @@
+import Badge from '@mui/material/Badge';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import { useTranslation } from 'react-i18next';
 import { matchPath, NavLink, useLocation, useMatch } from 'react-router';
+import { useViewingSummary } from '@/features/viewing';
 import { cn } from '@/shared/lib/cn';
 import type { NavItem } from '../navigation';
 
@@ -23,7 +25,12 @@ export function NavItemLink({ item, isCollapsed, onNavigate }: NavItemLinkProps)
   const isActive =
     useMatch({ path: item.path, end: exact }) !== null ||
     (item.alsoActiveOn ?? []).some((path) => matchPath(path, pathname) !== null);
-  const label = t(`nav.${item.section}`);
+  const summary = useViewingSummary(item.badge === 'viewingRequests');
+  const count = item.badge === 'viewingRequests' ? (summary.data?.requested ?? 0) : 0;
+  const label =
+    count > 0
+      ? t('nav.withBadge', { label: t(`nav.${item.section}`), count })
+      : t(`nav.${item.section}`);
   const Icon = item.icon;
 
   const link = (
@@ -48,9 +55,11 @@ export function NavItemLink({ item, isCollapsed, onNavigate }: NavItemLinkProps)
         />
       )}
       <ListItemIcon className="min-w-0 text-inherit">
-        <Icon aria-hidden />
+        <Badge badgeContent={count} color="secondary" max={99} overlap="circular">
+          <Icon aria-hidden />
+        </Badge>
       </ListItemIcon>
-      {!isCollapsed && <ListItemText primary={label} />}
+      {!isCollapsed && <ListItemText primary={t(`nav.${item.section}`)} />}
     </ListItemButton>
   );
 

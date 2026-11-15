@@ -3,7 +3,9 @@
     "label": "Main navigation",
     "listings": "Listings",
     "browse": "Browse homes",
-    "settings": "Settings"
+    "settings": "Settings",
+    "viewings": "Viewings",
+    "withBadge": "{{label}} — {{count}} to answer"
   },
   "menu": {
     "open": "Open menu",
@@ -21,7 +23,8 @@
     "securityDevices": "Security & devices",
     "settings": "Settings",
     "roleAt": "{{role}} · {{agency}}",
-    "demoReset": "Public demo · resets daily at 00:00 Kyiv time"
+    "demoReset": "Public demo · resets daily at 00:00 Kyiv time",
+    "viewings": "Viewings"
   },
   "role": {
     "TENANT": "Tenant",
@@ -40,7 +43,8 @@
     "signIn": "Sign in",
     "listHome": "List your home",
     "saved": "Saved",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "viewings": "Viewings"
   },
   "footer": {
     "tagline": "Homes to rent and to buy in six US cities.",
@@ -74,6 +78,7 @@
     "saved_visitor": "Saved",
     "dashboard": "Dashboard",
     "account": "Account",
-    "account_visitor": "Sign in"
+    "account_visitor": "Sign in",
+    "viewings": "Viewings"
   }
 }

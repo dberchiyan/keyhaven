@@ -11,6 +11,8 @@ export const PATHS = {
   listing: '/listings/:listingId',
   /** A tenant's saved homes and searches. */
   saved: '/saved',
+  /** A tenant's viewings, or the owner's viewings dashboard. */
+  viewings: '/viewings',
   newListing: '/manage/new',
   managedListing: '/manage/:listingId',
   editListing: '/manage/:listingId/edit',

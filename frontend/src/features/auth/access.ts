@@ -23,6 +23,15 @@ export const ACCESS = {
   'section.settings': EVERYONE,
   /** Home (`/`): the listings dashboard; everyone else lands on Browse. */
   'home.manage': LISTERS,
+  /** Viewings: a tenant's own, or the owner's dashboard of them — one route, two pages. */
+  'section.viewings': EVERYONE,
+  /** Asking for a viewing (the backend also needs a verified email). */
+  'viewing.book': TENANTS,
+  /** The viewings dashboard: landlords (their homes'), agents (the agency's), admins (all). */
+  'viewing.manage': LISTERS,
+  /** Answering requests and setting viewing hours: the owners only. */
+  'viewing.decide': OWNERS,
+  'viewing.hours': OWNERS,
   /** Saved homes and searches are a tenant's section. */
   'section.saved': TENANTS,
   'listing.save': TENANTS,

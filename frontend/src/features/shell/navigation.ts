@@ -1,3 +1,4 @@
+import EventAvailableOutlined from '@mui/icons-material/EventAvailableOutlined';
 import HomeWorkOutlined from '@mui/icons-material/HomeWorkOutlined';
 import SearchOutlined from '@mui/icons-material/SearchOutlined';
 import SettingsOutlined from '@mui/icons-material/SettingsOutlined';
@@ -6,10 +7,12 @@ import type { ComponentType } from 'react';
 import type { AccessPart } from '@/features/auth';
 import { BrowsePage, HomePage } from '@/features/listing';
 import { SettingsPage } from '@/features/settings';
+import { ViewingsPage } from '@/features/viewing';
 import { PATHS } from '@/shared/lib/paths';
 
 export const NavSection = {
   LISTINGS: 'listings',
+  VIEWINGS: 'viewings',
   BROWSE: 'browse',
   SETTINGS: 'settings',
 } as const;
@@ -24,6 +27,8 @@ export interface NavItem {
   placement: 'main' | 'bottom';
   /** Other paths that count as this section (a listing's management page under Listings). */
   alsoActiveOn?: readonly string[];
+  /** A figure on the icon: requests waiting for an answer. */
+  badge?: 'viewingRequests';
   /** Loads the page's code on hover or focus, so the click renders at once. */
   preload: () => Promise<unknown>;
 }
@@ -38,6 +43,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     placement: 'main',
     alsoActiveOn: [PATHS.managedListing, PATHS.newListing, PATHS.editListing],
     preload: HomePage.preload,
+  },
+  {
+    section: NavSection.VIEWINGS,
+    path: PATHS.viewings,
+    icon: EventAvailableOutlined,
+    access: 'viewing.manage',
+    placement: 'main',
+    badge: 'viewingRequests',
+    preload: ViewingsPage.preload,
   },
   {
     section: NavSection.BROWSE,

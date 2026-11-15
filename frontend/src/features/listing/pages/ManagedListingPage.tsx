@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useParams } from 'react-router';
 import { useAccess } from '@/features/auth';
+import { ListingViewingsSection, ScheduleSection } from '@/features/viewing';
 import { useDocumentTitle } from '@/shared/hooks/useDocumentTitle';
 import { usePageHeadingFocus } from '@/shared/hooks/usePageHeadingFocus';
 import { editListingPath, PATHS } from '@/shared/lib/paths';
@@ -86,6 +87,17 @@ export default function ManagedListingPage() {
         </Card>
       )}
       <ListingInsightsSection listingId={listing.data.id} />
+      {can('viewing.manage') && (
+        <>
+          <ScheduleSection
+            listingId={listing.data.id}
+            readOnly={
+              listing.data.demo || listing.data.status === 'SUSPENDED' || !can('viewing.hours')
+            }
+          />
+          <ListingViewingsSection listingId={listing.data.id} />
+        </>
+      )}
       <ListingDetailView
         listing={listing.data}
         badge={

@@ -86,8 +86,6 @@
     "address": "Address",
     "addressHidden": "The exact address is shared once a viewing is confirmed.",
     "book": "Book a viewing",
-    "bookSoon": "Coming soon",
-    "bookHint": "Booking a viewing arrives in the next release.",
     "error": "This home could not be loaded.",
     "retry": "Try again",
     "size": "Size",
@@ -152,7 +150,8 @@
       "typical": "About typical for a {{type}} in {{place}}",
       "basis_one": "— median {{median}} from {{count}} home",
       "basis_other": "— median {{median}} from {{count}} homes"
-    }
+    },
+    "contactShort": "Contact"
   },
   "manage": {
     "pageTitle": "Listings · Keyhaven",

@@ -1,3 +1,4 @@
+import EventAvailableOutlined from '@mui/icons-material/EventAvailableOutlined';
 import FavoriteBorderOutlined from '@mui/icons-material/FavoriteBorderOutlined';
 import HomeWorkOutlined from '@mui/icons-material/HomeWorkOutlined';
 import PersonOutlineOutlined from '@mui/icons-material/PersonOutlineOutlined';
@@ -13,7 +14,7 @@ import { cn } from '@/shared/lib/cn';
 import { browseSearch, parseBrowseParams } from '@/shared/lib/listingSearch';
 import { PATHS, settingsPath } from '@/shared/lib/paths';
 
-type TabKey = 'rent' | 'buy' | 'saved' | 'account' | 'dashboard';
+type TabKey = 'rent' | 'buy' | 'saved' | 'viewings' | 'account' | 'dashboard';
 
 interface Tab {
   key: TabKey;
@@ -24,8 +25,9 @@ interface Tab {
 
 /**
  * The phone's bottom tab bar (the public site only, under `md`): Rent, Buy, Saved and the
- * account — the four places a visitor or a tenant goes. A listing page replaces it with its own
- * action bar (`ListingActionBar`), as native apps do on a detail screen.
+ * account — the four places a visitor goes; a signed-in tenant gets Viewings as a fifth. A
+ * listing page replaces it with its own action bar (`ListingActionBar`), as native apps do on a
+ * detail screen.
  */
 export function MobileTabBar() {
   const { t } = useTranslation('shell');
@@ -61,6 +63,16 @@ export function MobileTabBar() {
             active: pathname.startsWith(PATHS.saved),
           },
         ]),
+    ...(user && can('viewing.book')
+      ? [
+          {
+            key: 'viewings' as const,
+            to: PATHS.viewings,
+            icon: EventAvailableOutlined,
+            active: pathname.startsWith(PATHS.viewings),
+          },
+        ]
+      : []),
     {
       key: 'account',
       to: user ? settingsPath('account') : PATHS.login,
@@ -74,7 +86,9 @@ export function MobileTabBar() {
       // The arbitrary padding: the home indicator's safe area on phones (ux.md).
       className="fixed inset-x-0 bottom-0 z-20 border-t border-divider bg-background-paper/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
     >
-      <ul className="m-0 grid list-none grid-cols-4 p-0">
+      <ul
+        className={cn('m-0 grid list-none p-0', tabs.length === 5 ? 'grid-cols-5' : 'grid-cols-4')}
+      >
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
