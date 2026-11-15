@@ -397,6 +397,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/managed-listings/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Views and saves per day over the listings the caller manages, against the period before, with the busiest listings */
+        get: operations["ManagedListingController_insights"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/managed-listings/{listingId}": {
         parameters: {
             query?: never;
@@ -408,6 +425,23 @@ export interface paths {
         get: operations["ManagedListingController_findOne"];
         /** Edit a listing’s details (owner, verified email); `version` guards the save */
         put: operations["ManagedListingController_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/managed-listings/{listingId}/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One listing’s views and saves per day, against the period before */
+        get: operations["ManagedListingController_listingInsights"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -955,6 +989,42 @@ export interface components {
             PUBLISHED: number;
             UNPUBLISHED: number;
             SUSPENDED: number;
+        };
+        InsightPoint_Output: {
+            /** Format: date */
+            day: string;
+            views: number;
+            saves: number;
+        };
+        InsightTotals_Output: {
+            views: number;
+            saves: number;
+        };
+        InsightTopListing_Output: {
+            listing: components["schemas"]["ManagedListingCard_Output"];
+            views: number;
+            saves: number;
+        };
+        ManagedInsightsResponse_Output: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            period: number;
+            series: components["schemas"]["InsightPoint_Output"][];
+            totals: components["schemas"]["InsightTotals_Output"];
+            previous: components["schemas"]["InsightTotals_Output"];
+            top: components["schemas"]["InsightTopListing_Output"][];
+        };
+        ListingInsightsResponse_Output: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            period: number;
+            series: components["schemas"]["InsightPoint_Output"][];
+            totals: components["schemas"]["InsightTotals_Output"];
+            previous: components["schemas"]["InsightTotals_Output"];
         };
         UpdateListingRequest: {
             title: string;
@@ -2168,6 +2238,54 @@ export interface operations {
             };
         };
     };
+    ManagedListingController_insights: {
+        parameters: {
+            query?: {
+                period?: "7" | "30" | "90";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ManagedInsightsResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     ManagedListingController_findOne: {
         parameters: {
             query?: never;
@@ -2291,6 +2409,63 @@ export interface operations {
             };
             /** @description BUSINESS_RULE_VIOLATION */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ManagedListingController_listingInsights: {
+        parameters: {
+            query?: {
+                period?: "7" | "30" | "90";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListingInsightsResponse_Output"];
+                };
+            };
+            /** @description VALIDATION_FAILED | INVALID_PARAMETER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RESOURCE_NOT_FOUND */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

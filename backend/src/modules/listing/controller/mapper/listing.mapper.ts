@@ -2,9 +2,12 @@ import type {
   ListingCard,
   ListingCity,
   ListingDetail,
+  ListingInsights,
+  ManagedInsights,
   ManagedListing,
   ManagedListingCard,
 } from '../../service/listing.types';
+import type { ListingInsightsBody, ManagedInsightsBody } from '../dto/listing-insights.response';
 import type {
   CitiesResponse,
   ListingDetailBody,
@@ -55,18 +58,44 @@ export const toListingPageResponse = (page: {
   totalElements: page.totalElements,
 });
 
+type ManagedCardItem = ManagedListingPageResponse['content'][number];
+
+export const toManagedListingCardResponse = (listing: ManagedListingCard): ManagedCardItem => ({
+  ...toListingCardResponse(listing),
+  status: listing.status,
+  demo: listing.demo,
+  viewCount: listing.viewCount,
+  saveCount: listing.saveCount,
+});
+
 export const toManagedListingPageResponse = (page: {
   content: ManagedListingCard[];
   totalElements: number;
 }): ManagedListingPageResponse => ({
-  content: page.content.map((listing) => ({
-    ...toListingCardResponse(listing),
-    status: listing.status,
-    demo: listing.demo,
-    viewCount: listing.viewCount,
-    saveCount: listing.saveCount,
-  })),
+  content: page.content.map(toManagedListingCardResponse),
   totalElements: page.totalElements,
+});
+
+export const toListingInsightsResponse = (insights: ListingInsights): ListingInsightsBody => ({
+  from: insights.from,
+  to: insights.to,
+  period: insights.period,
+  series: insights.series.map((point) => ({
+    day: point.day,
+    views: point.views,
+    saves: point.saves,
+  })),
+  totals: { views: insights.totals.views, saves: insights.totals.saves },
+  previous: { views: insights.previous.views, saves: insights.previous.saves },
+});
+
+export const toManagedInsightsResponse = (insights: ManagedInsights): ManagedInsightsBody => ({
+  ...toListingInsightsResponse(insights),
+  top: insights.top.map((row) => ({
+    listing: toManagedListingCardResponse(row.listing),
+    views: row.views,
+    saves: row.saves,
+  })),
 });
 
 export const toListingDetailResponse = (listing: ListingDetail): ListingDetailBody => ({

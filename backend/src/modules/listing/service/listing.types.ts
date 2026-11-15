@@ -1,5 +1,6 @@
 import type { Decimal, Money } from '../../../common/persistence/money';
 import type { ListingKind } from './listing-kind';
+import type { InsightPeriod } from './insight-period';
 import type { ListingStatus } from './listing-status';
 import type { PhotoContentType, PhotoStatus } from './photo-status';
 import type { PropertyType } from './property-type';
@@ -154,3 +155,44 @@ export interface NewPhotoIntent {
 /** Whose listings a dashboard shows — derived from the principal, never from the request. */
 export type ListingScope =
   { kind: 'LANDLORD'; landlordId: string } | { kind: 'AGENCY'; agencyId: string } | { kind: 'ALL' };
+
+/** Views and saves of one UTC day. */
+export interface InsightPoint {
+  /** `YYYY-MM-DD`. */
+  day: string;
+  views: number;
+  saves: number;
+}
+
+export interface InsightTotals {
+  views: number;
+  saves: number;
+}
+
+/** How a listing (or the caller's whole scope) did over the last `period` days. */
+export interface ListingInsights {
+  /** The first and the last day of the window, `YYYY-MM-DD` (UTC days, data.md). */
+  from: string;
+  to: string;
+  period: InsightPeriod;
+  /** One point per day of the window, oldest first; quiet days are zero, never missing. */
+  series: InsightPoint[];
+  totals: InsightTotals;
+  /** The same window one period earlier — the "against last period" comparison. */
+  previous: InsightTotals;
+}
+
+export interface InsightTopListing {
+  listing: ManagedListingCard;
+  /** Within the window, unlike the card's lifetime counts. */
+  views: number;
+  saves: number;
+}
+
+/** The dashboard's insights: the scope's series plus the listings that drew the most interest. */
+export interface ManagedInsights extends ListingInsights {
+  top: InsightTopListing[];
+}
+
+/** Whose activity the insights count: the dashboard's scope, or one listing. */
+export type InsightTarget = ListingScope | { kind: 'LISTING'; listingId: string };

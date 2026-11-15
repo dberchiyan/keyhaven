@@ -40,13 +40,16 @@ import {
   type ListingTransition,
 } from './listing-status';
 import type {
+  InsightTarget,
   ListedBy,
   ListingCard,
   ListingCity,
   ListingDetail,
   ListingDraft,
+  ListingInsights,
   ListingScope,
   ListingViewer,
+  ManagedInsights,
   ManagedListing,
   PriceContext,
   ManagedListingCard,
@@ -56,6 +59,7 @@ import type {
   UpdateListingCommand,
 } from './listing.types';
 import { isListingKind, type ListingKind } from './listing-kind';
+import { INSIGHT_TOP_LIMIT, type InsightPeriod } from './insight-period';
 import { PRICE_CONTEXT_MIN_SAMPLE } from './listing.types';
 import {
   isPhotoStatus,
@@ -246,6 +250,55 @@ export class ListingService {
       throw new ResourceNotFoundException();
     }
     return { ...this.toManaged(listing, photos), priceContext: await this.priceContextOf(listing) };
+  }
+
+  /**
+   * The dashboard's insights: views and saves per day over the caller's scope, the totals
+   * against the period before, and the listings that drew the most interest in the window.
+   */
+  async findInsights(principal: Principal, period: InsightPeriod): Promise<ManagedInsights> {
+    const scope = scopeOf(principal);
+    const insights = await this.insightsOf(scope, period);
+    const top = await this.listingRepository.findTopListings(
+      scope,
+      insights.from,
+      insights.to,
+      INSIGHT_TOP_LIMIT,
+    );
+    const cards = await this.listingRepository.findManagedCardsByIds(top.map((row) => row.id));
+    const byId = new Map(cards.map((card) => [card.id, card]));
+    return {
+      ...insights,
+      top: top.flatMap((row) => {
+        const card = byId.get(row.id);
+        return card
+          ? [{ listing: this.toManagedCard(card), views: row.views, saves: row.saves }]
+          : [];
+      }),
+    };
+  }
+
+  /** One listing's insights (the policy checked ownership). */
+  findListingInsights(listingId: string, period: InsightPeriod): Promise<ListingInsights> {
+    return this.insightsOf({ kind: 'LISTING', listingId }, period);
+  }
+
+  /** The window ends today (UTC) and spans `period` days; the previous window ends the day before it starts. */
+  private async insightsOf(target: InsightTarget, period: InsightPeriod): Promise<ListingInsights> {
+    const today = utcToday();
+    const to = toDayString(today);
+    const from = toDayString(addDays(today, -(period - 1)));
+    const previousTo = toDayString(addDays(today, -period));
+    const previousFrom = toDayString(addDays(today, -(2 * period - 1)));
+    const [series, previous] = await Promise.all([
+      this.listingRepository.findInsightSeries(target, from, to),
+      this.listingRepository.countInsightTotals(target, previousFrom, previousTo),
+    ]);
+    const totals = series.reduce(
+      (sum, point) => ({ views: sum.views + point.views, saves: sum.saves + point.saves }),
+      { views: 0, saves: 0 },
+    );
+    return { from, to, period, series, totals, previous };
   }
 
   /** A new DRAFT: a landlord's own, or the agent's agency's (never from the request). */
@@ -661,6 +714,10 @@ const utcToday = (): Date => {
   const now = new Date();
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 };
+
+const DAY_MS = 86_400_000;
+const addDays = (day: Date, days: number): Date => new Date(day.getTime() + days * DAY_MS);
+const toDayString = (day: Date): string => day.toISOString().slice(0, 10);
 
 /** Whose listings the caller manages — the one place the role becomes a query scope. */
 const scopeOf = (principal: Principal): ListingScope => {

@@ -108,6 +108,7 @@ model SavedListing {
 
   @@id([userId, listingId], map: "pk_saved_listings")
   @@index([listingId], map: "idx_saved_listings_listing_id")
+  @@index([listingId, createdAt], map: "idx_saved_listings_listing_id_created_at")
   @@map("saved_listings")
 }
 
@@ -125,6 +126,7 @@ model ListingView {
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   @@index([userId], map: "idx_listing_views_user_id")
+  @@index([listingId, viewedOn], map: "idx_listing_views_listing_id_viewed_on")
   @@map("listing_views")
 }
 

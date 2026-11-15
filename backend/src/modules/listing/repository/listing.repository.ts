@@ -8,8 +8,15 @@ import type { PrismaService } from '../../../common/persistence/prisma.service';
 import { Prisma } from '../../../generated/prisma/client';
 import type { ListingCriteria, ManagedListingCriteria } from '../service/filter/listing.criteria';
 import type { ListingSortField, ManagedListingSortField } from '../service/listing-sort';
-import type { ListingDraft, ListingScope, ListingViewer } from '../service/listing.types';
-import { managedListingWhere, publishedListingSql } from './listing-where';
+import type {
+  InsightPoint,
+  InsightTarget,
+  InsightTotals,
+  ListingDraft,
+  ListingScope,
+  ListingViewer,
+} from '../service/listing.types';
+import { insightTargetSql, managedListingWhere, publishedListingSql } from './listing-where';
 import { ListingStatus } from '../service/listing-status';
 import {
   type CityRecord,
@@ -67,6 +74,15 @@ const SIMILAR_PRICE_SPREAD = 0.25;
 /** The strips are short by design: a handful of cards, never a page. */
 export const SIMILAR_LIMIT = 6;
 export const RECENT_LIMIT = 12;
+
+/** The insights' day rows: every day of the window, counts as ints. */
+const insightRowsSchema = z.array(
+  z.object({ day: z.string(), views: z.number().int(), saves: z.number().int() }),
+);
+const insightTotalsSchema = z.array(z.object({ views: z.number().int(), saves: z.number().int() }));
+const topRowsSchema = z.array(
+  z.object({ id: z.string(), views: z.number().int(), saves: z.number().int() }),
+);
 
 @Injectable()
 export class ListingRepository {
@@ -218,6 +234,106 @@ export class ListingRepository {
       ORDER BY max(v.created_at) DESC
       LIMIT ${RECENT_LIMIT}`;
     return idRowsSchema.parse(rows).map((row) => row.id);
+  }
+
+  /**
+   * Views and saves per UTC day over `[from, to]` (both `YYYY-MM-DD`), oldest first, a row for
+   * every day — quiet days count zero, so the chart never has holes. Views are kept by their
+   * day already; a save's day is its instant in UTC. One statement, whatever the window.
+   */
+  async findInsightSeries(
+    target: InsightTarget,
+    from: string,
+    to: string,
+  ): Promise<InsightPoint[]> {
+    const rows = await this.txHost.tx.$queryRaw<unknown[]>`
+      WITH days AS (
+        SELECT d::date AS day FROM generate_series(${from}::date, ${to}::date, '1 day') AS d
+      ),
+      views AS (
+        SELECT v.viewed_on AS day, count(*)::int AS views
+        FROM listing_views v JOIN listings l ON l.id = v.listing_id
+        WHERE ${insightTargetSql(target)}
+          AND v.viewed_on BETWEEN ${from}::date AND ${to}::date
+        GROUP BY v.viewed_on
+      ),
+      saves AS (
+        SELECT (s.created_at AT TIME ZONE 'UTC')::date AS day, count(*)::int AS saves
+        FROM saved_listings s JOIN listings l ON l.id = s.listing_id
+        WHERE ${insightTargetSql(target)}
+          AND s.created_at >= ${from}::date AND s.created_at < ${to}::date + 1
+        GROUP BY 1
+      )
+      SELECT to_char(days.day, 'YYYY-MM-DD') AS day,
+        coalesce(views.views, 0) AS views,
+        coalesce(saves.saves, 0) AS saves
+      FROM days
+      LEFT JOIN views ON views.day = days.day
+      LEFT JOIN saves ON saves.day = days.day
+      ORDER BY days.day`;
+    return insightRowsSchema.parse(rows);
+  }
+
+  /** The views and saves of a window as two counts (the previous period, for the comparison). */
+  async countInsightTotals(
+    target: InsightTarget,
+    from: string,
+    to: string,
+  ): Promise<InsightTotals> {
+    const rows = await this.txHost.tx.$queryRaw<unknown[]>`
+      SELECT
+        (SELECT count(*) FROM listing_views v JOIN listings l ON l.id = v.listing_id
+          WHERE ${insightTargetSql(target)}
+            AND v.viewed_on BETWEEN ${from}::date AND ${to}::date)::int AS views,
+        (SELECT count(*) FROM saved_listings s JOIN listings l ON l.id = s.listing_id
+          WHERE ${insightTargetSql(target)}
+            AND s.created_at >= ${from}::date AND s.created_at < ${to}::date + 1)::int AS saves`;
+    return insightTotalsSchema.parse(rows)[0] ?? { views: 0, saves: 0 };
+  }
+
+  /**
+   * The scope's listings that drew the most interest in the window — views first, saves as
+   * the tie-breaker — with their counts; listings nobody looked at are left out.
+   */
+  async findTopListings(
+    scope: ListingScope,
+    from: string,
+    to: string,
+    limit: number,
+  ): Promise<{ id: string; views: number; saves: number }[]> {
+    const rows = await this.txHost.tx.$queryRaw<unknown[]>`
+      SELECT l.id, coalesce(v.views, 0) AS views, coalesce(s.saves, 0) AS saves
+      FROM listings l
+      LEFT JOIN (
+        SELECT listing_id, count(*)::int AS views FROM listing_views
+        WHERE viewed_on BETWEEN ${from}::date AND ${to}::date
+        GROUP BY listing_id
+      ) v ON v.listing_id = l.id
+      LEFT JOIN (
+        SELECT listing_id, count(*)::int AS saves FROM saved_listings
+        WHERE created_at >= ${from}::date AND created_at < ${to}::date + 1
+        GROUP BY listing_id
+      ) s ON s.listing_id = l.id
+      WHERE ${insightTargetSql(scope)} AND (v.views > 0 OR s.saves > 0)
+      ORDER BY views DESC, saves DESC, l.id ASC
+      LIMIT ${limit}`;
+    return topRowsSchema.parse(rows);
+  }
+
+  /** Dashboard rows for known ids, in the given order (a few rows: the insights' top list). */
+  async findManagedCardsByIds(ids: readonly string[]): Promise<ManagedListingCardRecord[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const cards = await this.txHost.tx.listing.findMany({
+      where: { id: { in: [...ids] } },
+      select: managedListingCardSelect,
+    });
+    const byId = new Map(cards.map((card) => [card.id, card]));
+    return ids.flatMap((id) => {
+      const card = byId.get(id);
+      return card ? [card] : [];
+    });
   }
 
   private async countPublished(criteria: ListingCriteria): Promise<number> {

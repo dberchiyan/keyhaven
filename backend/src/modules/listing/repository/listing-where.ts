@@ -1,7 +1,7 @@
 import { Prisma } from '../../../generated/prisma/client';
 import type { ListingCriteria, ManagedListingCriteria } from '../service/filter/listing.criteria';
 import { ListingStatus } from '../service/listing-status';
-import type { ListingScope } from '../service/listing.types';
+import type { InsightTarget, ListingScope } from '../service/listing.types';
 
 /**
  * The text the search box matches — the same expression as `idx_listings_search_trgm`, so the
@@ -85,3 +85,17 @@ export const managedListingWhere = (
     ],
   })),
 });
+
+/** Whose views and saves the insights count — the scope, or one listing — as a fragment on `l`. */
+export const insightTargetSql = (target: InsightTarget): Prisma.Sql => {
+  switch (target.kind) {
+    case 'LANDLORD':
+      return Prisma.sql`l.landlord_id = ${target.landlordId}::uuid`;
+    case 'AGENCY':
+      return Prisma.sql`l.agency_id = ${target.agencyId}::uuid`;
+    case 'LISTING':
+      return Prisma.sql`l.id = ${target.listingId}::uuid`;
+    case 'ALL':
+      return Prisma.sql`TRUE`;
+  }
+};

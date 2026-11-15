@@ -9,19 +9,24 @@ export const CurrentUserResponse_Output = /* @__PURE__ */ z.object({ "id": z.str
 export const DigestSummaryResponse_Output = /* @__PURE__ */ z.object({ "searches": z.number().int(), "emails": z.number().int() });
 export const EmailVerificationResponse_Output = /* @__PURE__ */ z.object({ "email": z.string(), "verifiedAt": z.string() });
 export const HealthResponse_Output = /* @__PURE__ */ z.object({ "status": z.enum(["ok"]) });
-export const ListedBy_Output = /* @__PURE__ */ z.union([z.object({ "kind": z.enum(["LANDLORD"]), "name": z.string(), "phone": z.string().nullable(), "email": z.string() }), z.object({ "kind": z.enum(["AGENCY"]), "name": z.string(), "phone": z.string(), "email": z.string(), "website": z.string().nullable() })]);
-export const ListingAddress_Output = /* @__PURE__ */ z.object({ "line1": z.string(), "line2": z.string().nullable() });
+export const InsightPoint_Output = /* @__PURE__ */ z.object({ "day": z.string(), "views": z.number().int(), "saves": z.number().int() });
 export const PropertyType_Output = /* @__PURE__ */ z.enum(["APARTMENT", "HOUSE", "CONDO", "TOWNHOUSE", "STUDIO"]);
 export const ListingKind_Output = /* @__PURE__ */ z.enum(["RENT", "SALE"]);
 export const Money_Output = /* @__PURE__ */ z.object({ "amount": z.string(), "currency": z.string() });
+export const ListingStatus_Output = /* @__PURE__ */ z.enum(["DRAFT", "PUBLISHED", "UNPUBLISHED", "SUSPENDED"]);
+export const ManagedListingCard_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "propertyType": PropertyType_Output, "kind": ListingKind_Output, "price": Money_Output, "bedrooms": z.number().int(), "bathrooms": z.string(), "sizeSqft": z.number().int(), "city": City_Output, "neighborhood": z.string().nullable(), "availableFrom": z.string().nullable(), "publishedAt": z.string().nullable(), "coverPhotoUrl": z.string().nullable(), "saved": z.boolean(), "status": ListingStatus_Output, "demo": z.boolean(), "viewCount": z.number().int(), "saveCount": z.number().int() });
+export const InsightTopListing_Output = /* @__PURE__ */ z.object({ "listing": ManagedListingCard_Output, "views": z.number().int(), "saves": z.number().int() });
+export const InsightTotals_Output = /* @__PURE__ */ z.object({ "views": z.number().int(), "saves": z.number().int() });
+export const ListedBy_Output = /* @__PURE__ */ z.union([z.object({ "kind": z.enum(["LANDLORD"]), "name": z.string(), "phone": z.string().nullable(), "email": z.string() }), z.object({ "kind": z.enum(["AGENCY"]), "name": z.string(), "phone": z.string(), "email": z.string(), "website": z.string().nullable() })]);
+export const ListingAddress_Output = /* @__PURE__ */ z.object({ "line1": z.string(), "line2": z.string().nullable() });
 export const ListingCard_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "propertyType": PropertyType_Output, "kind": ListingKind_Output, "price": Money_Output, "bedrooms": z.number().int(), "bathrooms": z.string(), "sizeSqft": z.number().int(), "city": City_Output, "neighborhood": z.string().nullable(), "availableFrom": z.string().nullable(), "publishedAt": z.string().nullable(), "coverPhotoUrl": z.string().nullable(), "saved": z.boolean() });
 export const ListingCardsResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(ListingCard_Output) });
 export const PriceContext_Output = /* @__PURE__ */ z.object({ "scope": z.enum(["NEIGHBORHOOD", "CITY"]), "median": Money_Output, "sample": z.number().int(), "differencePercent": z.number().int() });
 export const ListingDetailResponse_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "propertyType": PropertyType_Output, "kind": ListingKind_Output, "price": Money_Output, "bedrooms": z.number().int(), "bathrooms": z.string(), "sizeSqft": z.number().int(), "city": City_Output, "neighborhood": z.string().nullable(), "availableFrom": z.string().nullable(), "publishedAt": z.string().nullable(), "coverPhotoUrl": z.string().nullable(), "saved": z.boolean(), "demo": z.boolean(), "description": z.string(), "furnished": z.boolean(), "petsAllowed": z.boolean(), "parking": z.boolean(), "zip": z.string(), "photos": z.array(z.object({ "id": z.string(), "url": z.string() })), "listedBy": ListedBy_Output, "address": ListingAddress_Output.nullable(), "priceContext": PriceContext_Output.nullable() });
+export const ListingInsightsResponse_Output = /* @__PURE__ */ z.object({ "from": z.string(), "to": z.string(), "period": z.number().int(), "series": z.array(InsightPoint_Output), "totals": InsightTotals_Output, "previous": InsightTotals_Output });
 export const ListingPageResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(ListingCard_Output), "totalElements": z.number().int() });
 export const ListingStatusCountsResponse_Output = /* @__PURE__ */ z.object({ "DRAFT": z.number().int(), "PUBLISHED": z.number().int(), "UNPUBLISHED": z.number().int(), "SUSPENDED": z.number().int() });
-export const ListingStatus_Output = /* @__PURE__ */ z.enum(["DRAFT", "PUBLISHED", "UNPUBLISHED", "SUSPENDED"]);
-export const ManagedListingCard_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "propertyType": PropertyType_Output, "kind": ListingKind_Output, "price": Money_Output, "bedrooms": z.number().int(), "bathrooms": z.string(), "sizeSqft": z.number().int(), "city": City_Output, "neighborhood": z.string().nullable(), "availableFrom": z.string().nullable(), "publishedAt": z.string().nullable(), "coverPhotoUrl": z.string().nullable(), "saved": z.boolean(), "status": ListingStatus_Output, "demo": z.boolean(), "viewCount": z.number().int(), "saveCount": z.number().int() });
+export const ManagedInsightsResponse_Output = /* @__PURE__ */ z.object({ "from": z.string(), "to": z.string(), "period": z.number().int(), "series": z.array(InsightPoint_Output), "totals": InsightTotals_Output, "previous": InsightTotals_Output, "top": z.array(InsightTopListing_Output) });
 export const ManagedListingPageResponse_Output = /* @__PURE__ */ z.object({ "content": z.array(ManagedListingCard_Output), "totalElements": z.number().int() });
 export const PhotoStatus_Output = /* @__PURE__ */ z.enum(["PENDING", "READY"]);
 export const ManagedPhoto_Output = /* @__PURE__ */ z.object({ "id": z.string(), "url": z.string().nullable(), "status": PhotoStatus_Output, "position": z.number().int().nullable() });
@@ -47,9 +52,11 @@ export const RESPONSE_SCHEMAS: readonly { method: string; pattern: RegExp; schem
   { method: 'post', pattern: /^\/api\/v1\/auth\/password-resets$/, schema: CurrentUserResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/auth\/security-log$/, schema: SecurityLogResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/auth\/sessions$/, schema: SessionsResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/managed-listings\/insights$/, schema: ManagedInsightsResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/managed-listings\/status-counts$/, schema: ListingStatusCountsResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/photos\/[^/]+\/confirmation$/, schema: ManagedListingResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/listings\/[^/]+\/similar$/, schema: ListingCardsResponse_Output },
+  { method: 'get', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/insights$/, schema: ListingInsightsResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/photo-intents$/, schema: PhotoIntentResponse_Output },
   { method: 'put', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/photos$/, schema: ManagedListingResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/managed-listings\/[^/]+\/publication$/, schema: ManagedListingResponse_Output },

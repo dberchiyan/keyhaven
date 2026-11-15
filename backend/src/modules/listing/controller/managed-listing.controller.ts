@@ -25,6 +25,8 @@ import { ListingService, toSearchTerms } from '../service/listing.service';
 import type { ListingDraft } from '../service/listing.types';
 import { CreateListingRequest, UpdateListingRequest } from './dto/listing-draft.request';
 import { ManagedListingFilterQuery } from './dto/listing-filter.query';
+import { InsightsQuery } from './dto/listing-insights.query';
+import { ListingInsightsResponse, ManagedInsightsResponse } from './dto/listing-insights.response';
 import {
   PhotoIntentRequest,
   PhotoIntentResponse,
@@ -35,7 +37,12 @@ import {
   ManagedListingPageResponse,
   ManagedListingResponse,
 } from './dto/listing.response';
-import { toManagedListingPageResponse, toManagedListingResponse } from './mapper/listing.mapper';
+import {
+  toListingInsightsResponse,
+  toManagedInsightsResponse,
+  toManagedListingPageResponse,
+  toManagedListingResponse,
+} from './mapper/listing.mapper';
 
 /** The request's fields, one by one, into the service's draft (never passed on as is). */
 const toDraft = (request: CreateListingRequest): ListingDraft => ({
@@ -132,6 +139,23 @@ export class ManagedListingController {
     return this.listingService.countByStatus(principal);
   }
 
+  @Get('insights')
+  @Authorize(can.manageListings)
+  @ApiOperation({
+    summary:
+      'Views and saves per day over the listings the caller manages, against the period before, with the busiest listings',
+  })
+  @ZodResponse({ status: HttpStatus.OK, type: ManagedInsightsResponse })
+  @ApiErrors('VALIDATION_FAILED', 'UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN')
+  async insights(
+    @CurrentPrincipal() principal: Principal,
+    @Query() query: InsightsQuery,
+  ): Promise<ManagedInsightsResponse> {
+    return toManagedInsightsResponse(
+      await this.listingService.findInsights(principal, query.period),
+    );
+  }
+
   @Get(':listingId')
   @Authorize(can.manageListing)
   @ApiOperation({ summary: 'One of the listings the caller manages, with its exact address' })
@@ -145,6 +169,27 @@ export class ManagedListingController {
   )
   async findOne(@UuidParam('listingId') listingId: string): Promise<ManagedListingResponse> {
     return toManagedListingResponse(await this.listingService.findManaged(listingId));
+  }
+
+  @Get(':listingId/insights')
+  @Authorize(can.manageListing)
+  @ApiOperation({ summary: 'One listing’s views and saves per day, against the period before' })
+  @ZodResponse({ status: HttpStatus.OK, type: ListingInsightsResponse })
+  @ApiErrors(
+    'VALIDATION_FAILED',
+    'INVALID_PARAMETER',
+    'UNAUTHORIZED',
+    'SESSION_EXPIRED',
+    'FORBIDDEN',
+    'RESOURCE_NOT_FOUND',
+  )
+  async listingInsights(
+    @UuidParam('listingId') listingId: string,
+    @Query() query: InsightsQuery,
+  ): Promise<ListingInsightsResponse> {
+    return toListingInsightsResponse(
+      await this.listingService.findListingInsights(listingId, query.period),
+    );
   }
 
   @Put(':listingId')
