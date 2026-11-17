@@ -1,15 +1,13 @@
-/** One message, ready to send: the feature that sends it rendered both bodies. */
 export interface EmailMessage {
     to: string;
     subject: string;
     text: string;
-    /** Every interpolated value is escaped by the renderer (security.md → Injection). */
     html: string;
 }
 
 /**
- * The port to email delivery (integrations.md → Provider boundary): one adapter per transport
- * in `adapter/`. Provider types and errors never leave the adapter: it throws
+ * INT-1: the port to email delivery — one adapter per transport in `adapter/`; the feature that sends a message
+ * renders both bodies and escapes every value it interpolates into the HTML. Provider types and errors never leave the adapter: it throws
  * `UpstreamUnavailableException` when the server cannot be reached.
  */
 export abstract class EmailSender {

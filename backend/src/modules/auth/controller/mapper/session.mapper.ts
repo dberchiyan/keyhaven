@@ -1,5 +1,6 @@
-import { ClientType } from '../../../../common/security/principal';
-import type { SessionListRecord } from '../../repository/record/session.record';
+import { ClientType } from '@/common/security/principal';
+import type { SessionListRecord } from '@/modules/auth/repository/record/session.record';
+
 import type { SessionsResponse } from '../dto/sessions.response';
 
 type SessionItem = SessionsResponse['others']['content'][number];

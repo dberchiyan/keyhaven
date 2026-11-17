@@ -1,4 +1,3 @@
-/** For rent (the price is a monthly rent) or for sale (the asking price). Mirrored by ck_listings_kind. */
 export const ListingKind = {
     RENT: 'RENT',
     SALE: 'SALE',
@@ -7,5 +6,6 @@ export type ListingKind = (typeof ListingKind)[keyof typeof ListingKind];
 
 export const LISTING_KINDS = Object.values(ListingKind) as [ListingKind, ...ListingKind[]];
 
+/** The price is a monthly rent or an asking price by kind; ck_listings_kind allows no other value. */
 export const isListingKind = (value: string): value is ListingKind =>
     (LISTING_KINDS as readonly string[]).includes(value);

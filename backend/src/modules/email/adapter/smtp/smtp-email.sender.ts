@@ -1,16 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { createTransport, type Transporter } from 'nodemailer';
-import { AppConfigService } from '../../../../common/config/app-config.service';
-import { UpstreamUnavailableException } from '../../../../common/exception/api.exception';
-import { MetricsService } from '../../../../common/observability/metrics.service';
-import { type EmailMessage, EmailSender } from '../../service/email-sender';
 
-/** Every outbound call has a timeout (architecture.md → async). */
+import { AppConfigService } from '@/common/config/app-config.service';
+import { UpstreamUnavailableException } from '@/common/exception/api.exception';
+import { MetricsService } from '@/common/observability/metrics.service';
+import { type EmailMessage, EmailSender } from '@/modules/email/service/email-sender';
+
 const CONNECTION_TIMEOUT_MS = 10_000;
 const SOCKET_TIMEOUT_MS = 15_000;
+const SMTPS_PORT = 465;
+const SUBMISSION_PORT = 587;
+const PLACEHOLDER_SMTP_URL = 'smtp://localhost';
 
-/** SMTP delivery (EMAIL_TRANSPORT=smtp) through SMTP_URL; the From header is EMAIL_FROM. */
+/**
+ * SMTP delivery (EMAIL_TRANSPORT=smtp) through SMTP_URL; the From header is EMAIL_FROM. CORE-35: every call has a
+ * timeout. With the log transport there is no SMTP_URL, so a placeholder keeps the unused provider valid. INT-1:
+ * provider error text stays in the log; the caller gets our exception.
+ */
 @Injectable()
 export class SmtpEmailSender extends EmailSender {
     private readonly transporter: Transporter;
@@ -22,12 +29,11 @@ export class SmtpEmailSender extends EmailSender {
         @InjectPinoLogger(SmtpEmailSender.name) private readonly logger: PinoLogger,
     ) {
         super();
-        // With the log transport there is no SMTP_URL: a placeholder keeps the (unused) provider valid.
-        const url = new URL(config.get('SMTP_URL') ?? 'smtp://localhost');
+        const url = new URL(config.get('SMTP_URL') ?? PLACEHOLDER_SMTP_URL);
         const secure = url.protocol === 'smtps:';
         this.transporter = createTransport({
             host: url.hostname,
-            port: url.port ? Number(url.port) : secure ? 465 : 587,
+            port: url.port ? Number(url.port) : secure ? SMTPS_PORT : SUBMISSION_PORT,
             secure,
             ...(url.username
                 ? {
@@ -56,7 +62,6 @@ export class SmtpEmailSender extends EmailSender {
             this.metrics.emailsSent.inc({ outcome: 'sent' });
             this.logger.info({ messageId: readMessageId(info), subject: message.subject }, 'Email sent');
         } catch (error: unknown) {
-            // Provider error text stays in the log; the caller gets our exception (integrations.md).
             this.metrics.emailsSent.inc({ outcome: 'failed' });
             this.logger.warn({ err: error, subject: message.subject }, 'Email delivery failed');
             throw new UpstreamUnavailableException();
@@ -64,5 +69,5 @@ export class SmtpEmailSender extends EmailSender {
     }
 }
 
-const readMessageId = (info: unknown): string | null =>
-    typeof info === 'object' && info !== null && 'messageId' in info ? String(info.messageId) : null;
+const readMessageId = (info: unknown): string | undefined =>
+    typeof info === 'object' && info !== null && 'messageId' in info ? String(info.messageId) : undefined;

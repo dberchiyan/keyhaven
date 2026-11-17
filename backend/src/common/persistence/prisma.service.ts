@@ -3,15 +3,17 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { ClsService } from 'nestjs-cls';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import type { Pool } from 'pg';
-import { PrismaClient } from '../../generated/prisma/client';
+
+import { PrismaClient } from '@/generated/prisma/client';
+
 import { AppConfigService } from '../config/app-config.service';
 import type { RequestContext } from '../context/request-context';
 import { PG_POOL } from './pg-pool';
 
-type PrismaOptions = {
+interface PrismaOptions {
     adapter: PrismaPg;
     log: [{ emit: 'event'; level: 'query' }, { emit: 'event'; level: 'warn' }, { emit: 'event'; level: 'error' }];
-};
+}
 
 @Injectable()
 export class PrismaService extends PrismaClient<PrismaOptions> implements OnModuleDestroy {

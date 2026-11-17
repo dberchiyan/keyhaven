@@ -1,7 +1,10 @@
+import { DAY_MS, MINUTE_MS } from '@/shared/lib/units';
+
 import type { Message } from './types';
 
-/** Messages this close from the same person read as one run: a name once, a time at the end. */
-const RUN_GAP_MS = 5 * 60_000;
+const RUN_GAP_MINUTES = 5;
+const RUN_GAP_MS = RUN_GAP_MINUTES * MINUTE_MS;
+const WEEKDAY_WINDOW_DAYS = 6;
 
 /**
  * Chat times are the reader's own clock (not the home's zone, not UTC): a message was written
@@ -10,7 +13,7 @@ const RUN_GAP_MS = 5 * 60_000;
 export const formatMessageTime = (iso: string, locale: string): string =>
     new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
 
-/** The reader's local calendar day of an instant, `YYYY-MM-DD`. */
+/** The reader's local calendar day, `YYYY-MM-DD` — chat days follow the reader's clock, not UTC. */
 const localDay = (instant: Date): string =>
     `${instant.getFullYear()}-${String(instant.getMonth() + 1).padStart(2, '0')}-${String(instant.getDate()).padStart(2, '0')}`;
 
@@ -18,7 +21,7 @@ const localDay = (instant: Date): string =>
 export const formatDayDivider = (iso: string, now: number, locale: string): string => {
     const instant = new Date(iso);
     const today = new Date(now);
-    const yesterday = new Date(now - 86_400_000);
+    const yesterday = new Date(now - DAY_MS);
     const day = localDay(instant);
     if (day === localDay(today) || day === localDay(yesterday)) {
         return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(day === localDay(today) ? 0 : -1, 'day');
@@ -31,7 +34,6 @@ export const formatDayDivider = (iso: string, now: number, locale: string): stri
     }).format(instant);
 };
 
-/** Where a message sits in a run of the same sender: the corners and the time follow it. */
 export type RunPosition = 'single' | 'first' | 'middle' | 'last';
 
 export interface PlacedMessage {
@@ -45,8 +47,8 @@ export interface DayGroup {
 }
 
 /**
- * Messages in order, split into runs of one local day, each message placed in its run (the same
- * sender, within a few minutes of the previous one).
+ * Messages in order, split by the reader's local day, each placed in its run: messages this close
+ * from the same person read as one, so the name heads a run once and the time ends it.
  */
 export const groupByDay = (messages: readonly Message[]): DayGroup[] => {
     const groups: DayGroup[] = [];
@@ -66,11 +68,11 @@ export const groupByDay = (messages: readonly Message[]): DayGroup[] => {
             new Date(next.createdAt).getTime() - new Date(message.createdAt).getTime() <= RUN_GAP_MS;
         const position: RunPosition = joinsPrevious ? (joinsNext ? 'middle' : 'last') : joinsNext ? 'first' : 'single';
         const last = groups[groups.length - 1];
-        if (last && last.day === day) {
+        if (last?.day === day) {
             last.messages.push({ message, position });
-        } else {
-            groups.push({ day, messages: [{ message, position }] });
+            continue;
         }
+        groups.push({ day, messages: [{ message, position }] });
     }
     return groups;
 };
@@ -82,8 +84,19 @@ export const formatInboxTime = (iso: string, now: number, locale: string): strin
     if (localDay(instant) === localDay(new Date(now))) {
         return formatMessageTime(iso, locale);
     }
-    if (elapsed < 6 * 86_400_000) {
+    if (elapsed < WEEKDAY_WINDOW_DAYS * DAY_MS) {
         return new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(instant);
     }
     return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }).format(instant);
+};
+
+export interface PersonName {
+    firstName: string;
+    lastName: string;
+}
+
+/** A counterpart arrives as one display name; initials and the composer's placeholder need its parts. */
+export const splitName = (name: string): PersonName => {
+    const [firstName = '', lastName = ''] = name.split(' ');
+    return { firstName, lastName };
 };

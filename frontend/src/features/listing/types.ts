@@ -1,7 +1,7 @@
-import type { BrowseParams } from '@/shared/lib/listingSearch';
+import type { BrowseParams } from '@/shared/lib/listing-search';
 import type { Schemas } from '@/shared/types';
 
-export type { BrowseParams } from '@/shared/lib/listingSearch';
+export type { BrowseParams } from '@/shared/lib/listing-search';
 
 export type City = Schemas['City_Output'];
 export type ListingCard = Schemas['ListingCard_Output'];
@@ -27,21 +27,21 @@ export type ManagedInsights = Schemas['ManagedInsightsResponse_Output'];
 export type InsightPoint = Schemas['InsightPoint_Output'];
 export type InsightTotals = Schemas['InsightTotals_Output'];
 
-/** The insights' window in days, today included (backend: service/insight-period.ts). */
-export const INSIGHT_PERIODS = [7, 30, 90] as const;
-export type InsightPeriod = (typeof INSIGHT_PERIODS)[number];
-export const DEFAULT_INSIGHT_PERIOD: InsightPeriod = 30;
+const WEEK_PERIOD_DAYS = 7;
+const MONTH_PERIOD_DAYS = 30;
+const QUARTER_PERIOD_DAYS = 90;
 
-/** A tenant's saved homes: newest save first; page and size only. */
+export const INSIGHT_PERIODS = [WEEK_PERIOD_DAYS, MONTH_PERIOD_DAYS, QUARTER_PERIOD_DAYS] as const;
+export type InsightPeriod = (typeof INSIGHT_PERIODS)[number];
+export const DEFAULT_INSIGHT_PERIOD: InsightPeriod = MONTH_PERIOD_DAYS;
+
 export interface SavedListParams {
     page: number;
     size: number;
 }
 
-/** The search request as the API takes it (zero-based page). */
 export type SearchRequestParams = Omit<BrowseParams, 'page'> & { page: number };
 
-/** The owner's dashboard: status, search, order, page and size. */
 export interface ManagedListParams {
     status: ListingStatus | undefined;
     search: string;
@@ -50,5 +50,23 @@ export interface ManagedListParams {
     size: number;
 }
 
-/** A status change the owner (publish, unpublish) or an admin (suspend) makes. */
 export type ListingTransition = 'publish' | 'unpublish' | 'suspend';
+
+export interface ToggleSavedVariables {
+    listingId: string;
+    saved: boolean;
+}
+
+export interface CreateListingVariables {
+    request: CreateListingRequest;
+    key: string;
+}
+
+export interface PhotoIntentVariables {
+    request: PhotoIntentRequest;
+    key: string;
+}
+
+export type SignedInUser = { id: string } | null | undefined;
+
+export type BrowseFilterChange = Partial<Omit<BrowseParams, 'size' | 'page'>>;

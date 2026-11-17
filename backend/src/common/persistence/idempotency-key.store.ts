@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Prisma } from '../../generated/prisma/client';
-import { classifyPrismaError, PrismaErrorKind } from './prisma-error';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+
+import { Prisma } from '@/generated/prisma/client';
+
+import { JobLock } from './job-lock';
+import { JobName } from './job-name';
 import { PrismaService } from './prisma.service';
+import { classifyPrismaError, PrismaErrorKind } from './prisma-error';
 
 export interface StoredResponse {
     statusCode: number;
@@ -29,25 +35,17 @@ export interface ClaimRequest {
  */
 @Injectable()
 export class IdempotencyKeyStore {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly txHost: TransactionHost<TransactionalAdapterPrisma<PrismaService>>,
+        private readonly jobLock: JobLock,
+    ) {}
 
+    /** A key released between our insert and our read (the first attempt failed) is claimed again. */
     async claim(request: ClaimRequest): Promise<ClaimResult> {
-        try {
-            const { id } = await this.prisma.idempotencyKey.create({
-                data: {
-                    key: request.key,
-                    userId: request.userId,
-                    endpoint: request.endpoint,
-                    requestHash: request.requestHash,
-                    expiresAt: request.expiresAt,
-                },
-                select: { id: true },
-            });
-            return { outcome: 'CLAIMED', id };
-        } catch (error) {
-            if (classifyPrismaError(error) !== PrismaErrorKind.UNIQUE_VIOLATION) {
-                throw error;
-            }
+        const claimedId = await this.insert(request);
+        if (claimedId) {
+            return { outcome: 'CLAIMED', id: claimedId };
         }
         const existing = await this.prisma.idempotencyKey.findUnique({
             where: { userId_key: { userId: request.userId, key: request.key } },
@@ -61,7 +59,6 @@ export class IdempotencyKeyStore {
             },
         });
         if (!existing) {
-            // Released between our insert and read (the first attempt failed): claim again.
             return this.claim(request);
         }
         if (existing.expiresAt.getTime() <= Date.now()) {
@@ -96,8 +93,40 @@ export class IdempotencyKeyStore {
         await this.prisma.idempotencyKey.deleteMany({ where: { id } });
     }
 
+    /**
+     * DATA-23: a person's stored answers (they may hold their data) go with their account. Unlike a claim this joins
+     * the caller's transaction, so it commits with the erasure.
+     */
+    async deleteForUser(userId: string): Promise<void> {
+        await this.txHost.tx.idempotencyKey.deleteMany({ where: { userId } });
+    }
+
     @Cron(CronExpression.EVERY_HOUR)
     async deleteExpired(): Promise<void> {
-        await this.prisma.idempotencyKey.deleteMany({ where: { expiresAt: { lte: new Date() } } });
+        await this.jobLock.runExclusive(JobName.DELETE_EXPIRED_IDEMPOTENCY_KEYS, async () => {
+            await this.prisma.idempotencyKey.deleteMany({ where: { expiresAt: { lte: new Date() } } });
+        });
+    }
+
+    /** The new row's id, or undefined when the user already holds this key (the unique decided). */
+    private async insert(request: ClaimRequest): Promise<string | undefined> {
+        try {
+            const { id } = await this.prisma.idempotencyKey.create({
+                data: {
+                    key: request.key,
+                    userId: request.userId,
+                    endpoint: request.endpoint,
+                    requestHash: request.requestHash,
+                    expiresAt: request.expiresAt,
+                },
+                select: { id: true },
+            });
+            return id;
+        } catch (error) {
+            if (classifyPrismaError(error) !== PrismaErrorKind.UNIQUE_VIOLATION) {
+                throw error;
+            }
+            return undefined;
+        }
     }
 }

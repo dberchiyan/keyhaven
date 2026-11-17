@@ -1,17 +1,14 @@
 // @ts-check
 import eslint from '@eslint/js';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-// A module is src/modules/<module>/ or, inside a group, src/modules/<group>/<module>/ (e.g.
-// employee/review). Reaching up out of a module and into another one's internals is forbidden.
 const crossModuleInternals = ['repository', 'controller'].flatMap((layer) => [
+    `@/modules/*/${layer}/**`,
+    `@/modules/*/*/${layer}/**`,
     `../../*/${layer}/**`,
-    `../../../*/${layer}/**`,
-    `../../../../*/${layer}/**`,
     `../../*/*/${layer}/**`,
-    `../../../*/*/${layer}/**`,
-    `../../../../*/*/${layer}/**`,
 ]);
 const prismaClient = ['**/generated/prisma/**', '@prisma/client', '@prisma/client/**'];
 
@@ -31,15 +28,43 @@ export default tseslint.config(
                 experimentalDecorators: true,
             },
         },
+        plugins: { 'simple-import-sort': simpleImportSort },
         rules: {
+            'simple-import-sort/imports': [
+                'error',
+                { groups: [['^\\u0000'], ['^node:', '^@?\\w'], ['^@/'], ['^\\.']] },
+            ],
+            'simple-import-sort/exports': 'error',
+            '@typescript-eslint/explicit-module-boundary-types': 'error',
+            '@typescript-eslint/no-magic-numbers': [
+                'error',
+                {
+                    ignore: [-1, 0, 1, 2],
+                    ignoreEnums: true,
+                    ignoreNumericLiteralTypes: true,
+                    ignoreReadonlyClassProperties: true,
+                    ignoreTypeIndexes: true,
+                    ignoreDefaultValues: false,
+                    enforceConst: true,
+                    detectObjects: false,
+                },
+            ],
+            'no-implied-eval': 'error',
+            'no-new-func': 'error',
             'no-console': 'error',
+            'no-empty': ['error', { allowEmptyCatch: true }],
             '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/no-floating-promises': 'error',
             '@typescript-eslint/no-misused-promises': 'error',
             '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
             '@typescript-eslint/no-extraneous-class': ['error', { allowWithDecorator: true }],
             '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
-            'no-restricted-syntax': ['error', { selector: 'TSEnumDeclaration', message: 'Use an `as const` object.' }],
+            'no-restricted-syntax': [
+                'error',
+                { selector: 'TSEnumDeclaration', message: 'Use an `as const` object.' },
+                { selector: 'ExportDefaultDeclaration', message: 'Named exports only.' },
+                { selector: "CallExpression[callee.name='eval']", message: 'Forbidden (SEC-17).' },
+            ],
             'no-restricted-imports': [
                 'error',
                 {
@@ -49,6 +74,7 @@ export default tseslint.config(
                             group: prismaClient,
                             message: 'Prisma is used only in repositories and common/persistence.',
                         },
+                        { group: ['child_process', 'node:child_process'], message: 'Forbidden (SEC-17).' },
                     ],
                 },
             ],
@@ -86,7 +112,6 @@ export default tseslint.config(
         },
     },
     {
-        // Mappers turn records into DTOs (architecture.md → Record + mapper): record types only.
         files: ['src/modules/**/controller/mapper/**/*.ts'],
         rules: {
             'no-restricted-imports': [
@@ -102,5 +127,9 @@ export default tseslint.config(
                 },
             ],
         },
+    },
+    {
+        files: ['prisma/**/*.ts', 'scripts/**/*.ts', 'test/**/*.ts', 'prisma.config.ts'],
+        rules: { '@typescript-eslint/no-magic-numbers': 'off' },
     },
 );

@@ -1,23 +1,14 @@
-import type { PhotoContentType } from './photo-status';
+import { fileTypeFromBuffer } from 'file-type';
+
+import { PHOTO_CONTENT_TYPES, type PhotoContentType } from './photo-status';
+
+export const PHOTO_HEAD_BYTES = 4_100;
 
 /**
- * The image type from the first bytes (platform.md: never the client's Content-Type). Three
- * signatures are all the allowlist needs, so no library: JPEG `FF D8 FF`, PNG `89 50 4E 47`,
- * WebP `RIFF????WEBP`.
+ * FILE-3: the type comes from the stored bytes (magic numbers via `file-type`), never the client's Content-Type;
+ * anything outside the allow-list is undefined. PHOTO_HEAD_BYTES is the sample `file-type` needs at most.
  */
-export const sniffImageType = (head: Uint8Array): PhotoContentType | null => {
-    if (head.length >= 3 && head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) {
-        return 'image/jpeg';
-    }
-    if (head.length >= 4 && head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47) {
-        return 'image/png';
-    }
-    if (
-        head.length >= 12 &&
-        String.fromCodePoint(...head.subarray(0, 4)) === 'RIFF' &&
-        String.fromCodePoint(...head.subarray(8, 12)) === 'WEBP'
-    ) {
-        return 'image/webp';
-    }
-    return null;
+export const detectImageType = async (head: Uint8Array): Promise<PhotoContentType | undefined> => {
+    const detected = await fileTypeFromBuffer(head);
+    return PHOTO_CONTENT_TYPES.find((contentType) => contentType === detected?.mime);
 };

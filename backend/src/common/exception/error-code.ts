@@ -1,29 +1,27 @@
+import { HttpStatus } from '@nestjs/common';
+
 export const ErrorCode = {
-    VALIDATION_FAILED: 400,
-    MALFORMED_REQUEST: 400,
-    INVALID_PARAMETER: 400,
-    UNAUTHORIZED: 401,
-    INVALID_CREDENTIALS: 401,
-    SESSION_EXPIRED: 401,
-    FORBIDDEN: 403,
-    /** The action needs a verified email address (open the link from the verification email). */
-    EMAIL_NOT_VERIFIED: 403,
-    /** Turned off in the public demo (DEMO_MODE): it would lock other visitors out. */
-    DEMO_RESTRICTED: 403,
-    /** A showcase listing of the public demo: nobody edits it, add your own instead. */
-    DEMO_READ_ONLY: 403,
-    RESOURCE_NOT_FOUND: 404,
-    CONFLICT: 409,
-    CONCURRENT_MODIFICATION: 409,
-    /** Another tenant took this viewing slot a moment ago — pick another one. */
-    VIEWING_SLOT_TAKEN: 409,
-    IDEMPOTENCY_KEY_REUSED: 409,
-    BUSINESS_RULE_VIOLATION: 422,
-    PAYLOAD_TOO_LARGE: 413,
-    UNSUPPORTED_MEDIA_TYPE: 415,
-    RATE_LIMIT_EXCEEDED: 429,
-    UPSTREAM_UNAVAILABLE: 503,
-    INTERNAL_ERROR: 500,
+    VALIDATION_FAILED: HttpStatus.BAD_REQUEST,
+    MALFORMED_REQUEST: HttpStatus.BAD_REQUEST,
+    INVALID_PARAMETER: HttpStatus.BAD_REQUEST,
+    UNAUTHORIZED: HttpStatus.UNAUTHORIZED,
+    INVALID_CREDENTIALS: HttpStatus.UNAUTHORIZED,
+    SESSION_EXPIRED: HttpStatus.UNAUTHORIZED,
+    FORBIDDEN: HttpStatus.FORBIDDEN,
+    EMAIL_NOT_VERIFIED: HttpStatus.FORBIDDEN,
+    DEMO_RESTRICTED: HttpStatus.FORBIDDEN,
+    DEMO_READ_ONLY: HttpStatus.FORBIDDEN,
+    RESOURCE_NOT_FOUND: HttpStatus.NOT_FOUND,
+    CONFLICT: HttpStatus.CONFLICT,
+    CONCURRENT_MODIFICATION: HttpStatus.CONFLICT,
+    VIEWING_SLOT_TAKEN: HttpStatus.CONFLICT,
+    IDEMPOTENCY_KEY_REUSED: HttpStatus.CONFLICT,
+    BUSINESS_RULE_VIOLATION: HttpStatus.UNPROCESSABLE_ENTITY,
+    PAYLOAD_TOO_LARGE: HttpStatus.PAYLOAD_TOO_LARGE,
+    UNSUPPORTED_MEDIA_TYPE: HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+    RATE_LIMIT_EXCEEDED: HttpStatus.TOO_MANY_REQUESTS,
+    UPSTREAM_UNAVAILABLE: HttpStatus.SERVICE_UNAVAILABLE,
+    INTERNAL_ERROR: HttpStatus.INTERNAL_SERVER_ERROR,
 } as const;
 
 export type ErrorCode = keyof typeof ErrorCode;

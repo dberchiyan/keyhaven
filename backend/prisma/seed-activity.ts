@@ -1,24 +1,15 @@
 import { createHash } from 'node:crypto';
-import type { PrismaClient } from '../src/generated/prisma/client';
-import { ListingStatus } from '../src/modules/listing/service/listing-status';
+
+import type { PrismaClient } from '@/generated/prisma/client';
+import { ListingStatus } from '@/modules/listing/service/listing-status';
+
 import { LISTING_COUNT, SALE_LISTING_COUNT } from './seed-listings';
 
-/**
- * Views and saves of the showcase listings over the last months, so the owners' insights have
- * something to show on day one: each published home draws a random total of views (never under
- * `MIN_VIEWS`, a long tail above), spread over its days on the site with more right after
- * publishing and at weekends; most visits come from anonymous visitors, some from the seeded
- * renters, and a share of the visits ends in a save. Every row is deterministic and carries a
- * unique key (visitor + day, person + day, person + home), so a re-run adds nothing.
- */
 const HISTORY_DAYS = 180;
-/** Every showcase home has at least this many views (user decision, 2026-11-15); the spread above it. */
 const MIN_VIEWS = 250;
 const VIEWS_SPREAD = 1250;
 const DAY_MS = 86_400_000;
-/** Rows per createMany statement. */
-const BATCH = 1000;
-/** A visit by a signed-in renter rather than a visitor; a visit that ends in a save. */
+const CREATE_MANY_BATCH_SIZE = 1000;
 const RENTER_SHARE = 0.15;
 const SAVE_SHARE = 0.07;
 
@@ -53,7 +44,7 @@ interface ViewRow {
     listingId: string;
     userId: string | null;
     visitorKey: string | null;
-    viewedOn: Date;
+    viewedAt: Date;
     createdAt: Date;
 }
 interface SaveRow {
@@ -62,6 +53,18 @@ interface SaveRow {
     createdAt: Date;
 }
 
+/**
+ * Views and saves of the showcase listings over the last months, so the owners' insights have
+ * something to show on day one: each published home draws a random total of views (never under
+ * `MIN_VIEWS`, a long tail above), spread over its days on the site with more right after
+ * publishing and at weekends; most visits come from anonymous visitors, some from the seeded
+ * renters, and a share of the visits ends in a save. Every row is deterministic and carries a
+ * unique key (visitor + day, person + day, person + home), so a re-run adds nothing. `MIN_VIEWS` is a user decision
+ * (2026-11-15); squaring the roll skews most homes towards it and a few far above. Each day's share mixes freshness,
+ * weekends and noise (today is still young); cumulative rounding makes the day counts add up to the total exactly.
+ * Renters are distinct within a day (the per-day unique on person + home): once every seeded renter has been there,
+ * the rest are visitors, so the total stays what was drawn. The catalogue read is bounded by the seed's own size.
+ */
 export const seedActivity = async (
     prisma: PrismaClient,
     tenantIds: readonly string[],
@@ -71,7 +74,6 @@ export const seedActivity = async (
         where: { isDemo: true, status: ListingStatus.PUBLISHED },
         select: { id: true, publishedAt: true },
         orderBy: { id: 'asc' },
-        // Bounded by the seed's own catalogue.
         take: LISTING_COUNT + SALE_LISTING_COUNT,
     });
     const roll = random(20261114);
@@ -80,11 +82,9 @@ export const seedActivity = async (
     const historyStart = new Date(today.getTime() - (HISTORY_DAYS - 1) * DAY_MS);
 
     listings.forEach((listing, listingIndex) => {
-        // The home's total: squaring skews most homes towards the minimum, a few far above it.
         const target = MIN_VIEWS + Math.floor(roll() ** 2 * VIEWS_SPREAD);
         const publishedOn = utcDay(listing.publishedAt ?? today);
         const firstDay = publishedOn > historyStart ? publishedOn : historyStart;
-        // Each day's share of the total: fresh, weekend and a dash of noise; today is still young.
         const days: { day: Date; weight: number }[] = [];
         for (let day = firstDay; day <= today; day = new Date(day.getTime() + DAY_MS)) {
             const age = Math.round((day.getTime() - publishedOn.getTime()) / DAY_MS);
@@ -100,7 +100,6 @@ export const seedActivity = async (
         let cumulativeWeight = 0;
         let allocated = 0;
         days.forEach(({ day, weight }, dayIndex) => {
-            // Cumulative rounding: the day counts add up to the target exactly.
             cumulativeWeight += weight;
             const count = Math.round((target * cumulativeWeight) / totalWeight) - allocated;
             allocated += count;
@@ -108,8 +107,6 @@ export const seedActivity = async (
             let renters = 0;
             for (let visit = 0; visit < count; visit += 1) {
                 const createdAt = new Date(day.getTime() + Math.floor((6 + roll() * 16) * 60) * 60_000);
-                // Distinct renters within a day (the per-day unique on person + home): once every seeded
-                // renter has been here today, the rest are visitors, so the total stays what was drawn.
                 const byRenter = roll() < RENTER_SHARE && renters < tenantIds.length;
                 const renterId = at(tenantIds, listingIndex * 7 + dayIndex * 3 + renters);
                 if (byRenter) {
@@ -119,7 +116,7 @@ export const seedActivity = async (
                     listingId: listing.id,
                     userId: byRenter ? renterId : null,
                     visitorKey: byRenter ? null : visitorKey(listing.id, dayIso, visit),
-                    viewedOn: day,
+                    viewedAt: day,
                     createdAt,
                 });
                 if (roll() < SAVE_SHARE) {
@@ -134,18 +131,18 @@ export const seedActivity = async (
     });
 
     let views = 0;
-    for (let start = 0; start < viewRows.length; start += BATCH) {
+    for (let start = 0; start < viewRows.length; start += CREATE_MANY_BATCH_SIZE) {
         const created = await prisma.listingView.createMany({
-            data: viewRows.slice(start, start + BATCH),
+            data: viewRows.slice(start, start + CREATE_MANY_BATCH_SIZE),
             skipDuplicates: true,
         });
         views += created.count;
     }
     let saves = 0;
     const saveList = [...saveRows.values()];
-    for (let start = 0; start < saveList.length; start += BATCH) {
+    for (let start = 0; start < saveList.length; start += CREATE_MANY_BATCH_SIZE) {
         const created = await prisma.savedListing.createMany({
-            data: saveList.slice(start, start + BATCH),
+            data: saveList.slice(start, start + CREATE_MANY_BATCH_SIZE),
             skipDuplicates: true,
         });
         saves += created.count;

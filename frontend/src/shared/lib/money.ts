@@ -1,49 +1,47 @@
-/**
- * Money arrives as `{ amount: "4500.0000", currency: "USD" }` and stays a string. Never
- * parseFloat/Number() an amount (data.md → Money): formatting takes the string, comparisons
- * and chart geometry use exact integers (BigInt, 4 decimal places).
- */
+import { DECIMAL_RADIX } from './units';
+
 export interface Money {
     amount: string;
     currency: string;
 }
 
 const SCALE = 4;
+const UNITS_PER_WHOLE = BigInt(DECIMAL_RADIX) ** BigInt(SCALE);
+const NO_UNITS = BigInt(0);
+const CENTS_DIGITS = 2;
 const AMOUNT = /^(-?)(\d+)(?:\.(\d{1,4}))?$/;
 
-/** Exact integer in ten-thousandths, e.g. "4500.5" → 45005000n. */
+/**
+ * Exact integer in ten-thousandths ("4500.5" → 45005000n): amounts never become floats (QRY-20),
+ * so sums and divisions stay exact.
+ */
 export const toUnits = (amount: string): bigint => {
     const match = AMOUNT.exec(amount);
     if (!match) {
         throw new Error('Not a decimal amount');
     }
     const [, sign = '', whole = '0', fraction = ''] = match;
-    const units = BigInt(whole) * 10n ** BigInt(SCALE) + BigInt(fraction.padEnd(SCALE, '0'));
+    const units = BigInt(whole) * UNITS_PER_WHOLE + BigInt(fraction.padEnd(SCALE, '0'));
     return sign === '-' ? -units : units;
 };
 
-export const compareMoney = (a: Money, b: Money): number => {
-    const diff = toUnits(a.amount) - toUnits(b.amount);
-    return diff === 0n ? 0 : diff > 0n ? 1 : -1;
-};
+/** The decimal string of a non-negative unit count — the way back from `toUnits` (QRY-20). */
+export const fromUnits = (units: bigint): string =>
+    `${units / UNITS_PER_WHOLE}.${String(units % UNITS_PER_WHOLE).padStart(SCALE, '0')}`;
 
-/** Localised currency text from the string itself (Intl accepts decimal strings). */
-export const formatMoney = (money: Money, locale: string): string =>
-    new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: money.currency,
-        maximumFractionDigits: toUnits(money.amount) % 10_000n === 0n ? 0 : 2,
-        // The amount is a validated decimal string (API contract); Intl formats it without a float.
-    }).format(money.amount as Intl.StringNumericLiteral);
+const isDecimalLiteral = (amount: string): amount is Intl.StringNumericLiteral => AMOUNT.test(amount);
 
 /**
- * Position of `value` between `min` and `max` as a fraction 0…1 — a ratio for drawing, not an
- * amount. Exact up to 1/10 000.
+ * Localised currency text from the string itself — Intl accepts decimal strings, so the amount is
+ * never parsed into a float (QRY-20); whole amounts drop the cents.
  */
-export const ratioBetween = (value: Money, min: Money, max: Money): number => {
-    const range = toUnits(max.amount) - toUnits(min.amount);
-    if (range === 0n) {
-        return 0.5;
+export const formatMoney = (money: Money, locale: string): string => {
+    if (!isDecimalLiteral(money.amount)) {
+        throw new Error('Not a decimal amount');
     }
-    return Number(((toUnits(value.amount) - toUnits(min.amount)) * 10_000n) / range) / 10_000;
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: money.currency,
+        maximumFractionDigits: toUnits(money.amount) % UNITS_PER_WHOLE === NO_UNITS ? 0 : CENTS_DIGITS,
+    }).format(money.amount);
 };

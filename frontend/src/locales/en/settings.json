@@ -59,8 +59,6 @@
         "endOneLabel": "Sign out {{device}}",
         "endOthers": "Sign out of other sessions",
         "onlyThis": "Only this device is signed in.",
-        "error": "Couldn’t load your sessions",
-        "retry": "Try again",
         "confirmTitle": "Sign out of other sessions?",
         "confirmText_one": "The other device is signed out at once and needs your password to come back.",
         "confirmText_other": "The {{count}} other devices are signed out at once and need your password to come back.",
@@ -77,6 +75,37 @@
         "description": "Sign-ins, failed attempts, password changes and signed-out sessions on your account. If you don’t recognise something, change your password."
     },
     "demo": {
-        "passwordOff": "Password changes are turned off for this demo account — other visitors use it too."
+        "passwordOff": "Password changes are turned off for this demo account — other visitors use it too.",
+        "eraseOff": "Deleting the account is turned off for this demo account — other visitors use it too."
+    },
+    "data": {
+        "title": "Your data",
+        "description": "Take a copy of what Keyhaven holds about you, or delete your account.",
+        "download": {
+            "hint": "A JSON file with your account, sessions, security log, saved homes and searches, viewings, messages and listings.",
+            "action": "Download a copy of your data",
+            "pending": "Preparing your copy…"
+        },
+        "erase": {
+            "heading": "Delete account",
+            "hint": "Deleting your account can’t be undone.",
+            "action": "Delete account",
+            "title": "Delete your account?",
+            "review": {
+                "lead": "This can’t be undone. When you delete your account:",
+                "signedOut": "You are signed out on every device and can’t sign in again.",
+                "contacts": "Your name, email and phone number are removed.",
+                "saved": "Your saved homes and saved searches are deleted.",
+                "viewings": "Your upcoming viewings are cancelled.",
+                "messages": "The messages you wrote are removed from every conversation.",
+                "listings": "Your published listings are taken off the site.",
+                "kept": "Your account’s security log is kept: it is append-only and is never edited."
+            },
+            "passwordLead": "Enter your password to confirm it’s you.",
+            "password": "Password",
+            "cancel": "Cancel",
+            "continue": "Continue",
+            "submit": "Delete my account"
+        }
     }
 }

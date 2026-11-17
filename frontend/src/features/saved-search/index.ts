@@ -1,3 +1,2 @@
-/** Public surface of the saved-search feature: the save control and the list. */
-export { SaveSearchButton } from './components/SaveSearchButton';
-export { SavedSearchesSection } from './components/SavedSearchesSection';
+export { SaveSearchButton } from './components/save-search-button';
+export { SavedSearchesSection } from './components/saved-searches-section';

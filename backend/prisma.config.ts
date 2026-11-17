@@ -2,10 +2,9 @@ import { defineConfig, env } from 'prisma/config';
 
 try {
     process.loadEnvFile('.env');
-} catch {
-    // No .env file: variables come from the environment (CI, deployed runtime).
-}
+} catch {}
 
+// eslint-disable-next-line no-restricted-syntax -- Prisma loads the config's default export
 export default defineConfig({
     schema: 'prisma/schema',
     migrations: {
@@ -14,7 +13,6 @@ export default defineConfig({
     },
     datasource: {
         url: env('DATABASE_URL'),
-        // Needed only by `db:check` and `db:migrate:dev` (local); never used at runtime.
         ...(process.env.SHADOW_DATABASE_URL ? { shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL } : {}),
     },
 });

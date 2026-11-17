@@ -4,28 +4,25 @@ import boundaries from 'eslint-plugin-boundaries';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 const RESTRICTED_SYNTAX = [
     { selector: 'TSEnumDeclaration', message: 'Use an `as const` object.' },
+    { selector: 'ExportDefaultDeclaration', message: 'Named exports only (default only in *.config.*).' },
+    { selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']", message: 'Forbidden (FSEC-1).' },
+    { selector: "JSXAttribute[name.name='sx']", message: 'Layout is Tailwind, looks are the theme (FE-03).' },
     {
-        selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']",
-        message: 'Forbidden (architecture.md).',
-    },
-    {
-        // MUI 9 Typography silently ignores "text.secondary"; the value is "textSecondary".
         selector: "JSXAttribute[name.name='color'] Literal[value=/^text[.]/]",
         message: 'Use color="textSecondary" / "textPrimary" / "textDisabled".',
     },
     {
-        // What a role may use is decided once, in features/auth/access.ts.
         selector: "BinaryExpression[operator=/^[!=]==$/] > MemberExpression[property.name='role']",
-        message: 'Decide by role through ACCESS / useAccess() (features/auth/access.ts).',
+        message: 'Decide by role through ACCESS / useAccess() (features/auth/hooks/use-access.ts).',
     },
 ];
 
-/** Configuration is read once, checked, from `@/shared/config/env`. */
 const IMPORT_META_ENV = {
     selector: "MemberExpression[object.type='MetaProperty'][property.name='env']",
     message: 'Read configuration from `@/shared/config/env` (checked against a schema).',
@@ -39,6 +36,8 @@ export default tseslint.config(
             'src/shared/types/api.ts',
             'src/shared/api/schemas.generated.ts',
             'eslint.config.js',
+            'playwright-report/**',
+            'test-results/**',
         ],
     },
     eslint.configs.recommended,
@@ -50,7 +49,7 @@ export default tseslint.config(
             globals: { ...globals.browser },
             parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
         },
-        plugins: { 'react-refresh': reactRefresh, boundaries },
+        plugins: { 'react-refresh': reactRefresh, boundaries, 'simple-import-sort': simpleImportSort },
         settings: {
             'import/resolver': { typescript: { project: './tsconfig.app.json' } },
             'boundaries/include': ['src/**/*'],
@@ -63,6 +62,23 @@ export default tseslint.config(
             ],
         },
         rules: {
+            'simple-import-sort/imports': [
+                'error',
+                { groups: [['^\\u0000'], ['^node:', '^@?\\w'], ['^@/'], ['^\\.']] },
+            ],
+            'simple-import-sort/exports': 'error',
+            '@typescript-eslint/explicit-module-boundary-types': 'error',
+            '@typescript-eslint/no-magic-numbers': [
+                'error',
+                {
+                    ignore: [-1, 0, 1, 2],
+                    ignoreEnums: true,
+                    ignoreNumericLiteralTypes: true,
+                    ignoreReadonlyClassProperties: true,
+                    ignoreTypeIndexes: true,
+                    enforceConst: true,
+                },
+            ],
             'no-console': 'error',
             '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/consistent-type-imports': ['error', { fixStyle: 'inline-type-imports' }],
@@ -98,7 +114,6 @@ export default tseslint.config(
                     paths: [{ name: '@mui/icons-material', message: 'Import icons individually.' }],
                     patterns: [
                         {
-                            // A grouped feature's index is @/features/<group>/<feature>; anything deeper is internal.
                             group: ['@/features/*/*'],
                             message: 'Import a feature only through its index.ts.',
                         },
@@ -118,7 +133,6 @@ export default tseslint.config(
                     paths: [{ name: '@mui/icons-material', message: 'Import icons individually.' }],
                     patterns: [
                         {
-                            // A grouped feature's index is @/features/<group>/<feature>; anything deeper is internal.
                             group: ['@/features/*/*'],
                             message: 'Import a feature only through its index.ts.',
                         },
@@ -137,8 +151,20 @@ export default tseslint.config(
         languageOptions: { globals: { ...globals.node } },
     },
     {
-        // The one place that reads the raw values.
         files: ['src/shared/config/env.ts'],
         rules: { 'no-restricted-syntax': ['error', ...RESTRICTED_SYNTAX] },
+    },
+    {
+        files: ['src/theme/**/*.ts', 'scripts/**/*.ts', '*.config.ts'],
+        rules: { '@typescript-eslint/no-magic-numbers': 'off' },
+    },
+    {
+        files: ['*.config.ts'],
+        rules: {
+            'no-restricted-syntax': [
+                'error',
+                ...RESTRICTED_SYNTAX.filter((r) => r.selector !== 'ExportDefaultDeclaration'),
+            ],
+        },
     },
 );

@@ -1,6 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { ERROR_CODES } from '../src/common/exception/error-code';
+
+import { ERROR_CODES } from '@/common/exception/error-code';
 
 const I18N_ROOT = join(__dirname, '..', 'src', 'i18n');
 const FALLBACK_LOCALE = 'en';

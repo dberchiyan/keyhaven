@@ -1,19 +1,16 @@
-import type { PrismaClient } from '../src/generated/prisma/client';
-import { ListingStatus } from '../src/modules/listing/service/listing-status';
-import { PropertyType } from '../src/modules/listing/service/property-type';
+import type { PrismaClient } from '@/generated/prisma/client';
+import { ListingKind } from '@/modules/listing/service/listing-kind';
+import { ListingStatus } from '@/modules/listing/service/listing-status';
+import { PropertyType } from '@/modules/listing/service/property-type';
+
 import { CITIES, type SeedCity } from './seed-data';
 
-import { ListingKind } from '../src/modules/listing/service/listing-kind';
-
-/** ~1,000 homes for rent across the six cities (TASK → M0 seed), plus homes for sale. */
 export const LISTING_COUNT = 1000;
 export const SALE_LISTING_COUNT = 300;
-/** Homes for sale take the ids after the rentals, so a re-run stays idempotent. */
-const SALE_INDEX_FROM = LISTING_COUNT;
+const SALE_ID_OFFSET = LISTING_COUNT;
 
 const DAY_MS = 86_400_000;
-/** Rows per createMany statement — a comfortable size for one round trip. */
-const BATCH = 200;
+const CREATE_MANY_BATCH_SIZE = 200;
 
 /** A small deterministic PRNG (mulberry32), so every run generates the same catalogue. */
 const random = (seed: number): (() => number) => {
@@ -35,7 +32,7 @@ const pick = <T>(items: readonly T[], roll: number): T => {
     return item;
 };
 
-/** Fixed ids: a re-run skips rows that exist (idempotent seed, data.md). */
+/** MIG-7: fixed ids, so a re-run skips rows that exist (homes for sale take the ids after the rentals). */
 const listingId = (index: number): string => `019a0000-0000-7000-8000-${String(index + 1).padStart(12, '0')}`;
 const photoId = (listingIndex: number, photoIndex: number): string =>
     `019a0000-0000-7000-8001-${String(listingIndex + 1).padStart(8, '0')}${String(photoIndex).padStart(4, '0')}`;
@@ -87,14 +84,13 @@ const INTERIOR_PHOTOS = [
     '1513694203232-719a280e022f',
     '1567767292278-a4f21aa2d36e',
 ].map(UNSPLASH);
-/** The old provider's URLs: a re-seed replaces them (rows are matched by their fixed ids). */
 const RETIRED_PHOTO_HOST = 'https://loremflickr.com/';
 
+/** Consecutive rooms differ: the interior pool is walked from a per-listing offset. */
 const photoUrl = (listingIndex: number, photoIndex: number, isHouse: boolean): string => {
     if (isHouse && photoIndex === 0) {
         return pick(EXTERIOR_PHOTOS, ((listingIndex * 7) % 97) / 97);
     }
-    // Consecutive rooms differ: the pool is walked from a per-listing offset.
     const offset = (listingIndex * 11) % INTERIOR_PHOTOS.length;
     return pick(INTERIOR_PHOTOS, ((offset + photoIndex * 3) % INTERIOR_PHOTOS.length) / INTERIOR_PHOTOS.length);
 };
@@ -134,7 +130,6 @@ const FEATURES = [
     'bike storage',
 ];
 
-/** Sentence pools for the description; picked by the listing's index, so a re-run writes the same text. */
 const LIGHT = [
     'Morning light fills the main room, and the bedrooms face the quiet side of the building.',
     'High ceilings and an open plan make the space feel larger than its footprint.',
@@ -165,7 +160,10 @@ const at = <T>(items: readonly T[], index: number): T => {
     return item;
 };
 
-/** Two or three paragraphs: the home, the area, the terms — from the row's own attributes. */
+/**
+ * Two or three paragraphs — the home, the area, the terms — from the row's own attributes, picked by the listing's
+ * index so a re-run writes the same text; every third listing folds the area into the first paragraph.
+ */
 const describe = (
     index: number,
     kind: ListingKind,
@@ -176,9 +174,9 @@ const describe = (
     neighborhood: string,
     feature: string,
     secondFeature: string,
-    petsAllowed: boolean,
-    furnished: boolean,
-    parking: boolean,
+    isPetFriendly: boolean,
+    isFurnished: boolean,
+    hasParking: boolean,
 ): string => {
     const home =
         type === PropertyType.STUDIO ? 'studio' : `${bedrooms}-bedroom, ${bathrooms}-bath ${type.toLowerCase()}`;
@@ -189,28 +187,34 @@ const describe = (
     const terms =
         kind === ListingKind.RENT
             ? [
-                  petsAllowed ? 'Pets are welcome.' : 'No pets, please.',
-                  furnished ? 'Comes fully furnished.' : 'Unfurnished — bring your own style.',
-                  parking ? 'One parking spot is included.' : 'Street parking nearby.',
+                  isPetFriendly ? 'Pets are welcome.' : 'No pets, please.',
+                  isFurnished ? 'Comes fully furnished.' : 'Unfurnished — bring your own style.',
+                  hasParking ? 'One parking spot is included.' : 'Street parking nearby.',
                   at(RENT_TERMS, index),
               ].join(' ')
-            : [parking ? 'One parking spot comes with the home.' : 'Street parking only.', at(SALE_TERMS, index)].join(
-                  ' ',
-              );
-    // Every third listing folds the area into the first paragraph: two paragraphs instead of three.
+            : [
+                  hasParking ? 'One parking spot comes with the home.' : 'Street parking only.',
+                  at(SALE_TERMS, index),
+              ].join(' ');
     return index % 3 === 0 ? `${intro} ${area}\n\n${terms}` : `${intro}\n\n${area}\n\n${terms}`;
 };
 
 export interface SeedOwners {
     agencyId: string;
-    /** The showcase landlord gets a fixed share of the catalogue. */
     demoLandlordId: string;
     landlordIds: string[];
-    /** The showcase agent and the other agents: recorded as the listing's creator. */
     agentIds: string[];
 }
 
-/** Returns how many listings (and photos) were added; existing rows are kept. */
+/**
+ * ~1,000 homes for rent across the six cities plus homes for sale; returns how many listings (and photos) were added.
+ * MIG-7: re-runs leave existing rows alone, photos included — ON CONFLICT cannot arbitrate on the deferrable
+ * photo-position unique, so the check happens here, and every roll() still happens for a skipped row, so the
+ * catalogue stays the same. Kept rows get the current description in one statement per batch (the wording evolves,
+ * the attributes never do) and become showcase rows; photos of the retired provider are replaced. Rent is rounded
+ * to $25, an asking price to $5,000; ~38 % of homes belong to the agency, ~1.5 % to the showcase landlord, the rest
+ * to the other landlords. A home for sale has no move-in day (ck_listings_available_from).
+ */
 export const seedListings = async (
     prisma: PrismaClient,
     owners: SeedOwners,
@@ -220,7 +224,6 @@ export const seedListings = async (
         (await prisma.city.findMany({ select: { id: true, slug: true } })).map((city) => [city.slug, city.id]),
     );
     const roll = random(20261113);
-    // Photos of an earlier seed pointed at a provider that no longer serves them: replaced.
     const retired = await prisma.listingPhoto.deleteMany({
         where: { url: { startsWith: RETIRED_PHOTO_HOST } },
     });
@@ -229,17 +232,14 @@ export const seedListings = async (
     let descriptions = 0;
     const ranges: { kind: ListingKind; from: number; to: number }[] = [
         { kind: ListingKind.RENT, from: 0, to: LISTING_COUNT },
-        { kind: ListingKind.SALE, from: SALE_INDEX_FROM, to: SALE_INDEX_FROM + SALE_LISTING_COUNT },
+        { kind: ListingKind.SALE, from: SALE_ID_OFFSET, to: SALE_ID_OFFSET + SALE_LISTING_COUNT },
     ];
     for (const { kind, from, to } of ranges) {
-        for (let start = from; start < to; start += BATCH) {
+        for (let start = from; start < to; start += CREATE_MANY_BATCH_SIZE) {
             const rows = [];
             const photoRows = [];
             const realigned: { id: string; description: string }[] = [];
-            // Idempotent re-runs: rows that exist are left alone, photos included. ON CONFLICT cannot
-            // arbitrate on the deferrable photo-position unique, so the check happens here instead.
-            // Every roll() below still happens for a skipped row, so the catalogue stays the same.
-            const end = Math.min(start + BATCH, to);
+            const end = Math.min(start + CREATE_MANY_BATCH_SIZE, to);
             const batchIds = Array.from({ length: end - start }, (_, offset) => listingId(start + offset));
             const existing = new Set(
                 (await prisma.listing.findMany({ where: { id: { in: batchIds } }, select: { id: true } })).map(
@@ -263,17 +263,16 @@ export const seedListings = async (
                 const sizeSqft = Math.round(
                     (type === PropertyType.STUDIO ? 420 : 520 + bedrooms * 260) * (0.85 + roll() * 0.4),
                 );
-                // Rent to the nearest $25; an asking price to the nearest $5,000.
                 const price =
                     kind === ListingKind.RENT
                         ? Math.round(
-                              (city.baseRent *
+                              (city.oneBedroomRent *
                                   (type === PropertyType.STUDIO ? 0.8 : 0.75 + bedrooms * 0.35) *
                                   (0.9 + roll() * 0.3)) /
                                   25,
                           ) * 25
                         : Math.round(
-                              (city.baseSalePrice *
+                              (city.twoBedroomSalePrice *
                                   (type === PropertyType.STUDIO ? 0.55 : 0.6 + bedrooms * 0.2) *
                                   (type === PropertyType.HOUSE ? 1.25 : 1) *
                                   (0.85 + roll() * 0.4)) /
@@ -282,10 +281,9 @@ export const seedListings = async (
                 const neighborhood = pick(city.neighborhoods, roll());
                 const feature = pick(FEATURES, roll());
                 const secondFeature = pick(FEATURES, roll());
-                const petsAllowed = roll() < 0.55;
-                const furnished = roll() < 0.3;
-                const parking = roll() < 0.5;
-                // Who owns it: ~38 % the agency, ~1.5 % the showcase landlord, the rest spread over landlords.
+                const isPetFriendly = roll() < 0.55;
+                const isFurnished = roll() < 0.3;
+                const hasParking = roll() < 0.5;
                 const ownerRoll = roll();
                 const owner =
                     ownerRoll < 0.38
@@ -320,7 +318,7 @@ export const seedListings = async (
                 const publishedDaysAgo = Math.floor(roll() * 120);
                 const publishedAt =
                     status === ListingStatus.DRAFT ? null : new Date(today.getTime() - publishedDaysAgo * DAY_MS);
-                const availableFrom = new Date(today.getTime() + Math.floor(roll() * 100 - 10) * DAY_MS);
+                const availableAt = new Date(today.getTime() + Math.floor(roll() * 100 - 10) * DAY_MS);
                 const streetNumber = 100 + Math.floor(roll() * 4800);
                 const unit =
                     type === PropertyType.HOUSE || type === PropertyType.TOWNHOUSE
@@ -337,12 +335,11 @@ export const seedListings = async (
                     neighborhood,
                     feature,
                     secondFeature,
-                    petsAllowed,
-                    furnished,
-                    parking,
+                    isPetFriendly,
+                    isFurnished,
+                    hasParking,
                 );
                 if (existing.has(listingId(index))) {
-                    // Kept rows get the current text (the wording evolves; the attributes never do).
                     realigned.push({ id: listingId(index), description });
                     continue;
                 }
@@ -364,24 +361,22 @@ export const seedListings = async (
                     cityId,
                     neighborhood,
                     zip: `${city.zipPrefix}${String(Math.floor(roll() * 90) + 10).padStart(2, '0')}`,
-                    petsAllowed,
-                    furnished,
-                    parking,
-                    // A home for sale has no move-in day (ck_listings_available_from).
-                    availableFrom:
+                    isPetFriendly,
+                    isFurnished,
+                    hasParking,
+                    availableAt:
                         kind === ListingKind.RENT
                             ? new Date(
                                   Date.UTC(
-                                      availableFrom.getUTCFullYear(),
-                                      availableFrom.getUTCMonth(),
-                                      availableFrom.getUTCDate(),
+                                      availableAt.getUTCFullYear(),
+                                      availableAt.getUTCMonth(),
+                                      availableAt.getUTCDate(),
                                   ),
                               )
                             : null,
                     status,
                     publishedAt,
                     createdBy: owner.createdBy,
-                    // Showcase rows: read-only while the demo is on (DEMO_MODE).
                     isDemo: true,
                 });
                 const isHouse = type === PropertyType.HOUSE || type === PropertyType.TOWNHOUSE;
@@ -395,12 +390,10 @@ export const seedListings = async (
                 }
             }
             if (realigned.length > 0) {
-                // One statement for the batch (no query per row): only rows whose text differs change.
                 descriptions += await prisma.$executeRaw`
           UPDATE listings AS l SET description = d.description
           FROM unnest(${realigned.map((row) => row.id)}::uuid[], ${realigned.map((row) => row.description)}::text[]) AS d(id, description)
           WHERE l.id = d.id AND l.description <> d.description`;
-                // Rows seeded before the demo flag existed become showcase rows too.
                 await prisma.$executeRaw`
           UPDATE listings SET is_demo = true
           WHERE id = ANY(${realigned.map((row) => row.id)}::uuid[]) AND NOT is_demo`;

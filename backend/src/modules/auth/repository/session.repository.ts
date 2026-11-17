@@ -1,8 +1,10 @@
+import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Injectable } from '@nestjs/common';
-import type { PrismaService } from '../../../common/persistence/prisma.service';
-import type { Prisma } from '../../../generated/prisma/client';
+
+import type { PrismaService } from '@/common/persistence/prisma.service';
+import type { Prisma } from '@/generated/prisma/client';
+
 import {
     type SessionAuthenticationRecord,
     sessionAuthenticationSelect,
@@ -22,7 +24,7 @@ export interface NewSession {
     absoluteExpiresAt: Date;
 }
 
-/** Sessions trimmed per sign-in at most (normally one). */
+/** DATA-8: a sign-in normally trims one session; the bound only caps a backlog. */
 const MAX_TRIMMED = 100;
 
 @Injectable()
@@ -40,7 +42,17 @@ export class SessionRepository {
         return this.txHost.tx.session.findUnique({ where: { id }, select: sessionListSelect });
     }
 
-    /** The user's other live sessions, most recently used first, a page at a time. */
+    /** The user's live sessions, most recently used first, at most `take`. */
+    findLiveByUser(userId: string, now: Date, take: number): Promise<SessionListRecord[]> {
+        return this.txHost.tx.session.findMany({
+            where: { userId, idleExpiresAt: { gt: now }, absoluteExpiresAt: { gt: now } },
+            select: sessionListSelect,
+            orderBy: [{ lastSeenAt: 'desc' }, { id: 'desc' }],
+            take,
+        });
+    }
+
+    /** API-21: count and rows in parallel — a concurrent write may make them differ by a row. */
     async findOtherLivePage(
         userId: string,
         exceptId: string,
@@ -53,7 +65,6 @@ export class SessionRepository {
             idleExpiresAt: { gt: now },
             absoluteExpiresAt: { gt: now },
         };
-        // In parallel (api.md → Pagination): a concurrent write may make them differ by a row.
         const [totalElements, content] = await Promise.all([
             this.txHost.tx.session.count({ where }),
             this.txHost.tx.session.findMany({

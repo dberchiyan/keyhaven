@@ -1,27 +1,37 @@
 import { z } from 'zod';
 
-/** How long one viewing takes — mirrored by ck_viewing_schedules_slot_minutes. */
-export const SLOT_MINUTES = [15, 20, 30, 45, 60] as const;
+import { DAYS_PER_WEEK, HOURS_PER_DAY, MINUTES_PER_DAY, MINUTES_PER_HOUR } from '@/common/time/units';
+
+const QUARTER_HOUR_MINUTES = 15;
+const TWENTY_MINUTES = 20;
+const HALF_HOUR_MINUTES = 30;
+const THREE_QUARTERS_HOUR_MINUTES = 45;
+
+export const SLOT_MINUTES = [
+    QUARTER_HOUR_MINUTES,
+    TWENTY_MINUTES,
+    HALF_HOUR_MINUTES,
+    THREE_QUARTERS_HOUR_MINUTES,
+    MINUTES_PER_HOUR,
+] as const;
 export type SlotMinutes = (typeof SLOT_MINUTES)[number];
+export const SHORTEST_SLOT_MINUTES = Math.min(...SLOT_MINUTES);
+export const LONGEST_SLOT_MINUTES = Math.max(...SLOT_MINUTES);
+const LAST_WEEKDAY = DAYS_PER_WEEK - 1;
 
-export const MINUTES_PER_DAY = 24 * 60;
-
-/** The schedule's bounds (the CHECK constraints mirror the hours and days). */
 export const SCHEDULE_LIMITS = {
-    /** Time ranges per weekday: morning, afternoon, evening is plenty. */
     windowsPerDay: 3,
     blockedDays: 60,
     noticeHoursMin: 0,
-    /** A week: longer notice makes the horizon pointless. */
-    noticeHoursMax: 168,
+    noticeHoursMax: HOURS_PER_DAY * DAYS_PER_WEEK,
     horizonDaysMin: 1,
     horizonDaysMax: 60,
 } as const;
 
-/** One time range of a weekday, in minutes of the city's local day (`start` < `end`). */
+export const MAX_WINDOWS = DAYS_PER_WEEK * SCHEDULE_LIMITS.windowsPerDay;
+
 export const ViewingWindowSchema = z.object({
-    /** Sunday = 0 … Saturday = 6 (as `Date#getUTCDay`). */
-    weekday: z.number({ error: 'validation.invalid' }).int().min(0).max(6),
+    weekday: z.number({ error: 'validation.invalid' }).int().min(0).max(LAST_WEEKDAY),
     start: z.number({ error: 'validation.invalid' }).int().min(0).max(MINUTES_PER_DAY),
     end: z.number({ error: 'validation.invalid' }).int().min(0).max(MINUTES_PER_DAY),
 });
@@ -29,11 +39,56 @@ export type ViewingWindow = z.infer<typeof ViewingWindowSchema>;
 
 const isSlotMinutes = (value: number): value is SlotMinutes => (SLOT_MINUTES as readonly number[]).includes(value);
 
+interface WindowsDocument {
+    slotMinutes: number;
+    windows: ViewingWindow[];
+}
+
+const windowIssue = (window: ViewingWindow, slotMinutes: number): string | undefined => {
+    if (window.end <= window.start) {
+        return 'validation.schedule.windows.order';
+    }
+    return window.end - window.start < slotMinutes ? 'validation.schedule.windows.tooShort' : undefined;
+};
+
+const groupByWeekday = (windows: readonly ViewingWindow[]): Map<number, ViewingWindow[]> => {
+    const byDay = new Map<number, ViewingWindow[]>();
+    for (const window of windows) {
+        byDay.set(window.weekday, [...(byDay.get(window.weekday) ?? []), window]);
+    }
+    return byDay;
+};
+
+const hasOverlap = (windows: readonly ViewingWindow[]): boolean => {
+    const sorted = [...windows].sort((left, right) => left.start - right.start);
+    return sorted.some((current, index) => {
+        const previous = sorted[index - 1];
+        return previous !== undefined && current.start < previous.end;
+    });
+};
+
 /**
- * The owner's hours as one document: the length of a viewing, the notice a tenant must give,
- * how far ahead the calendar opens, the weekly windows and the days off. Validated on write
- * (the DTO) and again on read (data.md → JSON); the cross-field rules live here so both agree.
+ * DATA-22: the owner's hours are one JSON document validated on write (the DTO) and again on read;
+ * the cross-field rules live in the schema so both agree. One overlap issue per weekday is enough
+ * to send the owner back to it.
  */
+const checkWindows = (schedule: WindowsDocument, context: z.RefinementCtx): void => {
+    schedule.windows.forEach((window, index) => {
+        const message = windowIssue(window, schedule.slotMinutes);
+        if (message) {
+            context.addIssue({ code: 'custom', path: ['windows', index], message });
+        }
+    });
+    for (const windows of groupByWeekday(schedule.windows).values()) {
+        if (windows.length > SCHEDULE_LIMITS.windowsPerDay) {
+            context.addIssue({ code: 'custom', path: ['windows'], message: 'validation.schedule.windows.tooMany' });
+        }
+        if (hasOverlap(windows)) {
+            context.addIssue({ code: 'custom', path: ['windows'], message: 'validation.schedule.windows.overlap' });
+        }
+    }
+};
+
 export const ViewingScheduleSchema = z
     .object({
         slotMinutes: z
@@ -53,51 +108,10 @@ export const ViewingScheduleSchema = z
         windows: z
             .array(ViewingWindowSchema)
             .min(1, 'validation.schedule.windows.required')
-            .max(7 * SCHEDULE_LIMITS.windowsPerDay, 'validation.schedule.windows.tooMany'),
+            .max(MAX_WINDOWS, 'validation.schedule.windows.tooMany'),
         blockedDays: z
             .array(z.iso.date({ error: 'validation.schedule.blockedDays.invalid' }))
             .max(SCHEDULE_LIMITS.blockedDays, 'validation.schedule.blockedDays.tooMany'),
     })
-    .superRefine((schedule, context) => {
-        const byDay = new Map<number, ViewingWindow[]>();
-        schedule.windows.forEach((window, index) => {
-            if (window.end <= window.start) {
-                context.addIssue({
-                    code: 'custom',
-                    path: ['windows', index],
-                    message: 'validation.schedule.windows.order',
-                });
-            } else if (window.end - window.start < schedule.slotMinutes) {
-                context.addIssue({
-                    code: 'custom',
-                    path: ['windows', index],
-                    message: 'validation.schedule.windows.tooShort',
-                });
-            }
-            byDay.set(window.weekday, [...(byDay.get(window.weekday) ?? []), window]);
-        });
-        for (const windows of byDay.values()) {
-            if (windows.length > SCHEDULE_LIMITS.windowsPerDay) {
-                context.addIssue({
-                    code: 'custom',
-                    path: ['windows'],
-                    message: 'validation.schedule.windows.tooMany',
-                });
-            }
-            const sorted = [...windows].sort((left, right) => left.start - right.start);
-            for (let index = 1; index < sorted.length; index += 1) {
-                const previous = sorted[index - 1];
-                const current = sorted[index];
-                if (previous && current && current.start < previous.end) {
-                    context.addIssue({
-                        code: 'custom',
-                        path: ['windows'],
-                        message: 'validation.schedule.windows.overlap',
-                    });
-                    // One issue per weekday is enough to send the owner back to it.
-                    break;
-                }
-            }
-        }
-    });
+    .superRefine(checkWindows);
 export type ViewingScheduleDocument = z.infer<typeof ViewingScheduleSchema>;

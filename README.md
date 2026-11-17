@@ -106,7 +106,7 @@ frontend/  React 19 · Vite · MUI 9 + Tailwind 4 · TanStack Query · React Rou
 backend/   NestJS 11 · Prisma 7 · PostgreSQL 18 · Zod 4 · pino · argon2id · Jest + supertest
 ```
 
-- Modular monolith: `user`, `audit`, `email`, `event` (live updates over Server-Sent Events), `auth`, `storage`, `listing`, `saved-search`, `viewing`, `message`;
+- Modular monolith: `user`, `audit`, `email`, `event` (live updates over Server-Sent Events), `auth`, `storage`, `listing`, `saved-search`, `viewing`, `message`, `privacy` (a copy of one's data, account erasure);
   controller → service → repository, explicit `select` everywhere.
 - Every handler is `@Public()` or `@Authorize(policy)`; the catalogue's policies are public-scoped
   (a session only adds "saved"); foreign ids answer 403 or 404 — see `backend/test/access.spec.ts`.
@@ -122,7 +122,13 @@ make check                         # every pipeline step of all three packages, 
 cd backend  && npm run start:dev   # :3000, Swagger at /docs · npm test · npm run openapi:generate
 cd frontend && npm run dev         # :5180 · npm run generate:api · npm run build (bundle budget)
 cd landing  && npm run dev         # :4321 · npm run build (astro check)
+cd frontend && npm run test:smoke  # Playwright smoke against :5180 (E2E_WRITES=1 also creates a draft)
 ```
+
+CI (`.github/workflows/ci.yml`) runs on every push to `main`: each package's full pipeline (format, lint,
+typecheck, build, `db:check`, i18n, OpenAPI, tests, audit), then the smoke tests against a freshly migrated and
+seeded database. A pre-commit hook runs Prettier and ESLint on the staged files of both apps. Code style: 4 spaces,
+120 columns (`.editorconfig`); the one reformat commit is listed in `.git-blame-ignore-revs`.
 
 Backend env (`backend/.env.example`): `DATABASE_URL`, `SHADOW_DATABASE_URL`, `TEST_DATABASE_URL`,
 `APP_URL`, `EMAIL_*`, `R2_*` (the photo store), `SESSION_*` / `COOKIE_*`, `DEMO_*`, `LOG_LEVEL`.

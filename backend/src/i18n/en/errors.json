@@ -66,5 +66,8 @@
         "notPending": "This request was already answered",
         "notCancellable": "This viewing can't be cancelled any more",
         "scheduleNeedsWindow": "Open at least one day with viewing hours"
+    },
+    "personalData": {
+        "adminCannotErase": "Staff accounts are removed by another admin, not from Settings"
     }
 }

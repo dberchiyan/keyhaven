@@ -15,7 +15,7 @@ export interface SnapshotHome {
     bathrooms: string;
     sizeSqft: number;
     neighborhood: string | null;
-    availableFrom: string | null;
+    availableAt: string | null;
     coverPhotoUrl: string | null;
 }
 

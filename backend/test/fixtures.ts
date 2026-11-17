@@ -1,18 +1,18 @@
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PG_SESSION_OPTIONS } from '../src/common/persistence/pg-pool';
-import { PrismaClient } from '../src/generated/prisma/client';
-import { PasswordHasher } from '../src/modules/auth/service/password-hasher.service';
-import { ListingStatus } from '../src/modules/listing/service/listing-status';
-import { PropertyType } from '../src/modules/listing/service/property-type';
-import { UserRole } from '../src/modules/user/service/user-role';
+
+import { PG_SESSION_OPTIONS } from '@/common/persistence/pg-pool';
+import { PrismaClient } from '@/generated/prisma/client';
+import { PasswordHasher } from '@/modules/auth/service/password-hasher.service';
+import { ListingStatus } from '@/modules/listing/service/listing-status';
+import { PropertyType } from '@/modules/listing/service/property-type';
+import { UserRole } from '@/modules/user/service/user-role';
+
 import { testDatabaseUrl } from './test-database';
 
-/** Every fixture account signs in with it (meets the password rules). */
 export const PASSWORD = 'Test-Password-2026!';
 
 export interface Fixtures {
     tenant: { id: string; email: string };
-    /** A second renter: two people racing for one viewing slot. */
     otherTenant: { id: string; email: string };
     landlord: { id: string; email: string };
     otherLandlord: { id: string; email: string };
@@ -21,30 +21,25 @@ export interface Fixtures {
     admin: { id: string; email: string };
     agencyId: string;
     cityId: string;
-    /** Owned by `landlord`, published. */
     landlordPublished: string;
-    /** Owned by `landlord`, draft. */
     landlordDraft: string;
-    /** Owned by `otherLandlord`, published. */
     otherLandlordPublished: string;
-    /** Owned by `otherLandlord`, unpublished. */
     otherLandlordUnpublished: string;
-    /** Owned by the agency, published. */
     agencyPublished: string;
-    /** Owned by the agency, draft. */
     agencyDraft: string;
-    /** Showcase rows of the public demo (`is_demo`): read-only while DEMO_MODE is on. */
     landlordDemo: string;
     agencyDemo: string;
 }
 
-/** Fresh accounts and listings for one test file; names carry the run so files never collide. */
+/**
+ * Fresh accounts and listings for one test file; names carry the run so files never collide. Every file starts with
+ * fresh rate-limit budgets: sign-ups and sign-ins add up across files.
+ */
 export const createFixtures = async (run: string): Promise<Fixtures> => {
     const prisma = new PrismaClient({
         adapter: new PrismaPg({ connectionString: testDatabaseUrl(), options: PG_SESSION_OPTIONS }),
     });
     try {
-        // Every file starts with fresh rate-limit budgets (sign-ups and sign-ins add up across files).
         await prisma.rateLimit.deleteMany();
         const passwordHash = await new PasswordHasher().hash(PASSWORD);
         const agency = await prisma.agency.create({
@@ -115,10 +110,10 @@ export const createFixtures = async (run: string): Promise<Fixtures> => {
                     addressLine2: null,
                     cityId: city.id,
                     zip: '75001',
-                    petsAllowed: true,
-                    furnished: false,
-                    parking: true,
-                    availableFrom: new Date('2026-12-01T00:00:00Z'),
+                    isPetFriendly: true,
+                    isFurnished: false,
+                    hasParking: true,
+                    availableAt: new Date('2026-12-01T00:00:00Z'),
                     status,
                     publishedAt: status === ListingStatus.PUBLISHED ? new Date() : null,
                     photos: { create: [{ url: 'https://example.test/photo.jpg', position: 0 }] },

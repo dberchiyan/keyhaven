@@ -1,28 +1,30 @@
-import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Transactional } from '@nestjs-cls/transactional';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { AppConfigService } from '../../../common/config/app-config.service';
-import { ClientType, Principal } from '../../../common/security/principal';
+
+import { AppConfigService } from '@/common/config/app-config.service';
+import { JobLock } from '@/common/persistence/job-lock';
+import { JobName } from '@/common/persistence/job-name';
+import { ClientType, Principal } from '@/common/security/principal';
 import {
     type SessionAuthentication,
     SessionAuthenticator,
     SessionLookup,
-} from '../../../common/security/session-authenticator';
-import { generateToken, hashToken } from '../../../common/security/token-hash';
+} from '@/common/security/session-authenticator';
+import { generateToken, hashToken } from '@/common/security/token-hash';
+import { MS_PER_MINUTE } from '@/common/time/units';
+
 import type { SessionListRecord } from '../repository/record/session.record';
 import { SessionRepository } from '../repository/session.repository';
 
-const MINUTE_MS = 60_000;
-/** security.md: last_seen_at is written at most once a minute. */
-const TOUCH_INTERVAL_MS = MINUTE_MS;
+const TOUCH_INTERVAL_MS = MS_PER_MINUTE;
 
 export interface StartSessionCommand {
     userId: string;
     authorities: string[];
     ip: string;
     userAgent: string | null;
-    /** Token of a session presented at login — deleted, never reused (no fixation). */
     presentedToken: string | undefined;
 }
 
@@ -30,23 +32,27 @@ export interface StartedSession {
     token: string;
     csrfToken: string;
     absoluteExpiresAt: Date;
-    /** Sessions this sign-in ended (the per-user limit) — for the security log. */
     evicted: number;
 }
 
-/** Devices a person can be signed in on at once (security.md → Sessions). */
-const MAX_SESSIONS_PER_USER = 10;
+/** AUTH-3: devices a person can be signed in on at once. */
+export const MAX_SESSIONS_PER_USER = 10;
 
 @Injectable()
 export class SessionService extends SessionAuthenticator {
     constructor(
         private readonly sessionRepository: SessionRepository,
         private readonly config: AppConfigService,
+        private readonly jobLock: JobLock,
         @InjectPinoLogger(SessionService.name) private readonly logger: PinoLogger,
     ) {
         super();
     }
 
+    /**
+     * AUTH-1: a token presented at login is deleted, never reused (no fixation). AUTH-3: a new sign-in beyond the
+     * per-user limit ends the least recently used session.
+     */
     @Transactional()
     async start(command: StartSessionCommand): Promise<StartedSession> {
         if (command.presentedToken) {
@@ -55,7 +61,7 @@ export class SessionService extends SessionAuthenticator {
         const token = generateToken();
         const csrfToken = generateToken();
         const now = Date.now();
-        const absoluteExpiresAt = new Date(now + this.config.get('SESSION_ABSOLUTE_TIMEOUT_MINUTES') * MINUTE_MS);
+        const absoluteExpiresAt = new Date(now + this.config.get('SESSION_ABSOLUTE_TIMEOUT_MINUTES') * MS_PER_MINUTE);
         await this.sessionRepository.create({
             userId: command.userId,
             tokenHash: hashToken(token),
@@ -67,7 +73,6 @@ export class SessionService extends SessionAuthenticator {
             idleExpiresAt: this.idleExpiry(now, absoluteExpiresAt),
             absoluteExpiresAt,
         });
-        // At most MAX_SESSIONS_PER_USER devices: a new sign-in ends the least recently used one.
         const trimmed = await this.sessionRepository.deleteBeyondMostRecent(command.userId, MAX_SESSIONS_PER_USER);
         if (trimmed > 0) {
             this.logger.info({ userId: command.userId, trimmed }, 'Oldest sessions ended (limit)');
@@ -75,6 +80,7 @@ export class SessionService extends SessionAuthenticator {
         return { token, csrfToken, absoluteExpiresAt, evicted: trimmed };
     }
 
+    /** AUTH-2: last_seen_at is touched at most once a minute, so authentication rarely writes. */
     async authenticate(token: string): Promise<SessionAuthentication> {
         const session = await this.sessionRepository.findForAuthenticationByTokenHash(hashToken(token));
         if (!session) {
@@ -130,6 +136,11 @@ export class SessionService extends SessionAuthenticator {
         return { current, others };
     }
 
+    /** DATA-23: the person's live sessions for their export — at most MAX_SESSIONS_PER_USER exist. */
+    listLive(userId: string): Promise<SessionListRecord[]> {
+        return this.sessionRepository.findLiveByUser(userId, new Date(), MAX_SESSIONS_PER_USER);
+    }
+
     /** Signs the user out everywhere but this session. */
     endOthers(userId: string, keepSessionId: string): Promise<number> {
         return this.sessionRepository.deleteByUserIdExcept(userId, keepSessionId);
@@ -142,12 +153,14 @@ export class SessionService extends SessionAuthenticator {
 
     @Cron(CronExpression.EVERY_HOUR)
     async deleteExpired(): Promise<void> {
-        const count = await this.sessionRepository.deleteExpired(new Date());
-        this.logger.info({ count }, 'Expired sessions deleted');
+        await this.jobLock.runExclusive(JobName.DELETE_EXPIRED_SESSIONS, async () => {
+            const count = await this.sessionRepository.deleteExpired(new Date());
+            this.logger.info({ count }, 'Expired sessions deleted');
+        });
     }
 
     private idleExpiry(now: number, absoluteExpiresAt: Date): Date {
-        const idle = now + this.config.get('SESSION_IDLE_TIMEOUT_MINUTES') * MINUTE_MS;
+        const idle = now + this.config.get('SESSION_IDLE_TIMEOUT_MINUTES') * MS_PER_MINUTE;
         return new Date(Math.min(idle, absoluteExpiresAt.getTime()));
     }
 }

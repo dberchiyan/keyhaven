@@ -31,7 +31,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1160,
                         "neighborhood": "Clarksville",
-                        "availableFrom": "2026-11-23",
+                        "availableAt": "2026-11-23",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -43,7 +43,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1429,
                         "neighborhood": "East Austin",
-                        "availableFrom": "2026-11-06",
+                        "availableAt": "2026-11-06",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -55,7 +55,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 700,
                         "neighborhood": "Zilker",
-                        "availableFrom": "2026-11-03",
+                        "availableAt": "2026-11-03",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -67,7 +67,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1135,
                         "neighborhood": "Hyde Park",
-                        "availableFrom": "2026-11-10",
+                        "availableAt": "2026-11-10",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -79,7 +79,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1252,
                         "neighborhood": "East Austin",
-                        "availableFrom": "2027-01-19",
+                        "availableAt": "2027-01-19",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -91,7 +91,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1201,
                         "neighborhood": "Clarksville",
-                        "availableFrom": "2026-12-28",
+                        "availableAt": "2026-12-28",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -103,7 +103,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1268,
                         "neighborhood": "Zilker",
-                        "availableFrom": "2026-11-24",
+                        "availableAt": "2026-11-24",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -115,7 +115,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1607,
                         "neighborhood": "Mueller",
-                        "availableFrom": "2027-02-06",
+                        "availableAt": "2027-02-06",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -148,7 +148,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1621,
                         "neighborhood": "Hyde Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -160,7 +160,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 924,
                         "neighborhood": "Clarksville",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -172,7 +172,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1165,
                         "neighborhood": "Zilker",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -184,7 +184,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1352,
                         "neighborhood": "Barton Hills",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -196,7 +196,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1082,
                         "neighborhood": "Zilker",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -208,7 +208,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1148,
                         "neighborhood": "Barton Hills",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -220,7 +220,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 799,
                         "neighborhood": "Mueller",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -232,7 +232,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1288,
                         "neighborhood": "Hyde Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -268,7 +268,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1550,
                         "neighborhood": "Washington Park",
-                        "availableFrom": "2026-12-18",
+                        "availableAt": "2026-12-18",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -280,7 +280,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 391,
                         "neighborhood": "Washington Park",
-                        "availableFrom": "2027-02-01",
+                        "availableAt": "2027-02-01",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1588854337115-1c67d9247e4d?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -292,7 +292,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 907,
                         "neighborhood": "Highland",
-                        "availableFrom": "2026-11-29",
+                        "availableAt": "2026-11-29",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -304,7 +304,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 499,
                         "neighborhood": "RiNo",
-                        "availableFrom": "2027-01-01",
+                        "availableAt": "2027-01-01",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -316,7 +316,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1614,
                         "neighborhood": "LoHi",
-                        "availableFrom": "2026-12-31",
+                        "availableAt": "2026-12-31",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -328,7 +328,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1023,
                         "neighborhood": "Washington Park",
-                        "availableFrom": "2027-01-25",
+                        "availableAt": "2027-01-25",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -340,7 +340,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1276,
                         "neighborhood": "Cherry Creek",
-                        "availableFrom": "2027-01-09",
+                        "availableAt": "2027-01-09",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -352,7 +352,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1464,
                         "neighborhood": "LoHi",
-                        "availableFrom": "2026-12-18",
+                        "availableAt": "2026-12-18",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -386,7 +386,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1550,
                         "neighborhood": "Washington Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -398,7 +398,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 907,
                         "neighborhood": "Highland",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -410,7 +410,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 500,
                         "neighborhood": "Baker",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -422,7 +422,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 500,
                         "neighborhood": "Baker",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -434,7 +434,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 960,
                         "neighborhood": "Washington Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -446,7 +446,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1257,
                         "neighborhood": "LoHi",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -458,7 +458,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1531,
                         "neighborhood": "LoHi",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -470,7 +470,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1044,
                         "neighborhood": "Washington Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -506,7 +506,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1192,
                         "neighborhood": "Wallingford",
-                        "availableFrom": "2027-01-16",
+                        "availableAt": "2027-01-16",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -518,7 +518,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1702,
                         "neighborhood": "Fremont",
-                        "availableFrom": "2027-01-25",
+                        "availableAt": "2027-01-25",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -530,7 +530,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 776,
                         "neighborhood": "Belltown",
-                        "availableFrom": "2027-01-08",
+                        "availableAt": "2027-01-08",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -542,7 +542,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1204,
                         "neighborhood": "Capitol Hill",
-                        "availableFrom": "2026-11-08",
+                        "availableAt": "2026-11-08",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -554,7 +554,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 404,
                         "neighborhood": "Ballard",
-                        "availableFrom": "2027-01-19",
+                        "availableAt": "2027-01-19",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -566,7 +566,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1516,
                         "neighborhood": "Belltown",
-                        "availableFrom": "2026-12-17",
+                        "availableAt": "2026-12-17",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -578,7 +578,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 420,
                         "neighborhood": "Belltown",
-                        "availableFrom": "2027-01-20",
+                        "availableAt": "2027-01-20",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -590,7 +590,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1208,
                         "neighborhood": "Fremont",
-                        "availableFrom": "2026-11-09",
+                        "availableAt": "2026-11-09",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -623,7 +623,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 747,
                         "neighborhood": "Belltown",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -635,7 +635,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 892,
                         "neighborhood": "Wallingford",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -647,7 +647,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 934,
                         "neighborhood": "Belltown",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -659,7 +659,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 424,
                         "neighborhood": "Wallingford",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -671,7 +671,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 973,
                         "neighborhood": "Wallingford",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -683,7 +683,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1169,
                         "neighborhood": "Wallingford",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -695,7 +695,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 960,
                         "neighborhood": "Belltown",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -707,7 +707,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 476,
                         "neighborhood": "Queen Anne",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -743,7 +743,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1120,
                         "neighborhood": "Lakeview",
-                        "availableFrom": "2026-11-23",
+                        "availableAt": "2026-11-23",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -755,7 +755,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 901,
                         "neighborhood": "West Loop",
-                        "availableFrom": "2027-01-17",
+                        "availableAt": "2027-01-17",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -767,7 +767,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 435,
                         "neighborhood": "West Loop",
-                        "availableFrom": "2027-01-16",
+                        "availableAt": "2027-01-16",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -779,7 +779,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 746,
                         "neighborhood": "Lincoln Park",
-                        "availableFrom": "2026-12-04",
+                        "availableAt": "2026-12-04",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -791,7 +791,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 420,
                         "neighborhood": "Hyde Park",
-                        "availableFrom": "2026-12-14",
+                        "availableAt": "2026-12-14",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -803,7 +803,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 702,
                         "neighborhood": "Pilsen",
-                        "availableFrom": "2026-12-17",
+                        "availableAt": "2026-12-17",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -815,7 +815,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1211,
                         "neighborhood": "Logan Square",
-                        "availableFrom": "2027-01-14",
+                        "availableAt": "2027-01-14",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -827,7 +827,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1260,
                         "neighborhood": "Logan Square",
-                        "availableFrom": "2026-11-27",
+                        "availableAt": "2026-11-27",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -861,7 +861,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 862,
                         "neighborhood": "Hyde Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1588854337115-1c67d9247e4d?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -873,7 +873,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 860,
                         "neighborhood": "Wicker Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -885,7 +885,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 792,
                         "neighborhood": "Pilsen",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -897,7 +897,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1573,
                         "neighborhood": "Wicker Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -909,7 +909,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1540,
                         "neighborhood": "Hyde Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -921,7 +921,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 375,
                         "neighborhood": "Wicker Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -933,7 +933,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 817,
                         "neighborhood": "Lincoln Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -945,7 +945,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 497,
                         "neighborhood": "Hyde Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1588854337115-1c67d9247e4d?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -981,7 +981,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 787,
                         "neighborhood": "Buckhead",
-                        "availableFrom": "2027-01-22",
+                        "availableAt": "2027-01-22",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -993,7 +993,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 391,
                         "neighborhood": "West End",
-                        "availableFrom": "2026-11-07",
+                        "availableAt": "2026-11-07",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1005,7 +1005,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1625,
                         "neighborhood": "Inman Park",
-                        "availableFrom": "2027-02-10",
+                        "availableAt": "2027-02-10",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1017,7 +1017,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1752,
                         "neighborhood": "Midtown",
-                        "availableFrom": "2026-11-05",
+                        "availableAt": "2026-11-05",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1029,7 +1029,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1169,
                         "neighborhood": "Midtown",
-                        "availableFrom": "2026-11-12",
+                        "availableAt": "2026-11-12",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1041,7 +1041,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1140,
                         "neighborhood": "Midtown",
-                        "availableFrom": "2026-11-20",
+                        "availableAt": "2026-11-20",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1053,7 +1053,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1128,
                         "neighborhood": "Inman Park",
-                        "availableFrom": "2026-11-30",
+                        "availableAt": "2026-11-30",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1065,7 +1065,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 493,
                         "neighborhood": "Virginia-Highland",
-                        "availableFrom": "2026-11-20",
+                        "availableAt": "2026-11-20",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -1099,7 +1099,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1625,
                         "neighborhood": "Inman Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1111,7 +1111,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 493,
                         "neighborhood": "Buckhead",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1123,7 +1123,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1786,
                         "neighborhood": "Midtown",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1135,7 +1135,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1439,
                         "neighborhood": "Buckhead",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1147,7 +1147,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 439,
                         "neighborhood": "Inman Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1159,7 +1159,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1474,
                         "neighborhood": "West End",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1171,7 +1171,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 873,
                         "neighborhood": "Grant Park",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1183,7 +1183,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 879,
                         "neighborhood": "Old Fourth Ward",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -1219,7 +1219,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 760,
                         "neighborhood": "Willo",
-                        "availableFrom": "2026-12-28",
+                        "availableAt": "2026-12-28",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1231,7 +1231,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1657,
                         "neighborhood": "Coronado",
-                        "availableFrom": "2026-11-05",
+                        "availableAt": "2026-11-05",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1243,7 +1243,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1532,
                         "neighborhood": "Ahwatukee",
-                        "availableFrom": "2026-11-21",
+                        "availableAt": "2026-11-21",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1255,7 +1255,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 845,
                         "neighborhood": "Coronado",
-                        "availableFrom": "2026-12-21",
+                        "availableAt": "2026-12-21",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1267,7 +1267,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1587,
                         "neighborhood": "Arcadia",
-                        "availableFrom": "2026-11-05",
+                        "availableAt": "2026-11-05",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1279,7 +1279,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1364,
                         "neighborhood": "Arcadia",
-                        "availableFrom": "2027-02-08",
+                        "availableAt": "2027-02-08",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1291,7 +1291,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1207,
                         "neighborhood": "Roosevelt Row",
-                        "availableFrom": "2026-11-30",
+                        "availableAt": "2026-11-30",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1303,7 +1303,7 @@
                         "bathrooms": "2.5",
                         "sizeSqft": 1476,
                         "neighborhood": "Biltmore",
-                        "availableFrom": "2027-01-24",
+                        "availableAt": "2027-01-24",
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]
@@ -1337,7 +1337,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 832,
                         "neighborhood": "Biltmore",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1349,7 +1349,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 855,
                         "neighborhood": "Ahwatukee",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1449844908441-8829872d2607?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1361,7 +1361,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1167,
                         "neighborhood": "Arcadia",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1373,7 +1373,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 871,
                         "neighborhood": "Coronado",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1385,7 +1385,7 @@
                         "bathrooms": "1.5",
                         "sizeSqft": 1115,
                         "neighborhood": "Ahwatukee",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1397,7 +1397,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1192,
                         "neighborhood": "Coronado",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1409,7 +1409,7 @@
                         "bathrooms": "2.0",
                         "sizeSqft": 1213,
                         "neighborhood": "Coronado",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=1200&h=800&q=70&auto=format&fit=crop"
                     },
                     {
@@ -1421,7 +1421,7 @@
                         "bathrooms": "1.0",
                         "sizeSqft": 1177,
                         "neighborhood": "Arcadia",
-                        "availableFrom": null,
+                        "availableAt": null,
                         "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
                     }
                 ]

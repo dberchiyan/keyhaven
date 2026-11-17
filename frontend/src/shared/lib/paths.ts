@@ -1,19 +1,14 @@
-/** Route paths — one module for the router and every link. */
 export const PATHS = {
     login: '/login',
     signup: '/signup',
     verifyEmail: '/verify-email',
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
-    /** Home: the listings dashboard for landlords, agents and admins; tenants go to Browse. */
     home: '/',
     browse: '/browse',
     listing: '/listings/:listingId',
-    /** A tenant's saved homes and searches. */
     saved: '/saved',
-    /** A tenant's viewings, or the owner's viewings dashboard. */
     viewings: '/viewings',
-    /** The inbox, and one conversation (a viewing's thread, or a request to Keyhaven). */
     messages: '/messages',
     conversation: '/messages/:conversationId',
     newListing: '/manage/new',

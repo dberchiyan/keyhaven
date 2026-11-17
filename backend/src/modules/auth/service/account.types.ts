@@ -1,4 +1,4 @@
-import type { SignupRole } from '../../user/service/user-role';
+import type { SignupRole } from '@/modules/user/service/user-role';
 
 export interface RegisterCommand {
     email: string;
@@ -22,4 +22,11 @@ export interface ResetPasswordCommand {
 export interface EmailVerification {
     email: string;
     verifiedAt: Date;
+}
+
+export interface AccountSession {
+    createdAt: Date;
+    lastSeenAt: Date;
+    ip: string | null;
+    userAgent: string | null;
 }

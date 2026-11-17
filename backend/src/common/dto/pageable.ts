@@ -1,6 +1,7 @@
 import { applyDecorators, createParamDecorator, type ExecutionContext } from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
 import type { Request } from 'express';
+
 import { InvalidParameterException } from '../exception/api.exception';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -59,7 +60,7 @@ const parsePageable = <F extends string>(options: PageableOptions<F>, request: R
     return { page, size, sort: { field: sortField, direction } };
 };
 
-/** Binds the parsed page request (api.md → Pagination). */
+/** API-20: binds the parsed page request; an unknown sort field is 400. */
 export const PageableQuery = createParamDecorator(
     (options: PageableOptions<string>, context: ExecutionContext): Pageable =>
         parsePageable(options, context.switchToHttp().getRequest<Request>()),

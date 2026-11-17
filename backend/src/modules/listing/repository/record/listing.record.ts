@@ -1,5 +1,5 @@
-import type { Prisma } from '../../../../generated/prisma/client';
-import { MAX_PHOTOS } from '../../service/photo-status';
+import type { Prisma } from '@/generated/prisma/client';
+import { MAX_PHOTOS } from '@/modules/listing/service/photo-status';
 
 export const citySelect = {
     id: true,
@@ -10,10 +10,22 @@ export const citySelect = {
 } satisfies Prisma.CitySelect;
 export type CityRecord = Prisma.CityGetPayload<{ select: typeof citySelect }>;
 
-/** Only finished uploads are shown, in their order. */
 const readyPhotos = { status: 'READY' } as const;
+const NO_VIEWER_USER_ID = '00000000-0000-0000-0000-000000000000';
 
-/** A search result card: one photo (the cover), the public part of the address, how many looked. */
+interface SavedByViewerSelect {
+    where: { userId: string };
+    select: { userId: true };
+    take: 1;
+}
+
+/** The viewer's own save only (0 or 1 row): a visitor matches nobody, so the card says "not saved". */
+const savedByViewer = (viewerUserId: string | null): SavedByViewerSelect => ({
+    where: { userId: viewerUserId ?? NO_VIEWER_USER_ID },
+    select: { userId: true },
+    take: 1,
+});
+
 export const listingCardSelect = {
     id: true,
     title: true,
@@ -25,37 +37,25 @@ export const listingCardSelect = {
     bathrooms: true,
     sizeSqft: true,
     neighborhood: true,
-    availableFrom: true,
+    availableAt: true,
     publishedAt: true,
     isDemo: true,
     city: { select: citySelect },
-    // Bounded: the cover only.
     photos: {
         where: readyPhotos,
         select: { url: true, storageKey: true },
         orderBy: { position: 'asc' },
         take: 1,
     },
-    // One row per person and day (index `idx_listing_views_listing_id_viewed_on`).
     _count: { select: { views: true } },
 } satisfies Prisma.ListingSelect;
 export type ListingCardRecord = Prisma.ListingGetPayload<{ select: typeof listingCardSelect }>;
 
-/** The card plus whether one viewer saved it: `savedBy` filtered to that viewer (0 or 1 row). */
-export const viewerCardSelect = (viewerUserId: string | null) =>
-    ({
-        ...listingCardSelect,
-        savedBy: {
-            where: { userId: viewerUserId ?? '00000000-0000-0000-0000-000000000000' },
-            select: { userId: true },
-            take: 1,
-        },
-    }) satisfies Prisma.ListingSelect;
-export type ViewerCardRecord = Prisma.ListingGetPayload<{
-    select: ReturnType<typeof viewerCardSelect>;
-}>;
+export type ViewerCardSelect = typeof listingCardSelect & { savedBy: SavedByViewerSelect };
+export const viewerCardSelect = (viewerUserId: string | null): ViewerCardSelect =>
+    ({ ...listingCardSelect, savedBy: savedByViewer(viewerUserId) }) satisfies Prisma.ListingSelect;
+export type ViewerCardRecord = Prisma.ListingGetPayload<{ select: ViewerCardSelect }>;
 
-/** The owner's dashboard row: the card plus its status, views and saves. */
 export const managedListingCardSelect = {
     ...listingCardSelect,
     status: true,
@@ -65,13 +65,12 @@ export type ManagedListingCardRecord = Prisma.ListingGetPayload<{
     select: typeof managedListingCardSelect;
 }>;
 
-/** Everything about one listing, the private address included — the mapper decides who sees it. */
 export const listingDetailSelect = {
     ...listingCardSelect,
     description: true,
-    furnished: true,
-    petsAllowed: true,
-    parking: true,
+    isFurnished: true,
+    isPetFriendly: true,
+    hasParking: true,
     zip: true,
     addressLine1: true,
     addressLine2: true,
@@ -92,21 +91,11 @@ export const listingDetailSelect = {
 } satisfies Prisma.ListingSelect;
 export type ListingDetailRecord = Prisma.ListingGetPayload<{ select: typeof listingDetailSelect }>;
 
-/** The detail plus whether one viewer saved it (as `viewerCardSelect`). */
-export const viewerDetailSelect = (viewerUserId: string | null) =>
-    ({
-        ...listingDetailSelect,
-        savedBy: {
-            where: { userId: viewerUserId ?? '00000000-0000-0000-0000-000000000000' },
-            select: { userId: true },
-            take: 1,
-        },
-    }) satisfies Prisma.ListingSelect;
-export type ViewerDetailRecord = Prisma.ListingGetPayload<{
-    select: ReturnType<typeof viewerDetailSelect>;
-}>;
+export type ViewerDetailSelect = typeof listingDetailSelect & { savedBy: SavedByViewerSelect };
+export const viewerDetailSelect = (viewerUserId: string | null): ViewerDetailSelect =>
+    ({ ...listingDetailSelect, savedBy: savedByViewer(viewerUserId) }) satisfies Prisma.ListingSelect;
+export type ViewerDetailRecord = Prisma.ListingGetPayload<{ select: ViewerDetailSelect }>;
 
-/** The owner's page: the detail plus the viewer-independent counts and every photo, pending ones too. */
 export const managedListingSelect = {
     ...listingDetailSelect,
     cityId: true,
@@ -116,7 +105,6 @@ export type ManagedListingRecord = Prisma.ListingGetPayload<{
     select: typeof managedListingSelect;
 }>;
 
-/** Every photo of a listing as its owner sees it (pending intents included), bounded. */
 export const managedPhotoSelect = {
     id: true,
     url: true,
@@ -129,7 +117,6 @@ export type ManagedPhotoRecord = Prisma.ListingPhotoGetPayload<{
     select: typeof managedPhotoSelect;
 }>;
 
-/** A photo row during the upload: whose listing, where it is stored, what was declared. */
 export const photoUploadSelect = {
     id: true,
     listingId: true,
@@ -141,7 +128,6 @@ export const photoUploadSelect = {
 } satisfies Prisma.ListingPhotoSelect;
 export type PhotoUploadRecord = Prisma.ListingPhotoGetPayload<{ select: typeof photoUploadSelect }>;
 
-/** For a status change: the current status and version only. */
 export const listingStatusSelect = {
     id: true,
     title: true,

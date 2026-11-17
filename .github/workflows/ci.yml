@@ -1,0 +1,174 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_ENV: dev
+  NODE_ENV: test
+  TZ: UTC
+  PORT: '3000'
+  APP_URL: http://localhost:4180
+  DATABASE_URL: postgresql://keyhaven:keyhaven@localhost:5432/keyhaven?schema=public
+  SHADOW_DATABASE_URL: postgresql://keyhaven:keyhaven@localhost:5432/keyhaven_shadow?schema=public
+  TEST_DATABASE_URL: postgresql://keyhaven:keyhaven@localhost:5432/keyhaven_test?schema=public
+  DB_POOL_SIZE: '10'
+  DB_QUERY_LOG: 'false'
+  LOG_LEVEL: warn
+  TRUST_PROXY_HOPS: '0'
+  SESSION_COOKIE_NAME: keyhaven_session
+  COOKIE_DOMAIN: ''
+  COOKIE_SECURE: 'false'
+  COOKIE_SAME_SITE: lax
+  SESSION_IDLE_TIMEOUT_MINUTES: '2880'
+  SESSION_ABSOLUTE_TIMEOUT_MINUTES: '10080'
+  CORS_ALLOWED_ORIGINS: http://localhost:4180
+  SUPPORTED_LOCALES: en
+  EMAIL_TRANSPORT: log
+  SMTP_URL: ''
+  EMAIL_FROM: Keyhaven <no-reply@keyhaven.local>
+  R2_ENDPOINT: http://localhost:9000
+  R2_INTERNAL_ENDPOINT: ''
+  R2_REGION: us-east-1
+  R2_BUCKET: keyhaven
+  R2_ACCESS_KEY: keyhaven
+  R2_SECRET_KEY: keyhaven-local
+  R2_PUBLIC_URL: http://localhost:9000/keyhaven
+  DEMO_MODE: 'false'
+  DEMO_PROTECTED_EMAILS: ''
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: keyhaven
+          POSTGRES_PASSWORD: keyhaven
+          POSTGRES_DB: keyhaven
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U keyhaven" --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: backend/.nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Create the shadow and test databases
+        run: |
+          PGPASSWORD=keyhaven psql -h localhost -U keyhaven -d keyhaven -c 'CREATE DATABASE keyhaven_shadow'
+          PGPASSWORD=keyhaven psql -h localhost -U keyhaven -d keyhaven -c 'CREATE DATABASE keyhaven_test'
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run db:check
+      - run: npm run i18n:check
+      - run: npm run openapi:check
+      - run: npm test
+      - run: npm run audit
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run i18n:check
+
+  landing:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: landing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: landing/.nvmrc
+          cache: npm
+          cache-dependency-path: landing/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+
+  smoke:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: keyhaven
+          POSTGRES_PASSWORD: keyhaven
+          POSTGRES_DB: keyhaven
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U keyhaven" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: backend/.nvmrc
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - name: Backend — install, build, migrate, seed
+        working-directory: backend
+        run: |
+          npm ci
+          npm run build
+          npm run db:migrate:deploy
+          npm run db:seed
+      - name: Backend — start
+        working-directory: backend
+        run: |
+          nohup node dist/main.js > ../backend.log 2>&1 &
+          for attempt in $(seq 1 60); do curl -sf http://localhost:3000/health/ready && exit 0; sleep 1; done
+          cat ../backend.log; exit 1
+      - name: Frontend — install and build
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run build
+      - name: Smoke tests
+        working-directory: frontend
+        env:
+          E2E_BASE_URL: http://localhost:4180
+          E2E_WRITES: '1'
+        run: npm run test:smoke
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-report
+          path: |
+            frontend/playwright-report
+            backend.log
+          retention-days: 7

@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import type { Request } from 'express';
 
+import { toUtcDay } from '../time/utc-day';
+
 const MAX_USER_AGENT_LENGTH = 512;
 const MAX_TOKEN_LENGTH = 128;
 
@@ -17,7 +19,7 @@ export const readCookie = (request: Request, name: string): string | undefined =
     if (typeof cookies !== 'object' || cookies === null || !(name in cookies)) {
         return undefined;
     }
-    const value: unknown = (cookies as Record<string, unknown>)[name];
+    const value: unknown = Reflect.get(cookies, name);
     return typeof value === 'string' && value.length > 0 && value.length <= MAX_TOKEN_LENGTH ? value : undefined;
 };
 
@@ -27,5 +29,5 @@ export const readCookie = (request: Request, name: string): string | undefined =
  */
 export const visitorKey = (request: Request): string =>
     createHash('sha256')
-        .update(`${new Date().toISOString().slice(0, 10)}|${clientIp(request)}|${clientUserAgent(request) ?? ''}`)
+        .update(`${toUtcDay(new Date())}|${clientIp(request)}|${clientUserAgent(request) ?? ''}`)
         .digest('hex');

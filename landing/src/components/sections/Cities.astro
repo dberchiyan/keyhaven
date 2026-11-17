@@ -1,4 +1,5 @@
 ---
+import Photo from '@/components/ui/Photo.astro';
 import Container from '@/components/ui/Container.astro';
 import Icon from '@/components/ui/Icon.astro';
 import SectionHeading from '@/components/ui/SectionHeading.astro';
@@ -18,13 +19,12 @@ const { cities } = LANDING;
                     <article class="group relative flex h-full flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass">
                         <!-- A home of the city from the catalogue, dimmed towards the text. -->
                         <div class="relative h-40 bg-surface-2" aria-hidden="true">
-                            <img
-                                src={CITY_PHOTOS[city.slug]}
-                                alt=""
-                                width="1200"
-                                height="800"
-                                loading="lazy"
-                                decoding="async"
+                            <Photo
+                                src={CITY_PHOTOS[city.slug] ?? ''}
+                                width={1200}
+                                height={800}
+                                widths={[480, 800]}
+                                sizes="(min-width: 1024px) 24rem, (min-width: 640px) 50vw, 100vw"
                                 class="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                             />
                             <span class="absolute inset-0 bg-gradient-to-t from-navy/60 via-navy/10 to-transparent"></span>

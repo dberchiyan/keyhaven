@@ -1,13 +1,16 @@
 import 'reflect-metadata';
+
 import { randomUUID } from 'node:crypto';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import request, { type Response } from 'supertest';
-import { AppModule } from '../src/app.module';
-import { setupApp } from '../src/app.setup';
-import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from '../src/common/security/csrf.guard';
-import { EmailSender } from '../src/modules/email/service/email-sender';
-import { ObjectStorage } from '../src/modules/storage/service/object-storage';
+
+import { AppModule } from '@/app.module';
+import { setupApp } from '@/app.setup';
+import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from '@/common/security/csrf.guard';
+import { EmailSender } from '@/modules/email/service/email-sender';
+import { ObjectStorage } from '@/modules/storage/service/object-storage';
+
 import { FakeEmailSender } from './fake-email.sender';
 import { FakeObjectStorage } from './fake-object.storage';
 
@@ -111,7 +114,7 @@ export class Client {
             .then((r) => r);
     }
 
-    /** A side-effecting POST with its Idempotency-Key (api.md). */
+    /** A side-effecting POST with its Idempotency-Key (API-5). */
     postIdempotent(path: string, body: unknown, key: string = randomUUID()): Promise<Response> {
         return request(this.app.getHttpServer())
             .post(path)
@@ -134,7 +137,6 @@ export class Client {
             }
             const [name] = pair.split('=');
             this.cookies = this.cookies.filter((existing) => !existing.startsWith(`${name ?? ''}=`));
-            // An expired cookie (clearCookie) is dropped, not sent back.
             if (!/expires=Thu, 01 Jan 1970/i.test(cookie)) {
                 this.cookies.push(pair);
             }

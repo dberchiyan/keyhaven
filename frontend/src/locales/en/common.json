@@ -35,5 +35,8 @@
             "met": "— done",
             "notMet": "— not yet"
         }
+    },
+    "actions": {
+        "retry": "Try again"
     }
 }

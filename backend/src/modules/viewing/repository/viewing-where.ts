@@ -1,6 +1,7 @@
-import type { Prisma } from '../../../generated/prisma/client';
-import { ACTIVE_VIEWING_STATUSES } from '../service/viewing-status';
+import type { Prisma } from '@/generated/prisma/client';
+
 import type { ViewingCriteria, ViewingScope } from '../service/viewing.types';
+import { ACTIVE_VIEWING_STATUSES } from '../service/viewing-status';
 
 /** Whose viewings: the scope goes into the query through the listing, never a filter afterwards. */
 export const viewingScopeWhere = (scope: ViewingScope): Prisma.ViewingWhereInput => {
@@ -26,6 +27,6 @@ export const managedViewingWhere = (
 ): Prisma.ViewingWhereInput => ({
     ...viewingScopeWhere(scope),
     ...(criteria.listingId ? { listingId: criteria.listingId } : {}),
-    ...(criteria.upcoming ? { startsAt: { gt: now } } : {}),
-    ...(criteria.status ? { status: criteria.status } : criteria.upcoming ? activeViewingWhere : {}),
+    ...(criteria.isUpcoming ? { startsAt: { gt: now } } : {}),
+    ...(criteria.status ? { status: criteria.status } : criteria.isUpcoming ? activeViewingWhere : {}),
 });

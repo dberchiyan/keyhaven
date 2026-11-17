@@ -1,4 +1,4 @@
-import { ObjectStorage, type PresignedUpload, type StoredObject } from '../src/modules/storage/service/object-storage';
+import { ObjectStorage, type PresignedUpload, type StoredObject } from '@/modules/storage/service/object-storage';
 
 /** An in-memory store: a test "uploads" by writing bytes under the key the intent named. */
 export class FakeObjectStorage extends ObjectStorage {
@@ -13,9 +13,11 @@ export class FakeObjectStorage extends ObjectStorage {
         });
     }
 
-    head(key: string): Promise<StoredObject | null> {
+    head(key: string): Promise<StoredObject | undefined> {
         const object = this.objects.get(key);
-        return Promise.resolve(object ? { sizeBytes: object.bytes.length, contentType: object.contentType } : null);
+        return Promise.resolve(
+            object ? { sizeBytes: object.bytes.length, contentType: object.contentType } : undefined,
+        );
     }
 
     readHead(key: string, bytes: number): Promise<Uint8Array> {
@@ -39,7 +41,6 @@ export class FakeObjectStorage extends ObjectStorage {
     }
 }
 
-/** A valid PNG head: the signature plus the IHDR chunk start (16 bytes). */
 export const PNG_HEAD = new Uint8Array([
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
 ]);

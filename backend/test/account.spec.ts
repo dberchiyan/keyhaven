@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
+
 import { bodyOf, Client, createTestApp, type TestApp } from './app';
 import { FakeEmailSender } from './fake-email.sender';
 import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
 
-/** Sign-up, the verification email, what an unverified account may not do, and "forgot password". */
 describe('Account life cycle', () => {
     let testApp: TestApp;
     let f: Fixtures;
@@ -36,7 +36,6 @@ describe('Account life cycle', () => {
         const mail = testApp.emails.lastTo(email);
         expect(mail?.subject).toContain('Verify');
 
-        // Unverified: browsing is open, but nothing other people rely on.
         expect((await browser.get('/api/v1/listings')).status).toBe(200);
 
         const again = await new Client(testApp.app).post('/api/v1/registrations', {
@@ -56,7 +55,6 @@ describe('Account life cycle', () => {
         expect(verified.body).toMatchObject({ email });
         expect(typeof bodyOf(await browser.get('/api/v1/auth/me')).emailVerifiedAt).toBe('string');
 
-        // The link is spent.
         const spent = await new Client(testApp.app).post('/api/v1/auth/email-verifications', {
             token: FakeEmailSender.tokenOf(mail ?? { to: '', subject: '', text: '', html: '' }),
         });
@@ -77,7 +75,6 @@ describe('Account life cycle', () => {
                 })
             ).status,
         ).toBe(200);
-        // Any listing id: the scope is checked before the policy runs.
         const response = await browser.post(`/api/v1/managed-listings/${f.landlordDraft}/publication`);
         expect(response.status).toBe(403);
         expect(response.body).toMatchObject({ error: 'EMAIL_NOT_VERIFIED' });
@@ -120,7 +117,6 @@ describe('Account life cycle', () => {
         expect(reset.body).toMatchObject({ email: f.tenant.email });
         expect((await browser.get('/api/v1/auth/me')).status).toBe(200);
 
-        // Every earlier session ended.
         expect((await victim.get('/api/v1/auth/me')).status).toBe(401);
         expect((await new Client(testApp.app).login(f.tenant.email, PASSWORD)).status).toBe(401);
         expect((await new Client(testApp.app).login(f.tenant.email, NEW_PASSWORD)).status).toBe(200);
@@ -145,5 +141,32 @@ describe('Account life cycle', () => {
         expect((await browser.post('/api/v1/auth/logout')).status).toBe(200);
         expect((await browser.get('/api/v1/auth/me')).status).toBe(401);
         expect((await new Client(testApp.app).login(f.landlord.email, NEW_PASSWORD)).status).toBe(200);
+    });
+
+    it('pages the security log by cursor, newest first, and refuses a forged cursor (API-23)', async () => {
+        const browser = new Client(testApp.app);
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            expect((await new Client(testApp.app).login(f.agent.email, PASSWORD)).status).toBe(200);
+        }
+        expect((await browser.login(f.agent.email, PASSWORD)).status).toBe(200);
+
+        const seen: string[] = [];
+        let after: string | null = null;
+        do {
+            const query: string = after ? `?size=2&after=${after}` : '?size=2';
+            const page = await browser.get(`/api/v1/auth/security-log${query}`);
+            expect(page.status).toBe(200);
+            const body = bodyOf(page) as { content: { id: string; occurredAt: string }[]; nextCursor: string | null };
+            expect(body.content.length).toBeLessThanOrEqual(2);
+            seen.push(...body.content.map((event) => event.id));
+            after = body.nextCursor;
+        } while (after);
+
+        expect(seen.length).toBeGreaterThanOrEqual(4);
+        expect(new Set(seen).size).toBe(seen.length);
+        const all = bodyOf(await browser.get('/api/v1/auth/security-log?size=100')) as { content: { id: string }[] };
+        expect(all.content.map((event) => event.id)).toEqual(seen);
+
+        expect((await browser.get('/api/v1/auth/security-log?after=not-a-cursor')).status).toBe(400);
     });
 });

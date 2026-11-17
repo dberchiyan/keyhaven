@@ -1,5 +1,5 @@
-import type { EmailMessage } from '../../email/service/email-sender';
-import type { ListingCard } from '../../listing/service/listing.types';
+import type { EmailMessage } from '@/modules/email/service/email-sender';
+import type { ListingCard } from '@/modules/listing/service/listing.types';
 
 const escapeHtml = (value: string): string =>
     value
@@ -21,8 +21,8 @@ const rooms = (listing: ListingCard): string =>
         : `${listing.bedrooms} bed · ${listing.bathrooms} bath`;
 
 /**
- * The daily digest of a saved search: the new matches, each linking to its page. Every
- * interpolated value is escaped (security.md → Injection).
+ * The daily digest of a saved search: the new matches, each linking to its page. Titles and names are user text,
+ * so every value interpolated into the HTML is escaped.
  */
 export const digestEmail = (
     to: string,

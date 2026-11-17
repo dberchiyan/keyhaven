@@ -1,20 +1,17 @@
-import { Prisma } from '../../../generated/prisma/client';
+import { MONEY_SCALE } from '@/common/persistence/money';
+import { toUtcDay } from '@/common/time/utc-day';
+import { Prisma } from '@/generated/prisma/client';
+
 import type { ListingCriteria, ManagedListingCriteria } from '../service/filter/listing.criteria';
-import { ListingStatus } from '../service/listing-status';
 import type { InsightTarget, ListingScope } from '../service/listing.types';
+import { ListingStatus } from '../service/listing-status';
+
+const INDEXED_SEARCH_TEXT = Prisma.sql`(l.title || ' ' || coalesce(l.neighborhood, '') || ' ' || l.zip)`;
 
 /**
- * The text the search box matches — the same expression as `idx_listings_search_trgm`, so the
- * planner can use it. City names are matched on the joined row (six of them).
- */
-const SEARCH_TEXT = Prisma.sql`(l.title || ' ' || coalesce(l.neighborhood, '') || ' ' || l.zip)`;
-
-const toDay = (date: Date): string => date.toISOString().slice(0, 10);
-
-/**
- * Search (tenant side) as SQL fragments for the raw query: published listings only, every
- * filter in the query (api.md), each search term typo-tolerant (`<%` is pg_trgm's word
- * similarity, index-backed on the listing text).
+ * SEC-6: published listings only, every filter in the query. Each term is typo-tolerant (`<%` is pg_trgm's word
+ * similarity) against the same expression as `idx_listings_search_trgm`, so the planner can use the index; city
+ * names are matched on the joined row (a handful of them).
  */
 export const publishedListingSql = (criteria: ListingCriteria): Prisma.Sql => {
     const conditions: Prisma.Sql[] = [
@@ -28,10 +25,10 @@ export const publishedListingSql = (criteria: ListingCriteria): Prisma.Sql => {
         conditions.push(Prisma.sql`l.property_type = ${criteria.propertyType}`);
     }
     if (criteria.priceMin !== undefined) {
-        conditions.push(Prisma.sql`l.price >= ${criteria.priceMin.toFixed(4)}::numeric`);
+        conditions.push(Prisma.sql`l.price >= ${criteria.priceMin.toFixed(MONEY_SCALE)}::numeric`);
     }
     if (criteria.priceMax !== undefined) {
-        conditions.push(Prisma.sql`l.price <= ${criteria.priceMax.toFixed(4)}::numeric`);
+        conditions.push(Prisma.sql`l.price <= ${criteria.priceMax.toFixed(MONEY_SCALE)}::numeric`);
     }
     if (criteria.bedroomsMin !== undefined) {
         conditions.push(Prisma.sql`l.bedrooms >= ${criteria.bedroomsMin}`);
@@ -39,28 +36,28 @@ export const publishedListingSql = (criteria: ListingCriteria): Prisma.Sql => {
     if (criteria.bathroomsMin !== undefined) {
         conditions.push(Prisma.sql`l.bathrooms >= ${criteria.bathroomsMin.toFixed(1)}::numeric`);
     }
-    if (criteria.petsAllowed !== undefined) {
-        conditions.push(Prisma.sql`l.pets_allowed = ${criteria.petsAllowed}`);
+    if (criteria.isPetFriendly !== undefined) {
+        conditions.push(Prisma.sql`l.is_pet_friendly = ${criteria.isPetFriendly}`);
     }
-    if (criteria.furnished !== undefined) {
-        conditions.push(Prisma.sql`l.furnished = ${criteria.furnished}`);
+    if (criteria.isFurnished !== undefined) {
+        conditions.push(Prisma.sql`l.is_furnished = ${criteria.isFurnished}`);
     }
-    if (criteria.parking !== undefined) {
-        conditions.push(Prisma.sql`l.parking = ${criteria.parking}`);
+    if (criteria.hasParking !== undefined) {
+        conditions.push(Prisma.sql`l.has_parking = ${criteria.hasParking}`);
     }
-    if (criteria.availableBy !== undefined) {
-        conditions.push(Prisma.sql`l.available_from <= ${toDay(criteria.availableBy)}::date`);
+    if (criteria.moveInAt !== undefined) {
+        conditions.push(Prisma.sql`l.available_at <= ${toUtcDay(criteria.moveInAt)}::date`);
     }
     if (criteria.publishedAfter !== undefined) {
         conditions.push(Prisma.sql`l.published_at > ${criteria.publishedAfter}`);
     }
     for (const term of criteria.searchTerms) {
-        conditions.push(Prisma.sql`(${term} <% ${SEARCH_TEXT} OR ${term} <% c.name)`);
+        conditions.push(Prisma.sql`(${term} <% ${INDEXED_SEARCH_TEXT} OR ${term} <% c.name)`);
     }
     return Prisma.join(conditions, ' AND ');
 };
 
-/** Whose listings: the scope goes into the query, never a filter afterwards (api.md). */
+/** SEC-6: the scope goes into the query, never a filter afterwards. */
 export const scopeWhere = (scope: ListingScope): Prisma.ListingWhereInput => {
     switch (scope.kind) {
         case 'LANDLORD':
@@ -86,7 +83,6 @@ export const managedListingWhere = (
     })),
 });
 
-/** Whose views and saves the insights count — the scope, or one listing — as a fragment on `l`. */
 export const insightTargetSql = (target: InsightTarget): Prisma.Sql => {
     switch (target.kind) {
         case 'LANDLORD':

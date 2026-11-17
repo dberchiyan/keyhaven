@@ -1,16 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PG_SESSION_OPTIONS } from '../src/common/persistence/pg-pool';
-import { PrismaClient } from '../src/generated/prisma/client';
-import { EventService } from '../src/modules/event/service/event.service';
-import type { LiveEvent } from '../src/modules/event/service/live-event';
+
+import { PG_SESSION_OPTIONS } from '@/common/persistence/pg-pool';
+import { PrismaClient } from '@/generated/prisma/client';
+import { EventService } from '@/modules/event/service/event.service';
+import type { LiveEvent } from '@/modules/event/service/live-event';
+
 import { bodyOf, Client, createTestApp, type TestApp } from './app';
 import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
 import { testDatabaseUrl } from './test-database';
 
 const HOUR_MS = 3_600_000;
 
-/** Every day 08:00–20:00 local, half-hour slots, no notice, two weeks ahead. */
 const hours = {
     slotMinutes: 30,
     noticeHours: 0,
@@ -25,11 +26,6 @@ interface SlotDay {
     slots: { startsAt: string }[];
 }
 
-/**
- * Messages: a conversation per viewing that opens when the owner confirms (nobody writes to a
- * stranger), the unread counts and read receipts of each side, one email per run of unread
- * messages, who may read and write, and the closed thread of a cancelled viewing.
- */
 describe('Messages (a conversation per confirmed viewing)', () => {
     let testApp: TestApp;
     let f: Fixtures;
@@ -92,9 +88,8 @@ describe('Messages (a conversation per confirmed viewing)', () => {
         expect((await landlord.postIdempotent(messages(viewingId), { body: 'Hello back' })).status).toBe(422);
         expect(bodyOf(await tenant.get('/api/v1/conversations'))).toMatchObject({ content: [] });
         expect(await unreadOf(landlord)).toBe(0);
-        // Readable, empty, closed to writing.
         expect(bodyOf(await tenant.get(messages(viewingId)))).toMatchObject({
-            open: false,
+            isOpen: false,
             messages: [],
             unread: 0,
         });
@@ -107,7 +102,7 @@ describe('Messages (a conversation per confirmed viewing)', () => {
                 {
                     id: viewingId,
                     kind: 'VIEWING',
-                    open: true,
+                    isOpen: true,
                     side: 'REQUESTER',
                     unread: 0,
                     lastMessage: null,
@@ -117,8 +112,6 @@ describe('Messages (a conversation per confirmed viewing)', () => {
             ],
         });
 
-        // The landlord's open tab hears of the message at once (the live channel), the stray
-        // other landlord's does not.
         const events = testApp.app.get(EventService);
         const heard: LiveEvent[] = [];
         const strangerHeard: LiveEvent[] = [];
@@ -143,7 +136,6 @@ describe('Messages (a conversation per confirmed viewing)', () => {
         expect(mail?.subject).toContain('New message');
         expect(mail?.text).toContain('parking');
         expect(mail?.text).toContain(`/messages/${viewingId}`);
-        // A second message while the first is unread: no second email.
         const sentBefore = testApp.emails.sent.length;
         expect((await tenant.postIdempotent(messages(viewingId), { body: 'And is the garage gated?' })).status).toBe(
             200,
@@ -164,7 +156,7 @@ describe('Messages (a conversation per confirmed viewing)', () => {
             ],
         });
         const thread = bodyOf(await landlord.get(messages(viewingId)));
-        expect(thread).toMatchObject({ side: 'RESPONDER', unread: 2, open: true });
+        expect(thread).toMatchObject({ side: 'RESPONDER', unread: 2, isOpen: true });
         expect(thread.messages).toHaveLength(2);
 
         const read = await landlord.post(`/api/v1/conversations/${viewingId}/message-reads`);
@@ -183,7 +175,6 @@ describe('Messages (a conversation per confirmed viewing)', () => {
         expect((bodyOf(await tenant.get(messages(viewingId))).messages as unknown[]).length).toBe(3);
         expect((await tenant.post(`/api/v1/conversations/${viewingId}/message-reads`)).status).toBe(200);
         expect(await unreadOf(tenant)).toBe(0);
-        // Reading again changes nothing; a fresh landlord reply is the next unread.
         expect((await tenant.post(`/api/v1/conversations/${viewingId}/message-reads`)).status).toBe(200);
     });
 
@@ -193,7 +184,6 @@ describe('Messages (a conversation per confirmed viewing)', () => {
         expect((await otherLandlord.get(messages(viewingId))).status).toBe(403);
         expect((await agent.get(messages(viewingId))).status).toBe(403);
         expect((await admin.get(messages(viewingId))).status).toBe(200);
-        // The staff reads a viewing's thread, never writes in it.
         expect((await admin.postIdempotent(messages(viewingId), { body: 'Hi' })).status).toBe(422);
         expect((await admin.get(messages(randomUUID()))).status).toBe(404);
         expect((bodyOf(await admin.get('/api/v1/conversations')).content as unknown[]).length).toBeGreaterThanOrEqual(
@@ -228,9 +218,8 @@ describe('Messages (a conversation per confirmed viewing)', () => {
             });
             expect(thanks.status).toBe(200);
             expect(bodyOf(await otherTenant.get('/api/v1/conversations'))).toMatchObject({
-                content: [{ id: held.id, open: true, unread: 0 }],
+                content: [{ id: held.id, isOpen: true, unread: 0 }],
             });
-            // The landlord's inbox lists the latest message first.
             const inbox = bodyOf(await landlord.get('/api/v1/conversations')).content as {
                 id: string;
             }[];
@@ -245,7 +234,7 @@ describe('Messages (a conversation per confirmed viewing)', () => {
         expect(closed.status).toBe(422);
         expect(String(bodyOf(closed).message)).toContain('closed');
         const thread = bodyOf(await tenant.get(messages(viewingId)));
-        expect(thread).toMatchObject({ open: false, viewing: { status: 'CANCELLED' } });
+        expect(thread).toMatchObject({ isOpen: false, viewing: { status: 'CANCELLED' } });
         expect(thread.messages).toHaveLength(3);
         expect(
             (bodyOf(await tenant.get('/api/v1/conversations')).content as { id: string }[]).some(
@@ -262,7 +251,7 @@ describe('Messages (a conversation per confirmed viewing)', () => {
         expect(started.status).toBe(200);
         expect(started.body).toMatchObject({
             kind: 'SUPPORT',
-            open: true,
+            isOpen: true,
             side: 'REQUESTER',
             viewing: null,
             support: { subject: 'Changing the address of a published home', closedAt: null },
@@ -271,7 +260,6 @@ describe('Messages (a conversation per confirmed viewing)', () => {
             unread: 0,
         });
         const id = String(bodyOf(started).id);
-        // The staff does not ask; a stranger's request is 403 (an unknown id 404 to the staff).
         expect((await admin.postIdempotent('/api/v1/conversations', { subject: 'x', body: 'y' })).status).toBe(403);
         expect((await tenant.get(messages(id))).status).toBe(403);
         expect((await otherLandlord.get(messages(id))).status).toBe(403);
@@ -305,11 +293,10 @@ describe('Messages (a conversation per confirmed viewing)', () => {
             counterpart: { kind: 'KEYHAVEN' },
         });
 
-        // Closed: read-only for both until reopened; closing a viewing's thread is not a thing.
         const closed = await admin.post(`/api/v1/conversations/${id}/closure`);
         expect(closed.status).toBe(200);
         expect(closed.body).toMatchObject({
-            open: false,
+            isOpen: false,
             support: { subject: 'Changing the address of a published home' },
         });
         expect(typeof (bodyOf(closed).support as { closedAt: unknown }).closedAt).toBe('string');
@@ -318,7 +305,7 @@ describe('Messages (a conversation per confirmed viewing)', () => {
         expect((await admin.post(`/api/v1/conversations/${viewingId}/closure`)).status).toBe(422);
         expect((await admin.post(`/api/v1/conversations/${id}/closure`)).status).toBe(200);
         expect(bodyOf(await admin.post(`/api/v1/conversations/${id}/reopening`))).toMatchObject({
-            open: true,
+            isOpen: true,
         });
         expect((await landlord.postIdempotent(messages(id), { body: 'More, thanks.' })).status).toBe(200);
         expect((await landlord.postIdempotent('/api/v1/conversations', { subject: '', body: 'x' })).status).toBe(400);

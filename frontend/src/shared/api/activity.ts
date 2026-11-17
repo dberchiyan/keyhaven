@@ -1,11 +1,27 @@
-/**
- * When the API last answered — the server counts a session's idle time from its last request,
- * so the client can tell how long the session has left (the idle-timeout warning).
- */
-let lastActivity = Date.now();
+interface ApiActivityClock {
+    mark: () => void;
+    lastAt: () => number;
+}
 
-export const markApiActivity = (): void => {
-    lastActivity = Date.now();
+const createApiActivityClock = (): ApiActivityClock => {
+    const state = { lastAt: Date.now() };
+    return {
+        mark: () => {
+            state.lastAt = Date.now();
+        },
+        lastAt: () => state.lastAt,
+    };
 };
 
-export const lastApiActivity = (): number => lastActivity;
+const clock = createApiActivityClock();
+
+/**
+ * Called on every API answer: the server counts a session's idle time from its last request, so
+ * the idle warning (NAV-3) measures from here.
+ */
+export const markApiActivity = (): void => {
+    clock.mark();
+};
+
+/** The instant (ms) of the last API answer — the base of the idle-timeout countdown. */
+export const lastApiActivity = (): number => clock.lastAt();

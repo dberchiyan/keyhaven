@@ -15,6 +15,7 @@ export const LISTING_LIMITS = {
 export const PROPERTY_TYPES = ['APARTMENT', 'HOUSE', 'CONDO', 'TOWNHOUSE', 'STUDIO'] as const;
 export const LISTING_KINDS = ['RENT', 'SALE'] as const;
 
+/** An empty optional field is sent as `null`, the wire's absence. */
 const optionalText = (max: number, tooLong: string) =>
     z
         .string()
@@ -22,7 +23,7 @@ const optionalText = (max: number, tooLong: string) =>
         .max(max, tooLong)
         .transform((value) => (value.length > 0 ? value : null));
 
-/** Counts typed into a field: digits only, validated before they become numbers. */
+/** Counts arrive as typed text: digits only are checked before they become numbers, so "1e3" never passes. */
 const count = (max: number, message: string) =>
     z
         .string()
@@ -39,9 +40,7 @@ const listingFormShape = z.object({
         .min(1, 'validation:description.required')
         .max(LISTING_LIMITS.description, 'validation:description.tooLong'),
     propertyType: z.enum(PROPERTY_TYPES, { error: 'validation:propertyType.required' }),
-    /** For rent (the price is a monthly rent) or for sale (the asking price). */
     kind: z.enum(LISTING_KINDS, { error: 'validation:kind.required' }),
-    /** Money stays a string (data.md): whole dollars or two places. */
     price: z
         .string()
         .trim()
@@ -67,20 +66,19 @@ const listingFormShape = z.object({
         .string()
         .trim()
         .regex(/^\d{5}(-\d{4})?$/, 'validation:zip.invalid'),
-    petsAllowed: z.boolean(),
-    furnished: z.boolean(),
-    parking: z.boolean(),
-    /** The move-in day: required for a rental, ignored for a home for sale. */
-    availableFrom: z.string(),
+    isPetFriendly: z.boolean(),
+    isFurnished: z.boolean(),
+    hasParking: z.boolean(),
+    availableAt: z.string(),
 });
 
-/** A rental needs its move-in day — the cross-field rule mirrors the backend's superRefine. */
+/** A rental needs its move-in day, a home for sale has none — the backend's superRefine, mirrored (FORM-1). */
 export const listingFormSchema = listingFormShape.superRefine((values, context) => {
-    if (values.kind === 'RENT' && !/^\d{4}-\d{2}-\d{2}$/.test(values.availableFrom)) {
+    if (values.kind === 'RENT' && !/^\d{4}-\d{2}-\d{2}$/.test(values.availableAt)) {
         context.addIssue({
             code: 'custom',
-            path: ['availableFrom'],
-            message: 'validation:availableFrom.invalid',
+            path: ['availableAt'],
+            message: 'validation:availableAt.invalid',
         });
     }
 });
@@ -89,28 +87,6 @@ export const LISTING_FORM_FIELDS = Object.keys(listingFormShape.shape);
 export type ListingFormValues = z.input<typeof listingFormSchema>;
 export type ListingFormOutput = z.output<typeof listingFormSchema>;
 
-/** The form's own messages, told apart from a server message by this guard. */
-const MESSAGE_SET: ReadonlySet<string> = new Set([
-    'validation:title.required',
-    'validation:title.tooLong',
-    'validation:description.required',
-    'validation:description.tooLong',
-    'validation:propertyType.required',
-    'validation:kind.required',
-    'validation:amount.invalid',
-    'validation:bedrooms.invalid',
-    'validation:bathrooms.invalid',
-    'validation:sizeSqft.invalid',
-    'validation:addressLine1.required',
-    'validation:addressLine1.tooLong',
-    'validation:addressLine2.tooLong',
-    'validation:city.required',
-    'validation:neighborhood.tooLong',
-    'validation:zip.invalid',
-    'validation:availableFrom.invalid',
-]);
-export const isListingValidationMessage = (message: string): message is 'validation:title.required' =>
-    MESSAGE_SET.has(message);
-
-/** Mirrors backend CreateSavedSearchRequestSchema (saved-search/controller/dto/saved-search.request.ts). */
-export const SAVED_SEARCH_NAME_MAX_LENGTH = 80;
+export const BED_FILTER_OPTIONS = ['0', '1', '2', '3', '4'] as const;
+export const BATH_FILTER_OPTIONS = ['1', '1.5', '2', '3'] as const;
+export const PRICE_FILTER_MAX_DIGITS = 9;

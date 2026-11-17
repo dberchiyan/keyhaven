@@ -1,13 +1,15 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import { UuidParam } from '../../../common/dto/uuid-param';
-import { ApiErrors } from '../../../common/exception/api-errors.decorator';
-import { Idempotent, IdempotencyExempt } from '../../../common/idempotency/idempotent.decorator';
-import { CurrentPrincipal } from '../../../common/security/current-principal.decorator';
-import { can } from '../../../common/security/policies';
-import type { Principal } from '../../../common/security/principal';
-import { Authorize } from '../../../common/security/security.decorators';
+
+import { UuidParam } from '@/common/dto/uuid-param';
+import { ApiErrors } from '@/common/exception/api-errors.decorator';
+import { IdempotencyExempt, Idempotent } from '@/common/idempotency/idempotent.decorator';
+import { CurrentPrincipal } from '@/common/security/current-principal.decorator';
+import { can } from '@/common/security/policies';
+import type { Principal } from '@/common/security/principal';
+import { Authorize } from '@/common/security/security.decorators';
+
 import { SavedSearchService } from '../service/saved-search.service';
 import { CreateSavedSearchRequest, UpdateSavedSearchRequest } from './dto/saved-search.request';
 import { DigestSummaryResponse, SavedSearchListResponse, SavedSearchResponse } from './dto/saved-search.response';
@@ -54,7 +56,7 @@ export class SavedSearchController {
             await this.savedSearchService.create(principal.userId, {
                 name: request.name,
                 criteria: request.criteria,
-                emailAlerts: request.emailAlerts,
+                hasEmailAlerts: request.hasEmailAlerts,
             }),
         );
     }
@@ -80,7 +82,7 @@ export class SavedSearchController {
         return toSavedSearchResponse(
             await this.savedSearchService.update(principal.userId, savedSearchId, {
                 name: request.name,
-                emailAlerts: request.emailAlerts,
+                hasEmailAlerts: request.hasEmailAlerts,
                 version: request.version,
             }),
         );

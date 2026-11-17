@@ -1,12 +1,16 @@
+import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Injectable } from '@nestjs/common';
-import type { PrismaService } from '../../../common/persistence/prisma.service';
-import type { NewUser } from '../service/user.types';
+
+import type { PrismaService } from '@/common/persistence/prisma.service';
+
+import type { AnonymisedUser, NewUser } from '../service/user.types';
 import {
     type UserCredentialsRecord,
-    type UserProfileRecord,
     userCredentialsSelect,
+    type UserExportRecord,
+    userExportSelect,
+    type UserProfileRecord,
     userProfileSelect,
 } from './record/user.record';
 
@@ -26,8 +30,13 @@ export class UserRepository {
         return this.txHost.tx.user.findUnique({ where: { id }, select: userProfileSelect });
     }
 
-    existsByEmail(email: string): Promise<boolean> {
-        return this.txHost.tx.user.count({ where: { email } }).then((count) => count > 0);
+    findExportById(id: string): Promise<UserExportRecord | null> {
+        return this.txHost.tx.user.findUnique({ where: { id }, select: userExportSelect });
+    }
+
+    async existsByEmail(email: string): Promise<boolean> {
+        const count = await this.txHost.tx.user.count({ where: { email } });
+        return count > 0;
     }
 
     /** Returns the new user's id. */
@@ -66,5 +75,22 @@ export class UserRepository {
             data: { emailVerifiedAt: at, updatedBy: id, version: { increment: 1 } },
         });
         return count > 0;
+    }
+
+    /** DATA-23: the contacts are overwritten in place (the row stays: audit rows and messages reference it). */
+    async anonymise(id: string, user: AnonymisedUser): Promise<void> {
+        await this.txHost.tx.user.updateMany({
+            where: { id },
+            data: {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                phone: null,
+                emailVerifiedAt: null,
+                passwordHash: user.passwordHash,
+                updatedBy: id,
+                version: { increment: 1 },
+            },
+        });
     }
 }

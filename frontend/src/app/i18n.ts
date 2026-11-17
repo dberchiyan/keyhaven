@@ -1,16 +1,17 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { env } from '@/shared/config/env';
+
 import enAuth from '@/locales/en/auth.json';
 import enCommon from '@/locales/en/common.json';
 import enErrors from '@/locales/en/errors.json';
 import enListing from '@/locales/en/listing.json';
 import enMessage from '@/locales/en/message.json';
-import enSavedSearch from '@/locales/en/savedSearch.json';
+import enSavedSearch from '@/locales/en/saved-search.json';
 import enSettings from '@/locales/en/settings.json';
 import enShell from '@/locales/en/shell.json';
 import enValidation from '@/locales/en/validation.json';
 import enViewing from '@/locales/en/viewing.json';
+import { env } from '@/shared/config/env';
 
 export const SUPPORTED_LOCALES = ['en'] as const;
 export const DEFAULT_NAMESPACE = 'common';
@@ -45,4 +46,4 @@ await i18n.use(initReactI18next).init({
     returnNull: false,
 });
 
-export default i18n;
+export { i18n };

@@ -1,6 +1,7 @@
 import { HttpStatus, Injectable, type OnApplicationBootstrap, RequestMethod } from '@nestjs/common';
 import { HTTP_CODE_METADATA, METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
+
 import { IDEMPOTENCY_EXEMPT_KEY, IDEMPOTENT_KEY } from '../idempotency/idempotent.decorator';
 import type { Policy } from './policy';
 import { POLICY_KEY, PUBLIC_KEY } from './security.decorators';
@@ -9,7 +10,7 @@ type MetadataTarget = Parameters<Reflector['get']>[1];
 
 const PATH_ID_PARAM = /:([A-Za-z]+Id)\b/g;
 
-/** Refuses to boot when a handler breaks the security contract (security.md). */
+/** Refuses to boot when a handler breaks the security contract (API-1, API-5, SEC-3, PLAT-6). */
 @Injectable()
 export class RouteAuditService implements OnApplicationBootstrap {
     constructor(

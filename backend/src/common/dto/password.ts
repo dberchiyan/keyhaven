@@ -1,10 +1,8 @@
 import { z } from 'zod';
 
 export const PASSWORD_MAX_LENGTH = 128;
-/** Password rules (product decision): length plus upper- and lower-case letters, a digit and a symbol. */
 export const PASSWORD_MIN_LENGTH = 12;
 
-/** A new password (registration, password change) — the client shows the same rules live. */
 export const NewPasswordSchema = z
     .string({ error: 'validation.newPassword.required' })
     .min(PASSWORD_MIN_LENGTH, 'validation.newPassword.tooShort')
@@ -13,3 +11,9 @@ export const NewPasswordSchema = z
     .regex(/\p{Ll}/u, 'validation.newPassword.needsLowercase')
     .regex(/\p{Nd}/u, 'validation.newPassword.needsDigit')
     .regex(/[^\p{L}\p{Nd}\s]/u, 'validation.newPassword.needsSymbol');
+
+/** AUTH-4: the password one already has, asked again before a sensitive change — any value, only its length bounded. */
+export const CurrentPasswordSchema = z
+    .string({ error: 'validation.currentPassword.required' })
+    .min(1, 'validation.currentPassword.required')
+    .max(PASSWORD_MAX_LENGTH, 'validation.password.tooLong');

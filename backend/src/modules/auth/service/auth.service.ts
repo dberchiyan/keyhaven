@@ -1,27 +1,28 @@
-import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
+import { Transactional } from '@nestjs-cls/transactional';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+
+import type { Cursor } from '@/common/dto/cursor';
 import {
     BusinessRuleException,
     InvalidCredentialsException,
     NotAuthenticatedException,
-} from '../../../common/exception/api.exception';
-import type { Pageable } from '../../../common/dto/pageable';
-import { MetricsService } from '../../../common/observability/metrics.service';
-import type { Principal } from '../../../common/security/principal';
-import { loginRateLimitKey, RateLimitName } from '../../../common/security/rate-limit';
-import { RateLimitService } from '../../../common/security/rate-limit.service';
-import { AuditAction, AuditTargetType } from '../../audit/service/audit-action';
-import { AuditField, auditValue, changeOf } from '../../audit/service/audit-change';
-import type { AuditEventSortField } from '../../audit/service/audit-sort';
-import { AuditService } from '../../audit/service/audit.service';
-import type { SecurityEventPage } from '../../audit/service/audit.types';
-import type { SecurityCategory } from '../../audit/service/security-category';
-import { authoritiesFor, type UserRole } from '../../user/service/user-role';
-import { UserService } from '../../user/service/user.service';
-import type { UserProfile } from '../../user/service/user.types';
+} from '@/common/exception/api.exception';
+import { MetricsService } from '@/common/observability/metrics.service';
+import type { Principal } from '@/common/security/principal';
+import { loginRateLimitKey, RateLimitName } from '@/common/security/rate-limit';
+import { RateLimitService } from '@/common/security/rate-limit.service';
+import { AuditService } from '@/modules/audit/service/audit.service';
+import type { SecurityEventPage } from '@/modules/audit/service/audit.types';
+import { AuditAction, AuditTargetType } from '@/modules/audit/service/audit-action';
+import { AuditField, auditValue, changeOf } from '@/modules/audit/service/audit-change';
+import type { SecurityCategory } from '@/modules/audit/service/security-category';
+import { UserService } from '@/modules/user/service/user.service';
+import type { UserProfile } from '@/modules/user/service/user.types';
+import { authoritiesFor, type UserRole } from '@/modules/user/service/user-role';
+
 import { PasswordHasher } from './password-hasher.service';
-import { type StartedSession, SessionService } from './session.service';
+import { SessionService, type StartedSession } from './session.service';
 
 export interface LoginCommand {
     email: string;
@@ -62,18 +63,20 @@ export class AuthService {
         @InjectPinoLogger(AuthService.name) private readonly logger: PinoLogger,
     ) {}
 
+    /**
+     * AUTH-4: an unknown email runs a dummy verification, so timing reveals no account. A wrong password for a real
+     * account goes to its owner's security log; when that was the last allowed try from this IP, the lock is logged
+     * too (AUTH-6).
+     */
     async login(input: LoginCommand): Promise<LoginResult> {
         const command = { ...input, email: input.email.toLowerCase() };
         const credentials = await this.userService.findCredentialsByEmail(command.email);
-        // An unknown email runs a dummy verification — no timing oracle (security.md → Passwords).
         if (!credentials) {
             await this.passwordHasher.verifyDummy(command.password);
             throw this.loginFailed(command);
         }
         if (!(await this.passwordHasher.verify(credentials.passwordHash, command.password))) {
-            // A wrong password for a real account goes to its owner's security log.
             await this.security(AuditAction.AUTH_SIGN_IN_FAILED, credentials.id, null);
-            // That was the last allowed try from this IP: sign-in is now blocked there for a while.
             if (
                 await this.rateLimitService.isExhausted(
                     RateLimitName.LOGIN,
@@ -119,8 +122,8 @@ export class AuthService {
 
     /**
      * Changes the caller's password. The current one is checked first (rate-limited per user);
-     * then every session of the user ends — this browser gets a fresh one (security.md →
-     * Passwords: a password change deletes all sessions).
+     * then every session of the user ends — this browser gets a fresh one (AUTH-3). DATA-11: the new hash is
+     * computed before the transaction opens.
      */
     async changePassword(command: ChangePasswordCommand): Promise<StartedSession> {
         const credentials = await this.userService.findCredentialsById(command.userId);
@@ -131,31 +134,10 @@ export class AuthService {
         if (command.currentPassword === command.newPassword) {
             throw new BusinessRuleException('errors.auth.samePassword', {}, 'newPassword');
         }
-        // Hashing is CPU work, done before the transaction opens.
         const passwordHash = await this.passwordHasher.hash(command.newPassword);
         const session = await this.replacePassword(credentials, passwordHash, command);
         await this.rateLimitService.reset(RateLimitName.PASSWORD_CHANGE, [credentials.id]);
         this.logger.info({ userId: credentials.id, ip: command.ip }, 'Password changed');
-        return session;
-    }
-
-    /** The new hash, every old session gone and a new one for this browser — all or nothing. */
-    @Transactional()
-    private async replacePassword(
-        user: { id: string; role: UserRole },
-        passwordHash: string,
-        command: Pick<ChangePasswordCommand, 'ip' | 'userAgent'>,
-    ): Promise<StartedSession> {
-        await this.userService.updatePasswordHash(user.id, passwordHash);
-        await this.sessionService.endAllForUsers([user.id]);
-        const session = await this.sessionService.start({
-            userId: user.id,
-            authorities: authoritiesFor(user.role),
-            ip: command.ip,
-            userAgent: command.userAgent,
-            presentedToken: undefined,
-        });
-        await this.security(AuditAction.AUTH_PASSWORD_CHANGED, user.id, user.id);
         return session;
     }
 
@@ -214,10 +196,11 @@ export class AuthService {
     /** The caller's security log, newest first. */
     securityLog(
         principal: Principal,
-        category: SecurityCategory | null,
-        pageable: Pageable<AuditEventSortField>,
+        category: SecurityCategory | undefined,
+        after: Cursor | undefined,
+        size: number,
     ): Promise<SecurityEventPage> {
-        return this.auditService.findSecurityPage(principal.userId, category, pageable);
+        return this.auditService.findSecurityPage(principal.userId, category, after, size);
     }
 
     /** One security-log entry about `userId`; IP and browser come from the request context. */
@@ -230,13 +213,33 @@ export class AuthService {
         });
     }
 
+    /** Sessions cascade with their user, so a missing user only happens in a race with deletion. */
     async currentUser(userId: string): Promise<UserProfile> {
         const user = await this.userService.findProfileById(userId);
         if (!user) {
-            // Sessions cascade with their user, so this only happens in a race with deletion.
             throw new NotAuthenticatedException();
         }
         return user;
+    }
+
+    /** The new hash, every old session gone and a new one for this browser — all or nothing. */
+    @Transactional()
+    private async replacePassword(
+        user: { id: string; role: UserRole },
+        passwordHash: string,
+        command: Pick<ChangePasswordCommand, 'ip' | 'userAgent'>,
+    ): Promise<StartedSession> {
+        await this.userService.updatePasswordHash(user.id, passwordHash);
+        await this.sessionService.endAllForUsers([user.id]);
+        const session = await this.sessionService.start({
+            userId: user.id,
+            authorities: authoritiesFor(user.role),
+            ip: command.ip,
+            userAgent: command.userAgent,
+            presentedToken: undefined,
+        });
+        await this.security(AuditAction.AUTH_PASSWORD_CHANGED, user.id, user.id);
+        return session;
     }
 
     private loginFailed(command: LoginCommand): InvalidCredentialsException {

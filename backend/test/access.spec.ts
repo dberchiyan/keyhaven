@@ -1,12 +1,8 @@
 import { randomUUID } from 'node:crypto';
+
 import { bodyOf, Client, createTestApp, type TestApp } from './app';
 import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
 
-/**
- * The access matrix (TASK → M0 "access tests pass for every role"): each role sees and changes
- * only what it may, checked on the server — foreign ids answer 403 (ownership) or 404 (admin
- * style, like an unknown id), tenants never reach the dashboard, only admins suspend.
- */
 describe('Access by role', () => {
     let testApp: TestApp;
     let f: Fixtures;
@@ -42,7 +38,6 @@ describe('Access by role', () => {
             const response = await anonymous.get('/api/v1/managed-listings');
             expect(response.status).toBe(401);
             expect(response.body).toMatchObject({ error: 'UNAUTHORIZED' });
-            // Published homes are public: visitors browse without an account (CONTEXT.md).
             expect((await anonymous.get('/api/v1/listings')).status).toBe(200);
         });
 
@@ -147,7 +142,6 @@ describe('Access by role', () => {
             const again = await landlord.post(`/api/v1/managed-listings/${f.landlordDraft}/publication`);
             expect(again.status).toBe(200);
             expect(again.body).toMatchObject({ status: 'PUBLISHED', version: bodyOf(published).version });
-            // Now everyone finds it.
             expect((await tenant.get(`/api/v1/listings/${f.landlordDraft}`)).status).toBe(200);
             const unpublished = await landlord.post(`/api/v1/managed-listings/${f.landlordDraft}/unpublication`);
             expect(unpublished.status).toBe(200);

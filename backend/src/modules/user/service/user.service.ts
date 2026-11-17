@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common';
+
 import { UserRepository } from '../repository/user.repository';
+import type { NewUser, UserCredentials, UserExport, UserProfile } from './user.types';
 import { isUserRole, type UserRole } from './user-role';
-import type { NewUser, UserCredentials, UserProfile } from './user.types';
+
+/** Guarded by ck_users_role: an unknown role means the schema and the code disagree. */
+const ERASED_FIRST_NAME = 'Deleted';
+const ERASED_LAST_NAME = 'account';
+
+/** DATA-23: unique per account (uq_users_email) and on a reserved domain that can never receive mail (RFC 2606). */
+const erasedEmailOf = (userId: string): string => `erased-${userId}@erased.keyhaven.invalid`;
 
 const toRole = (role: string): UserRole => {
     if (!isUserRole(role)) {
-        // Guarded by ck_users_role; reaching this means the schema and code disagree.
         throw new Error('Unknown user role in database');
     }
     return role;
@@ -29,6 +36,37 @@ export class UserService {
     async findProfileById(id: string): Promise<UserProfile | null> {
         const user = await this.userRepository.findProfileById(id);
         return user ? { ...user, role: toRole(user.role) } : null;
+    }
+
+    /** DATA-23: the account's own fields for the person's export. */
+    async findExportById(id: string): Promise<UserExport | null> {
+        const user = await this.userRepository.findExportById(id);
+        if (!user) {
+            return null;
+        }
+        return {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phone: user.phone,
+            role: toRole(user.role),
+            agencyName: user.agency?.name ?? null,
+            emailVerifiedAt: user.emailVerifiedAt,
+            createdAt: user.createdAt,
+        };
+    }
+
+    /**
+     * DATA-23: name, email and phone replaced, the password hash with one nobody knows (computed before the
+     * transaction, DATA-11). The id survives — history and conversations reference it.
+     */
+    anonymise(id: string, unusablePasswordHash: string): Promise<void> {
+        return this.userRepository.anonymise(id, {
+            firstName: ERASED_FIRST_NAME,
+            lastName: ERASED_LAST_NAME,
+            email: erasedEmailOf(id),
+            passwordHash: unusablePasswordHash,
+        });
     }
 
     existsByEmail(email: string): Promise<boolean> {

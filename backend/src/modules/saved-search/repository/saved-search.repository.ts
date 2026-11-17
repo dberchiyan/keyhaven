@@ -1,13 +1,14 @@
+import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Injectable } from '@nestjs/common';
-import type { PrismaService } from '../../../common/persistence/prisma.service';
-import type { Prisma } from '../../../generated/prisma/client';
+
+import type { PrismaService } from '@/common/persistence/prisma.service';
+import type { Prisma } from '@/generated/prisma/client';
+
+import { MAX_SAVED_SEARCHES } from '../service/saved-search-limits';
 import { type SavedSearchRecord, savedSearchSelect } from './record/saved-search.record';
 
-/** A person keeps at most this many searches (the list is unpaged). */
-export const MAX_SAVED_SEARCHES = 20;
-/** Searches a digest run handles at most (bounded jobs, platform.md). */
+/** DATA-40: a digest run is bounded; the rest wait for the next day's run. */
 const MAX_DIGEST_PER_RUN = 500;
 
 @Injectable()
@@ -31,13 +32,23 @@ export class SavedSearchRepository {
         });
     }
 
+    async deleteByUser(userId: string): Promise<number> {
+        const { count } = await this.txHost.tx.savedSearch.deleteMany({ where: { userId } });
+        return count;
+    }
+
     countByUser(userId: string): Promise<number> {
         return this.txHost.tx.savedSearch.count({ where: { userId } });
     }
 
-    async create(userId: string, name: string, criteria: Prisma.InputJsonValue, emailAlerts: boolean): Promise<string> {
+    async create(
+        userId: string,
+        name: string,
+        criteria: Prisma.InputJsonValue,
+        hasEmailAlerts: boolean,
+    ): Promise<string> {
         const { id } = await this.txHost.tx.savedSearch.create({
-            data: { userId, name, criteria, emailAlerts, createdBy: userId, updatedBy: userId },
+            data: { userId, name, criteria, hasEmailAlerts, createdBy: userId, updatedBy: userId },
             select: { id: true },
         });
         return id;
@@ -48,7 +59,7 @@ export class SavedSearchRepository {
         userId: string,
         id: string,
         version: number,
-        data: { name: string; emailAlerts: boolean },
+        data: { name: string; hasEmailAlerts: boolean },
     ): Promise<boolean> {
         const { count } = await this.txHost.tx.savedSearch.updateMany({
             where: { id, userId, version },
@@ -64,7 +75,7 @@ export class SavedSearchRepository {
     /** Searches with alerts on, oldest notification first (never-notified ones first of all). */
     findForDigest(): Promise<SavedSearchRecord[]> {
         return this.txHost.tx.savedSearch.findMany({
-            where: { emailAlerts: true },
+            where: { hasEmailAlerts: true },
             select: savedSearchSelect,
             orderBy: [{ lastNotifiedAt: { sort: 'asc', nulls: 'first' } }, { id: 'asc' }],
             take: MAX_DIGEST_PER_RUN,

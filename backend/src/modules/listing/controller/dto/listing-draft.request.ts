@@ -1,17 +1,25 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { AmountInputSchema } from '../../../../common/dto/money';
-import { LISTING_KINDS } from '../../service/listing-kind';
-import { PROPERTY_TYPES } from '../../service/property-type';
 
-/** Mirrors the columns of `listings` (data.md); the frontend mirrors this schema. */
+import {
+    ADDRESS_LINE_MAX_LENGTH,
+    LISTING_DESCRIPTION_MAX_LENGTH,
+    LISTING_TITLE_MAX_LENGTH,
+    MAX_BEDROOMS,
+    NEIGHBORHOOD_MAX_LENGTH,
+    ZIP_MAX_LENGTH,
+} from '@/common/dto/limits';
+import { AmountInputSchema } from '@/common/dto/money';
+import { LISTING_KINDS } from '@/modules/listing/service/listing-kind';
+import { PROPERTY_TYPES } from '@/modules/listing/service/property-type';
+
 export const LISTING_LIMITS = {
-    title: 120,
-    description: 4000,
-    addressLine: 255,
-    neighborhood: 100,
-    zip: 10,
-    bedrooms: 20,
+    title: LISTING_TITLE_MAX_LENGTH,
+    description: LISTING_DESCRIPTION_MAX_LENGTH,
+    addressLine: ADDRESS_LINE_MAX_LENGTH,
+    neighborhood: NEIGHBORHOOD_MAX_LENGTH,
+    zip: ZIP_MAX_LENGTH,
+    bedrooms: MAX_BEDROOMS,
     sizeSqft: 100_000,
 } as const;
 
@@ -36,16 +44,13 @@ export const ListingDraftSchema = z.object({
         .min(1, 'validation.description.required')
         .max(LISTING_LIMITS.description, 'validation.description.tooLong'),
     propertyType: z.enum(PROPERTY_TYPES, { error: 'validation.propertyType.required' }),
-    /** For rent or for sale. */
     kind: z.enum(LISTING_KINDS, { error: 'validation.kind.required' }),
-    /** Monthly rent (RENT) or the asking price (SALE) in USD, typed as "1850" or "1850.50". */
     price: AmountInputSchema,
     bedrooms: z
         .number({ error: 'validation.bedrooms.invalid' })
         .int('validation.bedrooms.invalid')
         .min(0, 'validation.bedrooms.invalid')
         .max(LISTING_LIMITS.bedrooms, 'validation.bedrooms.invalid'),
-    /** "1", "1.5", "2" … */
     bathrooms: z
         .string({ error: 'validation.bathrooms.invalid' })
         .regex(/^(?:[1-9]|1\d)(?:\.5)?$|^20$/, 'validation.bathrooms.invalid'),
@@ -66,20 +71,19 @@ export const ListingDraftSchema = z.object({
         .string({ error: 'validation.zip.required' })
         .trim()
         .regex(/^\d{5}(-\d{4})?$/, 'validation.zip.invalid'),
-    petsAllowed: z.boolean({ error: 'validation.invalid' }),
-    furnished: z.boolean({ error: 'validation.invalid' }),
-    parking: z.boolean({ error: 'validation.invalid' }),
-    /** The move-in day — required for a home for rent, ignored for one for sale. */
-    availableFrom: z.iso.date({ error: 'validation.availableFrom.invalid' }).nullable().optional(),
+    isPetFriendly: z.boolean({ error: 'validation.invalid' }),
+    isFurnished: z.boolean({ error: 'validation.invalid' }),
+    hasParking: z.boolean({ error: 'validation.invalid' }),
+    availableAt: z.iso.date({ error: 'validation.availableAt.invalid' }).nullable().optional(),
 });
 
-/** A home for rent needs its move-in day (checked here, so the field gets the message). */
-const moveInDayRequired = (draft: { kind: string; availableFrom?: string | null }, context: z.RefinementCtx): void => {
-    if (draft.kind === 'RENT' && !draft.availableFrom) {
+/** A home for rent needs its move-in day; checked here so the field itself gets the message. */
+const moveInDayRequired = (draft: { kind: string; availableAt?: string | null }, context: z.RefinementCtx): void => {
+    if (draft.kind === 'RENT' && !draft.availableAt) {
         context.addIssue({
             code: 'custom',
-            path: ['availableFrom'],
-            message: 'validation.availableFrom.invalid',
+            path: ['availableAt'],
+            message: 'validation.availableAt.invalid',
         });
     }
 };

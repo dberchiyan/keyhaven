@@ -7,14 +7,13 @@ export const IDEMPOTENCY_EXEMPT_KEY = 'idempotency:exempt';
 export const IDEMPOTENCY_HEADER = 'Idempotency-Key';
 
 export interface IdempotentOptions {
-    /**
-     * Top-level response fields never stored for replay (secrets shown once, e.g. a generated
-     * password): a replay answers them as null.
-     */
     redact?: readonly string[];
 }
 
-/** Side-effecting POST: requires an Idempotency-Key and replays the stored response on retry. */
+/**
+ * API-5: requires an Idempotency-Key and replays the stored response on retry. `redact` names top-level fields
+ * never stored for replay (secrets shown once): a replay answers them as null.
+ */
 export const Idempotent = (options: IdempotentOptions = {}): MethodDecorator =>
     applyDecorators(
         SetMetadata(IDEMPOTENT_KEY, true),

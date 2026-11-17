@@ -1,5 +1,6 @@
-import type { EmailMessage } from '../../email/service/email-sender';
-import type { Viewing, ViewingAudience } from './viewing.types';
+import type { EmailMessage } from '@/modules/email/service/email-sender';
+
+import type { Viewing, ViewingAudience, ViewingRecipient as Recipient } from './viewing.types';
 
 const escapeHtml = (value: string): string =>
     value
@@ -29,14 +30,9 @@ const place = (viewing: Viewing): string =>
 const tenantName = (viewing: Viewing): string =>
     viewing.tenant ? `${viewing.tenant.firstName} ${viewing.tenant.lastName}` : 'A tenant';
 
-interface Recipient {
-    email: string;
-    firstName: string;
-}
-
 /**
- * One layout for every viewing email: a heading, the lines, a button. Every interpolated value
- * is escaped (security.md → Injection); the text body carries the same information.
+ * One layout for every viewing email: a heading, the lines, a button. Every interpolated value is
+ * HTML-escaped (names and notes are user text); the text body carries the same information.
  */
 const viewingEmail = (
     to: string,

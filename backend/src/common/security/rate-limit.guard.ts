@@ -2,27 +2,30 @@ import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/com
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { ClsService } from 'nestjs-cls';
+
 import type { RequestContext } from '../context/request-context';
 import { loginRateLimitKey, RATE_LIMIT_KEY, RateLimitName } from './rate-limit';
 import { RateLimitService } from './rate-limit.service';
 import { clientIp } from './request-client';
 
 const readBodyField = (body: unknown, field: string): unknown =>
-    typeof body === 'object' && body !== null && field in body ? (body as Record<string, unknown>)[field] : undefined;
+    typeof body === 'object' && body !== null && field in body ? (Reflect.get(body, field) as unknown) : undefined;
 
-/** Limiters keyed by the client IP (public endpoints, before any session exists). */
-const PER_IP: ReadonlySet<RateLimitName> = new Set([
+const IP_KEYED_LIMITS: ReadonlySet<RateLimitName> = new Set([
     RateLimitName.REGISTRATION,
     RateLimitName.PASSWORD_RESET_REQUEST,
     RateLimitName.TOKEN_REDEMPTION,
 ]);
 
-/** Limiters keyed by the signed-in user. */
-const PER_USER: ReadonlySet<RateLimitName> = new Set([
+const USER_KEYED_LIMITS: ReadonlySet<RateLimitName> = new Set([
     RateLimitName.PASSWORD_CHANGE,
     RateLimitName.EMAIL_VERIFICATION_REQUEST,
 ]);
 
+/**
+ * AUTH-6: public endpoints are limited by the client IP (no session exists yet), account actions by the user; every
+ * other route gets the per-session ceiling, or the same ceiling keyed by the visitor's address on public routes.
+ */
 @Injectable()
 export class RateLimitGuard implements CanActivate {
     constructor(
@@ -42,19 +45,18 @@ export class RateLimitGuard implements CanActivate {
             );
             return true;
         }
-        if (name && PER_IP.has(name)) {
+        if (name && IP_KEYED_LIMITS.has(name)) {
             await this.rateLimitService.consume(name, [clientIp(request)]);
             return true;
         }
         const principal = this.cls.get('principal');
-        if (name && PER_USER.has(name) && principal) {
+        if (name && USER_KEYED_LIMITS.has(name) && principal) {
             await this.rateLimitService.consume(name, [principal.userId]);
             return true;
         }
         if (principal) {
             await this.rateLimitService.consumeSession(principal.sessionId);
         } else {
-            // Public routes (the catalogue): the same ceiling, keyed by the visitor's address.
             await this.rateLimitService.consumeVisitor(clientIp(request));
         }
         return true;

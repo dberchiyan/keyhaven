@@ -1,4 +1,4 @@
-import type { Prisma } from '../../../../generated/prisma/client';
+import type { Prisma } from '@/generated/prisma/client';
 
 export const userCredentialsSelect = {
     id: true,
@@ -21,3 +21,15 @@ export const userProfileSelect = {
     agency: { select: { id: true, name: true } },
 } satisfies Prisma.UserSelect;
 export type UserProfileRecord = Prisma.UserGetPayload<{ select: typeof userProfileSelect }>;
+
+export const userExportSelect = {
+    firstName: true,
+    lastName: true,
+    email: true,
+    phone: true,
+    role: true,
+    emailVerifiedAt: true,
+    createdAt: true,
+    agency: { select: { name: true } },
+} satisfies Prisma.UserSelect;
+export type UserExportRecord = Prisma.UserGetPayload<{ select: typeof userExportSelect }>;

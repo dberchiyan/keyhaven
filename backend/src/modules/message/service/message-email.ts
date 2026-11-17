@@ -1,6 +1,7 @@
-import type { EmailMessage } from '../../email/service/email-sender';
-import { PREVIEW_LENGTH } from './message-limits';
+import type { EmailMessage } from '@/modules/email/service/email-sender';
+
 import type { Conversation, Message } from './message.types';
+import { PREVIEW_LENGTH } from './message-limits';
 
 const escapeHtml = (value: string): string =>
     value
@@ -42,7 +43,7 @@ const topicOf = (conversation: Conversation): string =>
 /**
  * To the other side: someone wrote in a conversation. Sent only when the recipient had nothing
  * unread there (one email per run of messages, not one per message). Every interpolated value
- * is escaped (security.md → Injection).
+ * is HTML-escaped: names, subjects and messages are user text.
  */
 export const newMessageEmail = (
     recipient: Recipient,

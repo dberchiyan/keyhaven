@@ -5,6 +5,7 @@ import type { Request, Response } from 'express';
 import { ClsService } from 'nestjs-cls';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { catchError, from, type Observable, of, switchMap, throwError } from 'rxjs';
+
 import type { RequestContext } from '../context/request-context';
 import {
     IdempotencyKeyReusedException,
@@ -13,10 +14,12 @@ import {
     RequestInProgressException,
 } from '../exception/api.exception';
 import { MetricsService } from '../observability/metrics.service';
-import { IdempotencyKeyStore } from '../persistence/idempotency-key.store';
+import { type ClaimResult, IdempotencyKeyStore } from '../persistence/idempotency-key.store';
+import { MS_PER_DAY } from '../time/units';
 import { IDEMPOTENCY_HEADER, IDEMPOTENCY_REDACT_KEY, IDEMPOTENT_KEY } from './idempotent.decorator';
 
-const KEY_TTL_MS = 24 * 60 * 60 * 1000;
+const KEY_TTL_MS = MS_PER_DAY;
+const ENDPOINT_MAX_LENGTH = 255;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** The body as stored for replay: redacted top-level fields become null. */
@@ -31,10 +34,10 @@ const endpointOf = (request: Request): string => {
         typeof route === 'object' && route !== null && 'path' in route && typeof route.path === 'string'
             ? route.path
             : request.path;
-    return `${request.method} ${path}`.slice(0, 255);
+    return `${request.method} ${path}`.slice(0, ENDPOINT_MAX_LENGTH);
 };
 
-/** api.md → Idempotency: claim before executing, store after, replay on repeat. */
+/** API-5: claim before executing, store after, replay on repeat. */
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {
     constructor(
@@ -66,44 +69,47 @@ export class IdempotencyInterceptor implements NestInterceptor {
         const requestHash = createHash('sha256')
             .update(`${endpoint}\n${JSON.stringify(request.body ?? null)}`)
             .digest('hex');
+        const claim = this.store.claim({
+            key: key.toLowerCase(),
+            userId: principal.userId,
+            endpoint,
+            requestHash,
+            expiresAt: new Date(Date.now() + KEY_TTL_MS),
+        });
+        return from(claim).pipe(switchMap((result) => this.answer(result, next, response, { endpoint, redact })));
+    }
 
-        return from(
-            this.store.claim({
-                key: key.toLowerCase(),
-                userId: principal.userId,
-                endpoint,
-                requestHash,
-                expiresAt: new Date(Date.now() + KEY_TTL_MS),
-            }),
-        ).pipe(
-            switchMap((claim) => {
-                switch (claim.outcome) {
-                    case 'REPLAY':
-                        this.logger.info({ endpoint }, 'Idempotent replay');
-                        response.status(claim.response.statusCode);
-                        return of(claim.response.body);
-                    case 'REUSED':
-                        this.metrics.idempotencyCollisions.inc({ reason: 'reused' });
-                        return throwError(() => new IdempotencyKeyReusedException());
-                    case 'IN_PROGRESS':
-                        this.metrics.idempotencyCollisions.inc({ reason: 'in_progress' });
-                        return throwError(() => new RequestInProgressException());
-                    case 'CLAIMED':
-                        return next.handle().pipe(
-                            switchMap((body: unknown) =>
-                                from(
-                                    this.store.complete(claim.id, {
-                                        statusCode: response.statusCode,
-                                        body: storable(body, redact),
-                                    }),
-                                ).pipe(switchMap(() => of(body))),
-                            ),
-                            catchError((error: unknown) =>
-                                from(this.store.release(claim.id)).pipe(switchMap(() => throwError(() => error))),
-                            ),
-                        );
-                }
-            }),
-        );
+    private answer(
+        claim: ClaimResult,
+        next: CallHandler,
+        response: Response,
+        call: { endpoint: string; redact: readonly string[] },
+    ): Observable<unknown> {
+        switch (claim.outcome) {
+            case 'REPLAY':
+                this.logger.info({ endpoint: call.endpoint }, 'Idempotent replay');
+                response.status(claim.response.statusCode);
+                return of(claim.response.body);
+            case 'REUSED':
+                this.metrics.idempotencyCollisions.inc({ reason: 'reused' });
+                return throwError(() => new IdempotencyKeyReusedException());
+            case 'IN_PROGRESS':
+                this.metrics.idempotencyCollisions.inc({ reason: 'in_progress' });
+                return throwError(() => new RequestInProgressException());
+            case 'CLAIMED':
+                return next.handle().pipe(
+                    switchMap((body: unknown) =>
+                        from(
+                            this.store.complete(claim.id, {
+                                statusCode: response.statusCode,
+                                body: storable(body, call.redact),
+                            }),
+                        ).pipe(switchMap(() => of(body))),
+                    ),
+                    catchError((error: unknown) =>
+                        from(this.store.release(claim.id)).pipe(switchMap(() => throwError(() => error))),
+                    ),
+                );
+        }
     }
 }

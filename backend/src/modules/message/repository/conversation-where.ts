@@ -1,6 +1,7 @@
-import { Prisma } from '../../../generated/prisma/client';
-import { MessageSide } from '../service/message-side';
+import { Prisma } from '@/generated/prisma/client';
+
 import type { SupportScope, ViewingScope } from '../service/message.types';
+import { MessageSide } from '../service/message-side';
 
 /**
  * The scopes as SQL fragments (the inbox and the unread total are raw statements: Prisma cannot

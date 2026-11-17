@@ -1,28 +1,33 @@
-import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Transactional } from '@nestjs-cls/transactional';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { generateToken, hashToken } from '../../../common/security/token-hash';
+
+import { JobLock } from '@/common/persistence/job-lock';
+import { JobName } from '@/common/persistence/job-name';
+import { generateToken, hashToken } from '@/common/security/token-hash';
+import { MS_PER_HOUR } from '@/common/time/units';
+
 import { AccountTokenRepository } from '../repository/account-token.repository';
 import type { TokenPurpose } from './token-purpose';
 
-const HOUR_MS = 3_600_000;
+const VERIFICATION_LINK_HOURS = 24;
 
-/** How long each kind of emailed link stays valid (product decision). */
 const TOKEN_LIFETIME_MS: Readonly<Record<TokenPurpose, number>> = {
-    EMAIL_VERIFICATION: 24 * HOUR_MS,
-    PASSWORD_RESET: 1 * HOUR_MS,
+    EMAIL_VERIFICATION: VERIFICATION_LINK_HOURS * MS_PER_HOUR,
+    PASSWORD_RESET: MS_PER_HOUR,
 };
 
 /**
- * One-time tokens behind emailed links (security.md → Sessions applies: 32 random bytes, only
- * the SHA-256 is stored). Issuing a new token for a purpose replaces the user's older ones;
+ * One-time tokens behind emailed links (AUTH-1 applies: 32 random bytes, only the SHA-256 is stored); how long a
+ * link stays valid is a product decision. Issuing a new token for a purpose replaces the user's older ones;
  * redeeming one spends every token of that purpose.
  */
 @Injectable()
 export class AccountTokenService {
     constructor(
         private readonly accountTokenRepository: AccountTokenRepository,
+        private readonly jobLock: JobLock,
         @InjectPinoLogger(AccountTokenService.name) private readonly logger: PinoLogger,
     ) {}
 
@@ -56,7 +61,9 @@ export class AccountTokenService {
 
     @Cron(CronExpression.EVERY_HOUR)
     async deleteExpired(): Promise<void> {
-        const count = await this.accountTokenRepository.deleteExpired(new Date());
-        this.logger.info({ count }, 'Expired account tokens deleted');
+        await this.jobLock.runExclusive(JobName.DELETE_EXPIRED_ACCOUNT_TOKENS, async () => {
+            const count = await this.accountTokenRepository.deleteExpired(new Date());
+            this.logger.info({ count }, 'Expired account tokens deleted');
+        });
     }
 }

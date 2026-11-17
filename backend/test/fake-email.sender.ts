@@ -1,4 +1,4 @@
-import { type EmailMessage, EmailSender } from '../src/modules/email/service/email-sender';
+import { type EmailMessage, EmailSender } from '@/modules/email/service/email-sender';
 
 /** Keeps every message in memory so a test can read the link out of it. */
 export class FakeEmailSender extends EmailSender {

@@ -1,6 +1,5 @@
-import type { Prisma } from '../../../../generated/prisma/client';
+import type { Prisma } from '@/generated/prisma/client';
 
-/** Only finished uploads are shown (the listing module's rule). */
 const readyPhotos = { status: 'READY' } as const;
 
 const listingSelect = {
@@ -12,7 +11,6 @@ const listingSelect = {
     landlordId: true,
     agencyId: true,
     city: { select: { name: true, state: true, timeZone: true } },
-    // Bounded: the cover only.
     photos: {
         where: readyPhotos,
         select: { url: true, storageKey: true },
@@ -23,20 +21,18 @@ const listingSelect = {
     agency: { select: { name: true, email: true } },
 } satisfies Prisma.ListingSelect;
 
-/** The thread's markers with its latest message (the inbox row's preview). */
 const threadSelect = {
     lastMessageAt: true,
     messageCount: true,
     requesterReadAt: true,
     responderReadAt: true,
     messages: {
-        select: { body: true, side: true, createdAt: true },
+        select: { body: true, isRemoved: true, side: true, createdAt: true },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         take: 1,
     },
 } satisfies Prisma.ConversationSelect;
 
-/** A viewing with what its conversation shows: the home (cover, place, address, owner's inbox), the tenant, the thread. */
 export const viewingConversationSelect = {
     id: true,
     status: true,
@@ -51,7 +47,6 @@ export type ViewingConversationRecord = Prisma.ViewingGetPayload<{
     select: typeof viewingConversationSelect;
 }>;
 
-/** A support request: who opened it, what about, the home if any, the thread. */
 export const supportConversationSelect = {
     id: true,
     subject: true,
@@ -65,7 +60,6 @@ export type SupportConversationRecord = Prisma.ConversationGetPayload<{
     select: typeof supportConversationSelect;
 }>;
 
-/** What writing needs to know about a viewing's conversation: its state and who takes part. */
 export const viewingParticipantsSelect = {
     id: true,
     status: true,
@@ -77,7 +71,6 @@ export type ViewingParticipantsRecord = Prisma.ViewingGetPayload<{
     select: typeof viewingParticipantsSelect;
 }>;
 
-/** What writing needs to know about a support request. */
 export const supportParticipantsSelect = {
     id: true,
     openedById: true,
@@ -95,7 +88,23 @@ export const messageSelect = {
     conversationId: true,
     side: true,
     body: true,
+    isRemoved: true,
     createdAt: true,
     sender: { select: { id: true, firstName: true, lastName: true } },
 } satisfies Prisma.MessageSelect;
 export type MessageRecord = Prisma.MessageGetPayload<{ select: typeof messageSelect }>;
+
+export const writtenMessageExportSelect = {
+    conversationId: true,
+    body: true,
+    createdAt: true,
+} satisfies Prisma.MessageSelect;
+export type WrittenMessageExportRecord = Prisma.MessageGetPayload<{ select: typeof writtenMessageExportSelect }>;
+
+export const openedConversationExportSelect = {
+    subject: true,
+    createdAt: true,
+} satisfies Prisma.ConversationSelect;
+export type OpenedConversationExportRecord = Prisma.ConversationGetPayload<{
+    select: typeof openedConversationExportSelect;
+}>;

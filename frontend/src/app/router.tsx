@@ -1,5 +1,6 @@
-import { Suspense, type ReactNode } from 'react';
+import { type ReactNode, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
+
 import {
     ForgotPasswordPage,
     LoginPage,
@@ -19,10 +20,10 @@ import {
 } from '@/features/listing';
 import { MessagesPage } from '@/features/message';
 import { SettingsPage } from '@/features/settings';
-import { ViewingsPage } from '@/features/viewing';
 import { AppLayout, RoleLayout, SiteLayout } from '@/features/shell';
-import { PageLoader } from '@/shared/components/PageLoader';
-import { RouteErrorBoundary } from '@/shared/components/RouteErrorBoundary';
+import { ViewingsPage } from '@/features/viewing';
+import { PageLoader } from '@/shared/components/page-loader';
+import { RouteErrorBoundary } from '@/shared/components/route-error-boundary';
 import { PATHS } from '@/shared/lib/paths';
 
 const route = (element: ReactNode): ReactNode => (
@@ -34,11 +35,9 @@ const route = (element: ReactNode): ReactNode => (
 export const router = createBrowserRouter([
     { path: PATHS.login, element: route(<LoginPage />) },
     { path: PATHS.signup, element: route(<SignupPage />) },
-    // The emailed links work signed in or not.
     { path: PATHS.verifyEmail, element: route(<VerifyEmailPage />) },
     { path: PATHS.forgotPassword, element: route(<ForgotPasswordPage />) },
     { path: PATHS.resetPassword, element: route(<ResetPasswordPage />) },
-    // The catalogue is public: no account needed to browse (CONTEXT.md).
     {
         element: <SiteLayout />,
         children: [
@@ -46,7 +45,6 @@ export const router = createBrowserRouter([
             { path: PATHS.listing, element: route(<ListingPage />) },
         ],
     },
-    // Home: the dashboard for people who list homes; tenants and visitors go to Browse.
     {
         element: <RoleLayout />,
         children: [{ path: PATHS.home, element: route(<HomePage />) }],

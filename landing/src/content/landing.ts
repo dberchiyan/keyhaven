@@ -39,6 +39,7 @@ export interface ListingPoint {
 }
 
 export const LANDING = {
+    skipLink: 'Skip to content',
     nav: [
         { href: '/browse?kind=rent', label: 'Rent' },
         { href: '/browse?kind=sale', label: 'Buy' },
@@ -77,8 +78,8 @@ export const LANDING = {
                 href: '/browse?city=seattle&beds=2&type=APARTMENT',
             },
             { label: 'Houses for sale in Austin', href: '/browse?kind=sale&city=austin&type=HOUSE' },
-            { label: 'Pet-friendly rentals in Denver', href: '/browse?city=denver&pets=true' },
-            { label: 'Furnished homes in Chicago', href: '/browse?city=chicago&furnished=true' },
+            { label: 'Pet-friendly rentals in Denver', href: '/browse?city=denver&isPetFriendly=true' },
+            { label: 'Furnished homes in Chicago', href: '/browse?city=chicago&isFurnished=true' },
             {
                 label: 'Studios under $1,500 in Phoenix',
                 href: '/browse?city=phoenix&type=STUDIO&priceMax=1500',
@@ -285,9 +286,9 @@ export const LANDING = {
         metaTitleRent: 'Homes for rent in {city} · Keyhaven',
         metaTitleSale: 'Homes for sale in {city} · Keyhaven',
         metaDescriptionRent:
-            '{count} apartments, houses, condos and studios for rent in {city}, median rent {median} a month. Filter by neighborhood, price, beds and move-in date — no account needed.',
+            '{count} homes for rent in {city}, median rent {median} a month: apartments, houses, condos, studios. Filter by neighborhood, price, beds, move-in date.',
         metaDescriptionSale:
-            '{count} houses, condos, townhouses and apartments for sale in {city}, median asking price {median}. Filter by neighborhood, price, beds and type — no account needed.',
+            '{count} homes for sale in {city}, median asking price {median}: houses, condos, townhouses, apartments. Filter by neighborhood, price, beds and type.',
         breadcrumb: 'You are here',
         home: 'Keyhaven',
         rent: 'Rent',
@@ -326,6 +327,9 @@ export const LANDING = {
             email: 'Email Keyhaven',
         },
         rights: 'Public demo: all people and homes are fictional.',
+        privacy: 'Privacy',
+        terms: 'Terms',
+        legal: 'Legal',
         signIn: 'Sign in',
     },
 } as const;

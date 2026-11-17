@@ -182,7 +182,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** The caller's security log: sign-ins, failed sign-ins, password changes, ended sessions */
+        /** The caller's security log, newest first by cursor (`after` from the previous page's `nextCursor`): sign-ins, failed sign-ins, password changes, ended sessions */
         get: operations["AuthController_securityLog"];
         put?: never;
         post?: never;
@@ -950,6 +950,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/personal-data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A copy of the caller's personal data: the account, live sessions (at most 10), the newest 500 security-log events, saved homes (500), saved searches (20), viewings as a tenant (500), messages written (2,000), requests to Keyhaven (100) and a landlord's listings (500), newest first */
+        get: operations["PrivacyController_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/personal-data/erasure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Erase the caller's account (password asked again): signed out everywhere, contacts anonymised, saved homes and searches deleted, upcoming viewings cancelled, a landlord's published listings unpublished, messages removed; the security log is kept */
+        post: operations["PrivacyController_erase"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -962,7 +996,7 @@ export interface components {
         ErrorCode: "VALIDATION_FAILED" | "MALFORMED_REQUEST" | "INVALID_PARAMETER" | "UNAUTHORIZED" | "INVALID_CREDENTIALS" | "SESSION_EXPIRED" | "FORBIDDEN" | "EMAIL_NOT_VERIFIED" | "DEMO_RESTRICTED" | "DEMO_READ_ONLY" | "RESOURCE_NOT_FOUND" | "CONFLICT" | "CONCURRENT_MODIFICATION" | "VIEWING_SLOT_TAKEN" | "IDEMPOTENCY_KEY_REUSED" | "BUSINESS_RULE_VIOLATION" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "RATE_LIMIT_EXCEEDED" | "UPSTREAM_UNAVAILABLE" | "INTERNAL_ERROR";
         ErrorResponse: {
             /** Format: date-time */
-            timestamp: string;
+            occurredAt: string;
             status: number;
             error: components["schemas"]["ErrorCode"];
             message: string;
@@ -996,8 +1030,8 @@ export interface components {
                 name: string;
             } | null;
             idleTimeoutMinutes: number;
-            demoRestricted: boolean;
-            demoMode: boolean;
+            isDemoRestricted: boolean;
+            isDemoMode: boolean;
         };
         ChangePasswordRequest: {
             currentPassword: string;
@@ -1035,11 +1069,11 @@ export interface components {
             occurredAt: string;
             ip: string | null;
             userAgent: string | null;
-            newDevice: boolean;
+            isNewDevice: boolean;
         };
         SecurityLogResponse_Output: {
             content: components["schemas"]["SecurityEvent_Output"][];
-            totalElements: number;
+            nextCursor: string | null;
         };
         /** @enum {string} */
         SignupRole: "TENANT" | "LANDLORD";
@@ -1094,12 +1128,12 @@ export interface components {
             city: components["schemas"]["City_Output"];
             neighborhood: string | null;
             /** Format: date */
-            availableFrom: string | null;
+            availableAt: string | null;
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
             viewCount: number;
-            saved: boolean;
+            isSaved: boolean;
         };
         /** @enum {string} */
         PropertyType_Output: "APARTMENT" | "HOUSE" | "CONDO" | "TOWNHOUSE" | "STUDIO";
@@ -1154,17 +1188,17 @@ export interface components {
             city: components["schemas"]["City_Output"];
             neighborhood: string | null;
             /** Format: date */
-            availableFrom: string | null;
+            availableAt: string | null;
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
             viewCount: number;
-            saved: boolean;
-            demo: boolean;
+            isSaved: boolean;
+            isDemo: boolean;
             description: string;
-            furnished: boolean;
-            petsAllowed: boolean;
-            parking: boolean;
+            isFurnished: boolean;
+            isPetFriendly: boolean;
+            hasParking: boolean;
             zip: string;
             photos: {
                 /** Format: uuid */
@@ -1188,14 +1222,14 @@ export interface components {
             city: components["schemas"]["City_Output"];
             neighborhood: string | null;
             /** Format: date */
-            availableFrom: string | null;
+            availableAt: string | null;
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
             viewCount: number;
-            saved: boolean;
+            isSaved: boolean;
             status: components["schemas"]["ListingStatus_Output"];
-            demo: boolean;
+            isDemo: boolean;
             saveCount: number;
         };
         /** @enum {string} */
@@ -1221,11 +1255,11 @@ export interface components {
             cityId: string;
             neighborhood?: string | null;
             zip: string;
-            petsAllowed: boolean;
-            furnished: boolean;
-            parking: boolean;
+            isPetFriendly: boolean;
+            isFurnished: boolean;
+            hasParking: boolean;
             /** Format: date */
-            availableFrom?: string | null;
+            availableAt?: string | null;
         };
         ManagedPhoto_Output: {
             /** Format: uuid */
@@ -1249,17 +1283,17 @@ export interface components {
             city: components["schemas"]["City_Output"];
             neighborhood: string | null;
             /** Format: date */
-            availableFrom: string | null;
+            availableAt: string | null;
             /** Format: date-time */
             publishedAt: string | null;
             coverPhotoUrl: string | null;
             viewCount: number;
-            saved: boolean;
-            demo: boolean;
+            isSaved: boolean;
+            isDemo: boolean;
             description: string;
-            furnished: boolean;
-            petsAllowed: boolean;
-            parking: boolean;
+            isFurnished: boolean;
+            isPetFriendly: boolean;
+            hasParking: boolean;
             zip: string;
             photos: {
                 /** Format: uuid */
@@ -1339,11 +1373,11 @@ export interface components {
             cityId: string;
             neighborhood?: string | null;
             zip: string;
-            petsAllowed: boolean;
-            furnished: boolean;
-            parking: boolean;
+            isPetFriendly: boolean;
+            isFurnished: boolean;
+            hasParking: boolean;
             /** Format: date */
-            availableFrom?: string | null;
+            availableAt?: string | null;
             version: number;
         };
         PhotoIntentRequest: {
@@ -1368,14 +1402,14 @@ export interface components {
         SavedListingResponse_Output: {
             /** Format: uuid */
             listingId: string;
-            saved: boolean;
+            isSaved: boolean;
         };
         SavedSearch_Output: {
             /** Format: uuid */
             id: string;
             name: string;
             criteria: components["schemas"]["SavedSearchCriteria_Output"];
-            emailAlerts: boolean;
+            hasEmailAlerts: boolean;
             /** Format: date-time */
             lastNotifiedAt: string | null;
             /** Format: date-time */
@@ -1392,11 +1426,11 @@ export interface components {
             priceMax?: string;
             beds?: number;
             baths?: string;
-            pets?: boolean;
-            furnished?: boolean;
-            parking?: boolean;
+            isPetFriendly?: boolean;
+            isFurnished?: boolean;
+            hasParking?: boolean;
             /** Format: date */
-            availableBy?: string;
+            moveInAt?: string;
             q?: string;
         };
         SavedSearchListResponse_Output: {
@@ -1412,24 +1446,24 @@ export interface components {
             priceMax?: string;
             beds?: number;
             baths?: string;
-            pets?: boolean;
-            furnished?: boolean;
-            parking?: boolean;
+            isPetFriendly?: boolean;
+            isFurnished?: boolean;
+            hasParking?: boolean;
             /** Format: date */
-            availableBy?: string;
+            moveInAt?: string;
             q?: string;
         };
         CreateSavedSearchRequest: {
             name: string;
             criteria: components["schemas"]["SavedSearchCriteria"];
-            emailAlerts: boolean;
+            hasEmailAlerts: boolean;
         };
         SavedSearchResponse_Output: {
             /** Format: uuid */
             id: string;
             name: string;
             criteria: components["schemas"]["SavedSearchCriteria_Output"];
-            emailAlerts: boolean;
+            hasEmailAlerts: boolean;
             /** Format: date-time */
             lastNotifiedAt: string | null;
             /** Format: date-time */
@@ -1438,7 +1472,7 @@ export interface components {
         };
         UpdateSavedSearchRequest: {
             name: string;
-            emailAlerts: boolean;
+            hasEmailAlerts: boolean;
             version: number;
         };
         DigestSummaryResponse_Output: {
@@ -1457,12 +1491,12 @@ export interface components {
             endsAt: string;
         };
         ViewingSlotsResponse_Output: {
-            open: boolean;
+            isOpen: boolean;
             timeZone: string;
             slotMinutes: number | null;
             noticeHours: number;
             /** Format: date */
-            horizonEnd: string;
+            horizonEndsAt: string;
             /** Format: date */
             from: string;
             days: components["schemas"]["ViewingSlotDay_Output"][];
@@ -1494,7 +1528,7 @@ export interface components {
                 line1: string;
                 line2: string | null;
             } | null;
-            demo: boolean;
+            isDemo: boolean;
         };
         ViewingTenant_Output: {
             /** Format: uuid */
@@ -1609,7 +1643,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             kind: components["schemas"]["ConversationKind_Output"];
-            open: boolean;
+            isOpen: boolean;
             side: components["schemas"]["MessageSide_Output"];
             viewing: {
                 /** Format: uuid */
@@ -1632,6 +1666,7 @@ export interface components {
             counterpart: components["schemas"]["Counterpart_Output"];
             lastMessage: {
                 body: string;
+                isRemoved: boolean;
                 side: components["schemas"]["MessageSide_Output"];
                 /** Format: date-time */
                 createdAt: string;
@@ -1693,6 +1728,7 @@ export interface components {
                 lastName: string;
             };
             body: string;
+            isRemoved: boolean;
             /** Format: date-time */
             createdAt: string;
         };
@@ -1700,7 +1736,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             kind: components["schemas"]["ConversationKind_Output"];
-            open: boolean;
+            isOpen: boolean;
             side: components["schemas"]["MessageSide_Output"];
             viewing: {
                 /** Format: uuid */
@@ -1723,6 +1759,7 @@ export interface components {
             counterpart: components["schemas"]["Counterpart_Output"];
             lastMessage: {
                 body: string;
+                isRemoved: boolean;
                 side: components["schemas"]["MessageSide_Output"];
                 /** Format: date-time */
                 createdAt: string;
@@ -1751,12 +1788,94 @@ export interface components {
                 lastName: string;
             };
             body: string;
+            isRemoved: boolean;
             /** Format: date-time */
             createdAt: string;
         };
         ReadReceiptResponse_Output: {
             /** Format: date-time */
             readAt: string | null;
+        };
+        PersonalDataExportResponse_Output: {
+            /** Format: date-time */
+            exportedAt: string;
+            account: {
+                firstName: string;
+                lastName: string;
+                email: string;
+                phone: string | null;
+                /** @enum {string} */
+                role: "TENANT" | "LANDLORD" | "AGENT" | "ADMIN";
+                agencyName: string | null;
+                /** Format: date-time */
+                emailVerifiedAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            };
+            sessions: {
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                lastSeenAt: string;
+                ip: string | null;
+                userAgent: string | null;
+            }[];
+            securityLog: {
+                /** @enum {string} */
+                action: "auth.signed_in" | "auth.sign_in_failed" | "auth.signed_out" | "auth.email_verified" | "auth.password_changed" | "auth.password_reset" | "auth.session_ended" | "auth.other_sessions_ended" | "auth.session_evicted" | "auth.sign_in_locked";
+                /** Format: date-time */
+                occurredAt: string;
+                ip: string | null;
+                userAgent: string | null;
+            }[];
+            savedHomes: {
+                /** Format: uuid */
+                listingId: string;
+                title: string;
+                /** Format: date-time */
+                savedAt: string;
+            }[];
+            savedSearches: {
+                name: string;
+                criteria: components["schemas"]["SavedSearchCriteria_Output"];
+                hasEmailAlerts: boolean;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            viewings: {
+                listingTitle: string;
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                endsAt: string;
+                /** @enum {string} */
+                status: "REQUESTED" | "CONFIRMED" | "DECLINED" | "CANCELLED" | "EXPIRED";
+                message: string | null;
+            }[];
+            messagesWritten: {
+                /** Format: uuid */
+                conversationId: string;
+                body: string;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            conversationsOpened: {
+                subject: string;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            listings: {
+                /** Format: uuid */
+                id: string;
+                title: string;
+                /** @enum {string} */
+                status: "DRAFT" | "PUBLISHED" | "UNPUBLISHED" | "SUSPENDED";
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        EraseAccountRequest: {
+            password: string;
         };
     };
     responses: never;
@@ -2172,10 +2291,8 @@ export interface operations {
         parameters: {
             query?: {
                 category?: "SIGN_INS" | "FAILED" | "PASSWORD" | "SESSIONS";
-                page?: number;
+                after?: string;
                 size?: number;
-                /** @description One of: occurredAt,asc|desc */
-                sort?: string;
             };
             header?: never;
             path?: never;
@@ -2191,7 +2308,7 @@ export interface operations {
                     "application/json": components["schemas"]["SecurityLogResponse_Output"];
                 };
             };
-            /** @description INVALID_PARAMETER */
+            /** @description VALIDATION_FAILED */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2494,10 +2611,10 @@ export interface operations {
                 priceMax?: string;
                 beds?: number;
                 baths?: string;
-                pets?: "true" | "false";
-                furnished?: "true" | "false";
-                parking?: "true" | "false";
-                availableBy?: string;
+                isPetFriendly?: "true" | "false";
+                isFurnished?: "true" | "false";
+                hasParking?: "true" | "false";
+                moveInAt?: string;
                 q?: string;
                 page?: number;
                 size?: number;
@@ -4484,7 +4601,7 @@ export interface operations {
             query?: {
                 status?: "REQUESTED" | "CONFIRMED" | "DECLINED" | "CANCELLED" | "EXPIRED";
                 listingId?: string;
-                upcoming?: "true" | "false";
+                isUpcoming?: "true" | "false";
                 page?: number;
                 size?: number;
                 /** @description One of: startsAt,asc|desc, createdAt,asc|desc */
@@ -5258,6 +5375,101 @@ export interface operations {
             };
             /** @description BUSINESS_RULE_VIOLATION */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    PrivacyController_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PersonalDataExportResponse_Output"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    PrivacyController_erase: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EraseAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description Account erased; cookies cleared */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description VALIDATION_FAILED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description UNAUTHORIZED | SESSION_EXPIRED */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FORBIDDEN | DEMO_RESTRICTED */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUSINESS_RULE_VIOLATION */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RATE_LIMIT_EXCEEDED */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -65,7 +65,7 @@
     "sizeSqft": {
         "invalid": "Enter a whole number of square feet"
     },
-    "availableFrom": {
+    "availableAt": {
         "invalid": "Enter a date"
     },
     "addressLine1": {
@@ -125,5 +125,8 @@
             "required": "Write a message first",
             "tooLong": "A message must be at most {{max}} characters"
         }
+    },
+    "cursor": {
+        "invalid": "This page link is out of date — start from the first page"
     }
 }

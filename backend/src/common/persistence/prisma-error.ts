@@ -1,4 +1,4 @@
-import { Prisma } from '../../generated/prisma/client';
+import { Prisma } from '@/generated/prisma/client';
 
 export const PrismaErrorKind = {
     UNIQUE_VIOLATION: 'UNIQUE_VIOLATION',

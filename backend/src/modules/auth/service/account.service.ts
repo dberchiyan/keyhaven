@@ -1,32 +1,32 @@
-import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
+import { Transactional } from '@nestjs-cls/transactional';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { AppConfigService } from '../../../common/config/app-config.service';
-import { BusinessConflictException, BusinessRuleException } from '../../../common/exception/api.exception';
-import type { Principal } from '../../../common/security/principal';
-import { AuditAction, AuditTargetType } from '../../audit/service/audit-action';
-import { AuditField, auditValue, changeOf } from '../../audit/service/audit-change';
-import { AuditService } from '../../audit/service/audit.service';
-import { EmailSender } from '../../email/service/email-sender';
-import type { UserRole } from '../../user/service/user-role';
-import { UserService } from '../../user/service/user.service';
-import type { UserProfile } from '../../user/service/user.types';
+
+import { AppConfigService } from '@/common/config/app-config.service';
+import { BusinessConflictException, BusinessRuleException } from '@/common/exception/api.exception';
+import type { Principal } from '@/common/security/principal';
+import { AuditService } from '@/modules/audit/service/audit.service';
+import { AuditAction, AuditTargetType } from '@/modules/audit/service/audit-action';
+import { AuditField, auditValue, changeOf } from '@/modules/audit/service/audit-change';
+import { EmailSender } from '@/modules/email/service/email-sender';
+import { UserService } from '@/modules/user/service/user.service';
+import type { UserProfile } from '@/modules/user/service/user.types';
+import type { UserRole } from '@/modules/user/service/user-role';
+
+import type { EmailVerification, RegisterCommand, ResetPasswordCommand } from './account.types';
 import { accountEmails } from './account-emails';
 import { AccountTokenService } from './account-token.service';
-import type { EmailVerification, RegisterCommand, ResetPasswordCommand } from './account.types';
 import { AuthService, type LoginResult } from './auth.service';
 import { PasswordHasher } from './password-hasher.service';
 import { SessionService } from './session.service';
 import { TokenPurpose } from './token-purpose';
 
-/** Where the emailed links open in the app (frontend routes). */
 const VERIFY_EMAIL_PATH = '/verify-email';
 const RESET_PASSWORD_PATH = '/reset-password';
 
 /**
  * The account's life cycle through email: sign-up with its verification link, resending it,
- * verifying, and "forgot password". Emails go out after the transaction committed
- * (data.md → Transactions: no network I/O inside); a failed delivery is logged and the person
+ * verifying, and "forgot password". DATA-12: emails go out after the transaction committed; a failed delivery is logged and the person
  * can ask again — there is no queue yet (jobs module off, a project decision).
  */
 @Injectable()
@@ -46,47 +46,19 @@ export class AccountService {
     /**
      * A new tenant or landlord account, signed in at once (unverified: browsing is open, actions
      * other people rely on wait for the verification link). A taken email is refused (409) — that
-     * tells the address has an account (accepted; registration is rate-limited per IP).
+     * tells the address has an account (accepted; registration is rate-limited per IP). DATA-11: hashing is CPU work,
+     * done before the transaction opens.
      */
     async register(command: RegisterCommand): Promise<LoginResult> {
         const email = command.email.toLowerCase();
         if (await this.userService.existsByEmail(email)) {
             throw new BusinessConflictException('errors.registration.emailTaken', {}, 'email');
         }
-        // Hashing is CPU work, done before the transaction opens.
         const passwordHash = await this.passwordHasher.hash(command.password);
         const { result, token } = await this.createAccount({ ...command, email }, passwordHash);
         this.logger.info({ userId: result.user.id, ip: command.ip }, 'Account registered');
         await this.sendVerification(result.user, token);
         return result;
-    }
-
-    @Transactional()
-    private async createAccount(
-        command: RegisterCommand,
-        passwordHash: string,
-    ): Promise<{ result: LoginResult; token: string }> {
-        const userId = await this.userService.create({
-            email: command.email,
-            firstName: command.firstName,
-            lastName: command.lastName,
-            role: command.role,
-            passwordHash,
-        });
-        await this.auditService.record({
-            action: AuditAction.USER_REGISTERED,
-            actorUserId: userId,
-            target: {
-                type: AuditTargetType.USER,
-                id: userId,
-                label: `${command.firstName} ${command.lastName}`,
-            },
-            changes: changeOf(AuditField.ROLE, null, auditValue.text(command.role)),
-        });
-        const token = await this.accountTokenService.issue(userId, TokenPurpose.EMAIL_VERIFICATION);
-        const session = await this.authService.startSession({ id: userId, role: command.role }, command);
-        const user = await this.authService.currentUser(userId);
-        return { result: { user, session }, token };
     }
 
     /** A fresh verification link for the signed-in caller (the old one stops working). */
@@ -107,16 +79,6 @@ export class AccountService {
         }
         const user = await this.markVerified(userId);
         return { email: user.email, verifiedAt: user.emailVerifiedAt ?? new Date() };
-    }
-
-    @Transactional()
-    private async markVerified(userId: string): Promise<UserProfile> {
-        const now = new Date();
-        if (await this.userService.markEmailVerified(userId, now)) {
-            await this.authService.security(AuditAction.AUTH_EMAIL_VERIFIED, userId, userId);
-        }
-        await this.accountTokenService.spend(userId, TokenPurpose.EMAIL_VERIFICATION);
-        return this.authService.currentUser(userId);
     }
 
     /**
@@ -155,11 +117,48 @@ export class AccountService {
         if (!credentials) {
             throw new BusinessRuleException('errors.verification.invalidLink');
         }
-        // Hashing is CPU work, done before the transaction opens.
         const passwordHash = await this.passwordHasher.hash(command.newPassword);
         const result = await this.applyReset(credentials, passwordHash, command);
         this.logger.info({ userId, ip: command.ip }, 'Password reset');
         return result;
+    }
+
+    @Transactional()
+    private async createAccount(
+        command: RegisterCommand,
+        passwordHash: string,
+    ): Promise<{ result: LoginResult; token: string }> {
+        const userId = await this.userService.create({
+            email: command.email,
+            firstName: command.firstName,
+            lastName: command.lastName,
+            role: command.role,
+            passwordHash,
+        });
+        await this.auditService.record({
+            action: AuditAction.USER_REGISTERED,
+            actorUserId: userId,
+            target: {
+                type: AuditTargetType.USER,
+                id: userId,
+                label: `${command.firstName} ${command.lastName}`,
+            },
+            changes: changeOf(AuditField.ROLE, null, auditValue.text(command.role)),
+        });
+        const token = await this.accountTokenService.issue(userId, TokenPurpose.EMAIL_VERIFICATION);
+        const session = await this.authService.startSession({ id: userId, role: command.role }, command);
+        const user = await this.authService.currentUser(userId);
+        return { result: { user, session }, token };
+    }
+
+    @Transactional()
+    private async markVerified(userId: string): Promise<UserProfile> {
+        const now = new Date();
+        if (await this.userService.markEmailVerified(userId, now)) {
+            await this.authService.security(AuditAction.AUTH_EMAIL_VERIFIED, userId, userId);
+        }
+        await this.accountTokenService.spend(userId, TokenPurpose.EMAIL_VERIFICATION);
+        return this.authService.currentUser(userId);
     }
 
     @Transactional()

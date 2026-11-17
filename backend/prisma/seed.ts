@@ -1,10 +1,14 @@
 import 'reflect-metadata';
+
 import { PrismaPg } from '@prisma/adapter-pg';
 import { z } from 'zod';
-import { PG_SESSION_OPTIONS } from '../src/common/persistence/pg-pool';
-import { PrismaClient } from '../src/generated/prisma/client';
-import { PasswordHasher } from '../src/modules/auth/service/password-hasher.service';
-import { UserRole } from '../src/modules/user/service/user-role';
+
+import { PG_SESSION_OPTIONS } from '@/common/persistence/pg-pool';
+import { PrismaClient } from '@/generated/prisma/client';
+import { PasswordHasher } from '@/modules/auth/service/password-hasher.service';
+import { UserRole } from '@/modules/user/service/user-role';
+
+import { seedActivity } from './seed-activity';
 import {
     AGENCY,
     CITIES,
@@ -18,29 +22,26 @@ import {
     SEED_PASSWORD,
     type SeedPerson,
 } from './seed-data';
-import { seedActivity } from './seed-activity';
 import { seedListings } from './seed-listings';
 import { seedMessages } from './seed-messages';
 import { seedViewings } from './seed-viewings';
 
-/**
- * Development seed (APP_ENV=dev only): the six cities, one agency, the showcase accounts (one
- * per role), more landlords, agents and renters, ~1,300 listings with photos, and the renters'
- * visits and saves over the last months (the owners' insights). Idempotent — existing rows are
- * kept (people are matched by email, cities by slug, listings by their fixed ids, activity by
- * its unique keys).
- */
 const seedEnv = z.object({
     APP_ENV: z.literal('dev'),
     DATABASE_URL: z.url(),
 });
 
+/**
+ * MIG-7: development seed (APP_ENV=dev only) of fictional people — the six cities, one agency, the showcase accounts
+ * (one per role), more landlords, agents and renters, ~1,300 listings with photos, and the renters' visits and saves
+ * over the last months (the owners' insights). The shared password is a public constant. Idempotent — existing rows
+ * are kept (people are matched by email, cities by slug, listings by their fixed ids, activity by its unique keys).
+ * Seeded accounts are verified: the demo has no mailbox to open the link from.
+ */
 const seed = async (): Promise<void> => {
     try {
         process.loadEnvFile('.env');
-    } catch {
-        // Variables come from the environment.
-    }
+    } catch {}
     const env = seedEnv.parse(process.env);
     const prisma = new PrismaClient({
         adapter: new PrismaPg({ connectionString: env.DATABASE_URL, options: PG_SESSION_OPTIONS }),
@@ -99,7 +100,6 @@ const seed = async (): Promise<void> => {
             role,
             agencyId,
             passwordHash,
-            // Seeded accounts are verified: the demo has no mailbox to open the link from.
             emailVerifiedAt: today,
         });
         const users = await prisma.user.createMany({

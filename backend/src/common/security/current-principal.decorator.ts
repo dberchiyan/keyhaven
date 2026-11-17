@@ -1,7 +1,8 @@
 import { createParamDecorator } from '@nestjs/common';
 import { ClsServiceManager } from 'nestjs-cls';
-import { NotAuthenticatedException } from '../exception/api.exception';
+
 import type { RequestContext } from '../context/request-context';
+import { NotAuthenticatedException } from '../exception/api.exception';
 import type { Principal } from './principal';
 
 /** The visitor's principal on a public route: null without a session. */

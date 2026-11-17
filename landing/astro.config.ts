@@ -14,6 +14,16 @@ export default defineConfig({
     trailingSlash: 'never',
     build: { assets: '_landing', format: 'file' },
     compressHTML: true,
-    integrations: [sitemap()],
-    vite: { plugins: [tailwindcss()] },
+    // The catalogue's photos are Unsplash pictures: fetched once at build, resized and re-encoded
+    // by sharp into /_landing/, so the page loads no third-party image.
+    image: {
+        remotePatterns: [{ protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' }],
+    },
+    integrations: [sitemap({ filter: (page) => !page.endsWith('/404') })],
+    vite: {
+        plugins: [tailwindcss()],
+        // Scripts always ship as files under /_landing/, never inlined into the HTML: the proxy's
+        // CSP allows `script-src 'self'` and no inline script. Other assets keep Vite's default.
+        build: { assetsInlineLimit: (file) => (file.endsWith('.js') ? false : undefined) },
+    },
 });

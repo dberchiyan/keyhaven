@@ -1,12 +1,11 @@
-import type { PrismaClient } from '../src/generated/prisma/client';
-import { ListingStatus } from '../src/modules/listing/service/listing-status';
-import { ViewingStatus } from '../src/modules/viewing/service/viewing-status';
-import { addDays, zonedDay, zonedInstant } from '../src/modules/viewing/service/zoned-time';
+import type { PrismaClient } from '@/generated/prisma/client';
+import { ListingStatus } from '@/modules/listing/service/listing-status';
+import { ViewingStatus } from '@/modules/viewing/service/viewing-status';
+import { addDays, zonedDay, zonedInstant } from '@/modules/viewing/service/zoned-time';
+
 import { LISTING_COUNT, SALE_LISTING_COUNT } from './seed-listings';
 
-/** Rows per createMany statement. */
-const BATCH = 500;
-/** Showcase homes with viewing hours: most, so a tenant can book almost anywhere. */
+const CREATE_MANY_BATCH_SIZE = 500;
 const SCHEDULED_SHARE = 0.85;
 
 /** The same PRNG as the listings seed (mulberry32), its own stream. */
@@ -32,9 +31,7 @@ const pick = <T>(items: readonly T[], roll: number): T => {
 const WEEKDAYS = [1, 2, 3, 4, 5];
 const WEEKEND = [0, 6];
 
-/** A few believable patterns of hours; windows in local minutes. */
 const HOUR_PATTERNS = [
-    // Weekday evenings and Saturday mornings.
     {
         slot: 30,
         notice: 12,
@@ -42,7 +39,6 @@ const HOUR_PATTERNS = [
         weekdays: [[17 * 60, 19 * 60]],
         weekend: [[10 * 60, 13 * 60]],
     },
-    // Lunch breaks and both weekend days.
     {
         slot: 20,
         notice: 4,
@@ -50,7 +46,6 @@ const HOUR_PATTERNS = [
         weekdays: [[12 * 60, 14 * 60]],
         weekend: [[11 * 60, 16 * 60]],
     },
-    // An agency's long days.
     {
         slot: 30,
         notice: 2,
@@ -61,9 +56,7 @@ const HOUR_PATTERNS = [
         ],
         weekend: [[10 * 60, 14 * 60]],
     },
-    // Mornings only, a week ahead at most.
     { slot: 45, notice: 24, horizon: 7, weekdays: [[8 * 60, 11 * 60]], weekend: [] },
-    // Evenings all week.
     {
         slot: 15,
         notice: 6,
@@ -108,8 +101,12 @@ const MESSAGES = [
  * Viewing hours on most published showcase homes (a few patterns, days off here and there) and
  * a handful of viewings for the showcase tenant and the other renters: a request waiting for
  * the showcase landlord, confirmed ones ahead, a declined one with a note, a few that already
- * took place. Idempotent: hours by the listing's id, viewings by their unique keys — a second
- * run adds nothing.
+ * took place. Most homes get hours, so a tenant can book almost anywhere; the patterns (windows in local minutes) are
+ * weekday evenings with Saturday mornings, lunch breaks with both weekend days, an agency's long days, mornings only a
+ * week ahead, and evenings all week. The showcase landlord's homes get the interesting viewings (their dashboard),
+ * with a sprinkle over the other owners' homes; a slot is the first offered one of a given day. The catalogue read is
+ * bounded by the seed's own size. Idempotent: hours by the listing's id, viewings by their unique keys — a second run
+ * adds nothing.
  */
 export const seedViewings = async (
     prisma: PrismaClient,
@@ -122,7 +119,6 @@ export const seedViewings = async (
         where: { isDemo: true, status: ListingStatus.PUBLISHED },
         select: { id: true, landlordId: true, agencyId: true, city: { select: { timeZone: true } } },
         orderBy: { id: 'asc' },
-        // Bounded by the seed's own catalogue.
         take: LISTING_COUNT + SALE_LISTING_COUNT,
     });
     const roll = random(20261115);
@@ -157,16 +153,14 @@ export const seedViewings = async (
         });
     }
     let schedules = 0;
-    for (let start = 0; start < scheduleRows.length; start += BATCH) {
+    for (let start = 0; start < scheduleRows.length; start += CREATE_MANY_BATCH_SIZE) {
         const created = await prisma.viewingSchedule.createMany({
-            data: scheduleRows.slice(start, start + BATCH),
+            data: scheduleRows.slice(start, start + CREATE_MANY_BATCH_SIZE),
             skipDuplicates: true,
         });
         schedules += created.count;
     }
 
-    // Viewings: the showcase landlord's homes get the interesting ones (their dashboard), the rest
-    // spread over other owners. A slot is the first offered one of a given day.
     const slotOn = (listingId: string, dayOffset: number, index: number): { startsAt: Date; endsAt: Date } | null => {
         const entry = scheduled.get(listingId);
         if (!entry) {
@@ -201,7 +195,6 @@ export const seedViewings = async (
         note?: string;
         cancelledBy?: string;
     }[] = [];
-    // The showcase tenant: a request waiting, a confirmed viewing ahead, a declined one, one held last week.
     const [home1, home2, home3, home4] = demoHomes;
     if (home1 && home2 && home3 && home4) {
         plan.push({
@@ -234,7 +227,6 @@ export const seedViewings = async (
             status: ViewingStatus.CONFIRMED,
         });
     }
-    // Other renters on the showcase landlord's homes: requests to answer, confirmed ones ahead, history.
     demoHomes.slice(4, 16).forEach((listingId, position) => {
         const tenantId = tenantIds[position % tenantIds.length] ?? demoTenantId;
         const kind = position % 4;
@@ -274,7 +266,6 @@ export const seedViewings = async (
                       },
         );
     });
-    // A sprinkle over the other owners' homes, so agents and other landlords have rows too.
     otherHomes.slice(0, 120).forEach((listingId, position) => {
         const tenantId = tenantIds[(position * 7) % tenantIds.length] ?? demoTenantId;
         const kind = position % 3;
@@ -325,9 +316,9 @@ export const seedViewings = async (
         });
     }
     let viewings = 0;
-    for (let start = 0; start < rows.length; start += BATCH) {
+    for (let start = 0; start < rows.length; start += CREATE_MANY_BATCH_SIZE) {
         const created = await prisma.viewing.createMany({
-            data: rows.slice(start, start + BATCH),
+            data: rows.slice(start, start + CREATE_MANY_BATCH_SIZE),
             skipDuplicates: true,
         });
         viewings += created.count;

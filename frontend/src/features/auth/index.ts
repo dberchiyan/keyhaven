@@ -1,23 +1,26 @@
-import { lazyWithPreload } from '@/shared/lib/lazyWithPreload';
+import { lazyWithPreload } from '@/shared/lib/lazy-with-preload';
 
-/** Public surface of the auth feature. Pages are lazy so the router stays in the shell chunk. */
-export const LoginPage = lazyWithPreload(() => import('./pages/LoginPage'));
-export const SignupPage = lazyWithPreload(() => import('./pages/SignupPage'));
-export const VerifyEmailPage = lazyWithPreload(() => import('./pages/VerifyEmailPage'));
-export const ForgotPasswordPage = lazyWithPreload(() => import('./pages/ForgotPasswordPage'));
-export const ResetPasswordPage = lazyWithPreload(() => import('./pages/ResetPasswordPage'));
-export { RequireAuth } from './components/RequireAuth';
-export { RequireAccess } from './components/RequireAccess';
-export { IdleSessionWarning } from './components/IdleSessionWarning';
-export { VerificationBanner } from './components/VerificationBanner';
-export { useAccess } from './hooks/useAccess';
-export { ACCESS, type AccessPart, type UserRole } from './access';
-export { useLogout } from './hooks/useLogout';
-export { useCurrentUser } from './hooks/useCurrentUser';
-export { authKeys } from './hooks/queryKeys';
-export { useResendVerification } from './hooks/useAccountRecovery';
-export { applyServerFieldErrors } from './hooks/useServerFieldErrors';
-export { FormErrorLine, RESERVED_LINE } from './components/FormErrorLine';
+export const LoginPage = lazyWithPreload(async () => ({ default: (await import('./pages/login-page')).LoginPage }));
+export const SignupPage = lazyWithPreload(async () => ({ default: (await import('./pages/signup-page')).SignupPage }));
+export const VerifyEmailPage = lazyWithPreload(async () => ({
+    default: (await import('./pages/verify-email-page')).VerifyEmailPage,
+}));
+export const ForgotPasswordPage = lazyWithPreload(async () => ({
+    default: (await import('./pages/forgot-password-page')).ForgotPasswordPage,
+}));
+export const ResetPasswordPage = lazyWithPreload(async () => ({
+    default: (await import('./pages/reset-password-page')).ResetPasswordPage,
+}));
+export { SECURITY_LOG_PAGE_SIZE, SESSIONS_PAGE_SIZE } from './api/account-api';
+export { AUTH_SESSION_ENDPOINTS } from './api/auth-api';
+export { IdleSessionWarning } from './components/idle-session-warning';
+export { RequireAccess } from './components/require-access';
+export { RequireAuth } from './components/require-auth';
+export { SecurityLogView } from './components/security-log-view';
+export { VerificationBanner } from './components/verification-banner';
+export { describeUserAgent, isSecurityCategory } from './format';
+export { authKeys } from './hooks/query-keys';
+export { ACCESS, type AccessPart, useAccess, type UserRole } from './hooks/use-access';
 export {
     useChangePassword,
     useEndOtherSessions,
@@ -25,14 +28,17 @@ export {
     useOwnSecurityLog,
     useSessions,
     useUpdateOwnName,
-} from './hooks/useAccount';
-export { SecurityLogView } from './components/SecurityLogView';
-export { isSecurityCategory } from './securityLog';
-export { describeUserAgent } from './userAgent';
-export { AUTH_SESSION_ENDPOINTS } from './api/authApi';
+} from './hooks/use-account';
+export { useResendVerification } from './hooks/use-account-recovery';
+export { useCurrentUser } from './hooks/use-current-user';
+export type { LoginLocationState } from './hooks/use-login-redirect';
+export { useLogout } from './hooks/use-logout';
+export { useDownloadPersonalData, useEraseAccount } from './hooks/use-personal-data-queries';
 export type {
     ChangePasswordRequest,
     CurrentUser,
+    EraseAccountRequest,
+    PersonalDataExport,
     SecurityCategory,
     SecurityEvent,
     SecurityLog,
@@ -40,5 +46,3 @@ export type {
     UserSession,
     UserSessions,
 } from './types';
-export { SECURITY_LOG_PAGE_SIZE, SESSIONS_PAGE_SIZE } from './api/accountApi';
-export type { LoginLocationState } from './hooks/useLoginRedirect';

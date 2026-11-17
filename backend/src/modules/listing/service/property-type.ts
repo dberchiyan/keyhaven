@@ -1,4 +1,3 @@
-/** Mirrored by ck_listings_property_type. */
 export const PropertyType = {
     APARTMENT: 'APARTMENT',
     HOUSE: 'HOUSE',
@@ -10,5 +9,6 @@ export type PropertyType = (typeof PropertyType)[keyof typeof PropertyType];
 
 export const PROPERTY_TYPES = Object.values(PropertyType) as [PropertyType, ...PropertyType[]];
 
+/** ck_listings_property_type allows no other value. */
 export const isPropertyType = (value: string): value is PropertyType =>
     (PROPERTY_TYPES as readonly string[]).includes(value);

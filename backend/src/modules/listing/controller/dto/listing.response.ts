@@ -1,11 +1,32 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { MoneySchema } from '../../../../common/dto/money';
-import { pageResponseSchema } from '../../../../common/dto/page.response';
-import { LISTING_KINDS } from '../../service/listing-kind';
-import { LISTING_STATUSES } from '../../service/listing-status';
-import { PHOTO_STATUSES } from '../../service/photo-status';
-import { PROPERTY_TYPES } from '../../service/property-type';
+
+import {
+    ADDRESS_LINE_MAX_LENGTH,
+    AGENCY_NAME_MAX_LENGTH,
+    CITY_NAME_MAX_LENGTH,
+    CITY_SLUG_MAX_LENGTH,
+    EMAIL_MAX_LENGTH,
+    LISTING_DESCRIPTION_MAX_LENGTH,
+    LISTING_TITLE_MAX_LENGTH,
+    NEIGHBORHOOD_MAX_LENGTH,
+    PERSON_FULL_NAME_MAX_LENGTH,
+    PHONE_MAX_LENGTH,
+    PHOTO_URL_MAX_LENGTH,
+    TIME_ZONE_MAX_LENGTH,
+    WEBSITE_MAX_LENGTH,
+    ZIP_MAX_LENGTH,
+} from '@/common/dto/limits';
+import { MoneySchema } from '@/common/dto/money';
+import { pageResponseSchema } from '@/common/dto/page.response';
+import { LISTING_KINDS } from '@/modules/listing/service/listing-kind';
+import { MAX_CITIES, MAX_STRIP_CARDS } from '@/modules/listing/service/listing-limits';
+import { LISTING_STATUSES } from '@/modules/listing/service/listing-status';
+import { MAX_PENDING_PHOTOS, MAX_PHOTOS, PHOTO_STATUSES } from '@/modules/listing/service/photo-status';
+import { PROPERTY_TYPES } from '@/modules/listing/service/property-type';
+
+const MIN_DIFFERENCE_PERCENT = -1000;
+const MAX_DIFFERENCE_PERCENT = 100_000;
 
 export const PropertyTypeSchema = z.enum(PROPERTY_TYPES).meta({ id: 'PropertyType' });
 export const ListingStatusSchema = z.enum(LISTING_STATUSES).meta({ id: 'ListingStatus' });
@@ -14,58 +35,46 @@ export const ListingKindSchema = z.enum(LISTING_KINDS).meta({ id: 'ListingKind' 
 export const CitySchema = z
     .object({
         id: z.uuid(),
-        name: z.string().max(100),
-        /** USPS state code. */
+        name: z.string().max(CITY_NAME_MAX_LENGTH),
         state: z.string().length(2),
-        /** For `?city=` in search. */
-        slug: z.string().max(100),
-        /** IANA time zone (viewing times are shown in it). */
-        timeZone: z.string().max(64),
+        slug: z.string().max(CITY_SLUG_MAX_LENGTH),
+        timeZone: z.string().max(TIME_ZONE_MAX_LENGTH),
     })
     .meta({ id: 'City' });
 
-/** A search result card. */
 export const ListingCardSchema = z
     .object({
         id: z.uuid(),
-        title: z.string().max(120),
+        title: z.string().max(LISTING_TITLE_MAX_LENGTH),
         propertyType: PropertyTypeSchema,
-        /** For rent (the price is a monthly rent) or for sale (the asking price). */
         kind: ListingKindSchema,
         price: MoneySchema,
         bedrooms: z.number().int().min(0),
-        /** "1.5" — a decimal string with one place. */
         bathrooms: z.string().regex(/^\d{1,2}\.\d$/),
         sizeSqft: z.number().int().min(1),
         city: CitySchema,
-        neighborhood: z.string().max(100).nullable(),
-        /** Move-in day of a home for rent; null for one for sale. */
-        availableFrom: z.iso.date().nullable(),
+        neighborhood: z.string().max(NEIGHBORHOOD_MAX_LENGTH).nullable(),
+        availableAt: z.iso.date().nullable(),
         publishedAt: z.iso.datetime().nullable(),
-        coverPhotoUrl: z.string().max(500).nullable(),
-        /** People who opened the page, one per person and day. */
+        coverPhotoUrl: z.string().max(PHOTO_URL_MAX_LENGTH).nullable(),
         viewCount: z.number().int().min(0),
-        /** The viewer saved it (tenants); false for everyone else. */
-        saved: z.boolean(),
+        isSaved: z.boolean(),
     })
     .meta({ id: 'ListingCard' });
 
-/** A row of the owner's dashboard: the card plus its status and saves. */
 export const ManagedListingCardSchema = z
     .object({
         ...ListingCardSchema.shape,
         status: ListingStatusSchema,
-        /** A showcase row of the public demo: read-only, add your own listing instead. */
-        demo: z.boolean(),
+        isDemo: z.boolean(),
         saveCount: z.number().int().min(0),
     })
     .meta({ id: 'ManagedListingCard' });
 
-/** A photo as its owner manages it: pending uploads included. */
 export const ManagedPhotoSchema = z
     .object({
         id: z.uuid(),
-        url: z.string().max(500).nullable(),
+        url: z.string().max(PHOTO_URL_MAX_LENGTH).nullable(),
         status: z.enum(PHOTO_STATUSES).meta({ id: 'PhotoStatus' }),
         position: z.number().int().min(0).nullable(),
     })
@@ -75,55 +84,52 @@ const ListedBySchema = z
     .discriminatedUnion('kind', [
         z.object({
             kind: z.literal('LANDLORD'),
-            name: z.string().max(201),
-            phone: z.string().max(32).nullable(),
-            email: z.string().max(254),
+            name: z.string().max(PERSON_FULL_NAME_MAX_LENGTH),
+            phone: z.string().max(PHONE_MAX_LENGTH).nullable(),
+            email: z.string().max(EMAIL_MAX_LENGTH),
         }),
         z.object({
             kind: z.literal('AGENCY'),
-            name: z.string().max(120),
-            phone: z.string().max(32),
-            email: z.string().max(254),
-            website: z.string().max(255).nullable(),
+            name: z.string().max(AGENCY_NAME_MAX_LENGTH),
+            phone: z.string().max(PHONE_MAX_LENGTH),
+            email: z.string().max(EMAIL_MAX_LENGTH),
+            website: z.string().max(WEBSITE_MAX_LENGTH).nullable(),
         }),
     ])
     .meta({ id: 'ListedBy' });
 
-/** The price against comparable homes (same kind, city and type); null with too few of them. */
 const PriceContextSchema = z
     .object({
         scope: z.enum(['NEIGHBORHOOD', 'CITY']),
         median: MoneySchema,
         sample: z.number().int().min(1),
-        /** Whole percent against the median: −8 is 8 % below. */
-        differencePercent: z.number().int().min(-1000).max(100000),
+        differencePercent: z.number().int().min(MIN_DIFFERENCE_PERCENT).max(MAX_DIFFERENCE_PERCENT),
     })
     .meta({ id: 'PriceContext' });
 
-/** The private part of the address; null when the caller may not see it. */
 const ListingAddressSchema = z
-    .object({ line1: z.string().max(255), line2: z.string().max(255).nullable() })
+    .object({
+        line1: z.string().max(ADDRESS_LINE_MAX_LENGTH),
+        line2: z.string().max(ADDRESS_LINE_MAX_LENGTH).nullable(),
+    })
     .meta({ id: 'ListingAddress' });
 
 export const ListingDetailSchema = z
     .object({
         ...ListingCardSchema.shape,
-        /** A showcase row of the public demo: read-only, add your own listing instead. */
-        demo: z.boolean(),
-        description: z.string().max(4000),
-        furnished: z.boolean(),
-        petsAllowed: z.boolean(),
-        parking: z.boolean(),
-        zip: z.string().max(10),
-        photos: z.array(z.object({ id: z.uuid(), url: z.string().max(500) })).max(20),
+        isDemo: z.boolean(),
+        description: z.string().max(LISTING_DESCRIPTION_MAX_LENGTH),
+        isFurnished: z.boolean(),
+        isPetFriendly: z.boolean(),
+        hasParking: z.boolean(),
+        zip: z.string().max(ZIP_MAX_LENGTH),
+        photos: z.array(z.object({ id: z.uuid(), url: z.string().max(PHOTO_URL_MAX_LENGTH) })).max(MAX_PHOTOS),
         listedBy: ListedBySchema,
-        /** Shown to the owner, the agency's agents and admins; null for everyone else (M2: confirmed viewings). */
         address: ListingAddressSchema.nullable(),
         priceContext: PriceContextSchema.nullable(),
     })
     .meta({ id: 'ListingDetail' });
 
-/** A listing as its owner (or an admin) manages it. */
 export const ManagedListingSchema = z
     .object({
         ...ListingDetailSchema.shape,
@@ -131,29 +137,27 @@ export const ManagedListingSchema = z
         address: ListingAddressSchema,
         cityId: z.uuid(),
         saveCount: z.number().int().min(0),
-        managedPhotos: z.array(ManagedPhotoSchema).max(40),
+        managedPhotos: z.array(ManagedPhotoSchema).max(MAX_PHOTOS + MAX_PENDING_PHOTOS),
         createdAt: z.iso.datetime(),
         updatedAt: z.iso.datetime(),
         version: z.number().int().min(0),
     })
     .meta({ id: 'ManagedListing' });
 
-/** Plain body types for the mappers (a DTO class instance must not be spread). */
 export type ListingDetailBody = z.infer<typeof ListingDetailSchema>;
 export type ManagedListingBody = z.infer<typeof ManagedListingSchema>;
 
-export class CitiesResponse extends createZodDto(z.object({ content: z.array(CitySchema).max(100) })) {}
+export class CitiesResponse extends createZodDto(z.object({ content: z.array(CitySchema).max(MAX_CITIES) })) {}
 export class ListingPageResponse extends createZodDto(pageResponseSchema(ListingCardSchema)) {}
-/** A short strip of cards: similar homes, recently viewed. */
-export class ListingCardsResponse extends createZodDto(z.object({ content: z.array(ListingCardSchema).max(12) })) {}
+export class ListingCardsResponse extends createZodDto(
+    z.object({ content: z.array(ListingCardSchema).max(MAX_STRIP_CARDS) }),
+) {}
 export class ManagedListingPageResponse extends createZodDto(pageResponseSchema(ManagedListingCardSchema)) {}
 export class ListingDetailResponse extends createZodDto(z.object(ListingDetailSchema.shape)) {}
 export class ManagedListingResponse extends createZodDto(z.object(ManagedListingSchema.shape)) {}
 
-/** A tenant's saved home. */
-export class SavedListingResponse extends createZodDto(z.object({ listingId: z.uuid(), saved: z.boolean() })) {}
+export class SavedListingResponse extends createZodDto(z.object({ listingId: z.uuid(), isSaved: z.boolean() })) {}
 
-/** How many listings the caller manages in each status. */
 export class ListingStatusCountsResponse extends createZodDto(
     z.object({
         DRAFT: z.number().int().min(0),

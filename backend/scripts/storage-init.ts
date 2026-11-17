@@ -7,12 +7,6 @@ import {
 } from '@aws-sdk/client-s3';
 import { z } from 'zod';
 
-/**
- * One-time storage provisioning (`make setup`, the compose `storage-init` service): the photo
- * bucket with public reads and the CORS rule the browser's direct uploads need. Idempotent.
- * Cloudflare R2 refuses bucket policies through the API — there, public access and CORS are set
- * in the dashboard and this script only checks that the bucket exists.
- */
 const env = z
     .object({
         R2_ENDPOINT: z.url(),
@@ -27,9 +21,7 @@ const env = z
         (() => {
             try {
                 process.loadEnvFile('.env');
-            } catch {
-                // Variables come from the environment (compose).
-            }
+            } catch {}
             return process.env;
         })(),
     );
@@ -45,6 +37,12 @@ const log = (line: string): void => {
     process.stdout.write(`${line}\n`);
 };
 
+/**
+ * One-time storage provisioning (`make setup`, the compose `storage-init` service): the photo
+ * bucket with public reads and the CORS rule the browser's direct uploads need. Idempotent.
+ * Cloudflare R2 refuses bucket policies through the API — there, public access and CORS are set
+ * in the dashboard and this script only checks that the bucket exists.
+ */
 const init = async (): Promise<void> => {
     const bucket = env.R2_BUCKET;
     try {
@@ -90,7 +88,6 @@ const init = async (): Promise<void> => {
         );
         log(`CORS allows uploads from ${env.APP_URL}`);
     } catch (error: unknown) {
-        // R2: policies and CORS are set in the Cloudflare dashboard, not through the API.
         log(`Bucket policy / CORS not set through the API (${String(error)}) — set them in the provider's console`);
     }
 };

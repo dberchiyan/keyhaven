@@ -1,9 +1,12 @@
+import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Injectable } from '@nestjs/common';
-import type { PrismaService } from '../../../common/persistence/prisma.service';
+
+import type { PrismaService } from '@/common/persistence/prisma.service';
+
 import { ListingStatus } from '../service/listing-status';
 import { type ViewerCardRecord, viewerCardSelect } from './record/listing.record';
+import { type SavedHomeExportRecord, savedHomeExportSelect } from './record/listing-privacy.record';
 
 @Injectable()
 export class SavedListingRepository {
@@ -25,13 +28,12 @@ export class SavedListingRepository {
         return count > 0;
     }
 
-    /** The tenant's saved homes that are still on the site, newest save first. */
+    /** Only homes still on the site. API-21: count and rows in parallel, they may differ by a row. */
     async findSavedPage(
         userId: string,
         page: { skip: number; take: number },
     ): Promise<{ content: ViewerCardRecord[]; totalElements: number }> {
         const where = { userId, listing: { status: ListingStatus.PUBLISHED } };
-        // In parallel (api.md → Pagination): a concurrent write may make them differ by a row.
         const [totalElements, rows] = await Promise.all([
             this.txHost.tx.savedListing.count({ where }),
             this.txHost.tx.savedListing.findMany({
@@ -43,5 +45,20 @@ export class SavedListingRepository {
             }),
         ]);
         return { content: rows.map((row) => row.listing), totalElements };
+    }
+
+    /** Every saved home, whatever its status now, newest first, at most `take`. */
+    findForExport(userId: string, take: number): Promise<SavedHomeExportRecord[]> {
+        return this.txHost.tx.savedListing.findMany({
+            where: { userId },
+            select: savedHomeExportSelect,
+            orderBy: [{ createdAt: 'desc' }, { listingId: 'desc' }],
+            take,
+        });
+    }
+
+    async deleteByUser(userId: string): Promise<number> {
+        const { count } = await this.txHost.tx.savedListing.deleteMany({ where: { userId } });
+        return count;
     }
 }

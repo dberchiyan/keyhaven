@@ -1,9 +1,7 @@
-import type { Prisma } from '../../../../generated/prisma/client';
+import type { Prisma } from '@/generated/prisma/client';
 
-/** Only finished uploads are shown (the listing module's rule). */
 const readyPhotos = { status: 'READY' } as const;
 
-/** A viewing with what both sides need to read it: the home (cover, place, owner's address and inbox) and the tenant. */
 export const viewingSelect = {
     id: true,
     listingId: true,
@@ -30,7 +28,6 @@ export const viewingSelect = {
             landlordId: true,
             agencyId: true,
             city: { select: { name: true, state: true, slug: true, timeZone: true } },
-            // Bounded: the cover only.
             photos: {
                 where: readyPhotos,
                 select: { url: true, storageKey: true },
@@ -45,7 +42,6 @@ export const viewingSelect = {
 } satisfies Prisma.ViewingSelect;
 export type ViewingRecord = Prisma.ViewingGetPayload<{ select: typeof viewingSelect }>;
 
-/** For a status change: the current status, slot and version only. */
 export const viewingStatusSelect = {
     id: true,
     status: true,
@@ -69,7 +65,6 @@ export type ViewingScheduleRecord = Prisma.ViewingScheduleGetPayload<{
     select: typeof viewingScheduleSelect;
 }>;
 
-/** What booking needs to know about the home: on the site, whose, in which zone, with which hours. */
 export const bookableListingSelect = {
     id: true,
     title: true,

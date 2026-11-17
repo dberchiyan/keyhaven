@@ -1,32 +1,28 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { USER_ROLES } from '../../../user/service/user-role';
+
+import {
+    AGENCY_NAME_MAX_LENGTH,
+    EMAIL_MAX_LENGTH,
+    PERSON_NAME_MAX_LENGTH,
+    PHONE_MAX_LENGTH,
+} from '@/common/dto/limits';
+import { USER_ROLES } from '@/modules/user/service/user-role';
 
 export const UserRoleSchema = z.enum(USER_ROLES).meta({ id: 'UserRole' });
 
 export const CurrentUserResponseSchema = z.object({
     id: z.uuid(),
-    email: z.string().max(254),
-    firstName: z.string().max(100),
-    lastName: z.string().max(100),
-    phone: z.string().max(32).nullable(),
+    email: z.string().max(EMAIL_MAX_LENGTH),
+    firstName: z.string().max(PERSON_NAME_MAX_LENGTH),
+    lastName: z.string().max(PERSON_NAME_MAX_LENGTH),
+    phone: z.string().max(PHONE_MAX_LENGTH).nullable(),
     role: UserRoleSchema,
-    /** Null until the person opened the verification link (or reset the password by email). */
     emailVerifiedAt: z.iso.datetime().nullable(),
-    /** The agent's agency; null for every other role. */
-    agency: z.object({ id: z.uuid(), name: z.string().max(120) }).nullable(),
-    /** Minutes without activity after which the session ends (the client warns before). */
+    agency: z.object({ id: z.uuid(), name: z.string().max(AGENCY_NAME_MAX_LENGTH) }).nullable(),
     idleTimeoutMinutes: z.number().int().min(1),
-    /**
-     * One of the public demo's shared showcase accounts: actions that would lock other visitors
-     * out are turned off for it. False for everyone else (an account a visitor created included).
-     */
-    demoRestricted: z.boolean(),
-    /**
-     * The public demo is on: showcase listings are read-only and everything added is wiped at the
-     * daily reset. False locally.
-     */
-    demoMode: z.boolean(),
+    isDemoRestricted: z.boolean(),
+    isDemoMode: z.boolean(),
 });
 
 export class CurrentUserResponse extends createZodDto(CurrentUserResponseSchema) {}

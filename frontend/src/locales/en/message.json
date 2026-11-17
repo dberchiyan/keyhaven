@@ -2,7 +2,6 @@
     "pageTitle": "Messages",
     "title": "Messages",
     "subtitle": "Talk to the other side of a confirmed viewing — or to Keyhaven about anything else.",
-    "retry": "Try again",
     "inbox": {
         "title": "Conversations",
         "loading": "Loading conversations",
@@ -61,7 +60,8 @@
         "emptySupport": "Your request is with Keyhaven",
         "emptySupportHint": "Someone from the team will answer here; you get an email too.",
         "staffName": "{{name}} · Keyhaven",
-        "justNow": "just now"
+        "justNow": "just now",
+        "removed": "This message was removed"
     },
     "composer": {
         "label": "Write a message",

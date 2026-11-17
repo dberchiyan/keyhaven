@@ -1,28 +1,32 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import { ApiPageable, type Pageable, PageableQuery } from '../../../common/dto/pageable';
-import { UuidParam } from '../../../common/dto/uuid-param';
-import { ApiErrors } from '../../../common/exception/api-errors.decorator';
-import { Idempotent, IdempotencyExempt } from '../../../common/idempotency/idempotent.decorator';
-import { toDecimal } from '../../../common/persistence/money';
-import { CurrentPrincipal } from '../../../common/security/current-principal.decorator';
-import { can } from '../../../common/security/policies';
-import type { Principal } from '../../../common/security/principal';
-import { Authorize } from '../../../common/security/security.decorators';
-import { MANAGED_LISTING_PAGEABLE, type ManagedListingSortField } from '../service/listing-sort';
+
+import { ApiPageable, type Pageable, PageableQuery } from '@/common/dto/pageable';
+import { UuidParam } from '@/common/dto/uuid-param';
+import { ApiErrors } from '@/common/exception/api-errors.decorator';
+import { IdempotencyExempt, Idempotent } from '@/common/idempotency/idempotent.decorator';
+import { toDecimal } from '@/common/persistence/money';
+import { CurrentPrincipal } from '@/common/security/current-principal.decorator';
+import { can } from '@/common/security/policies';
+import type { Principal } from '@/common/security/principal';
+import { Authorize } from '@/common/security/security.decorators';
+
 import { ListingService, toSearchTerms } from '../service/listing.service';
 import type { ListingDraft } from '../service/listing.types';
-import { CreateListingRequest, UpdateListingRequest } from './dto/listing-draft.request';
-import { ManagedListingFilterQuery } from './dto/listing-filter.query';
-import { InsightsQuery } from './dto/listing-insights.query';
-import { ListingInsightsResponse, ManagedInsightsResponse } from './dto/listing-insights.response';
-import { PhotoIntentRequest, PhotoIntentResponse, ReorderPhotosRequest } from './dto/listing-photo.request';
+import { ListingInsightService } from '../service/listing-insight.service';
+import { ListingPhotoService } from '../service/listing-photo.service';
+import { MANAGED_LISTING_PAGEABLE, type ManagedListingSortField } from '../service/listing-sort';
 import {
     ListingStatusCountsResponse,
     ManagedListingPageResponse,
     ManagedListingResponse,
 } from './dto/listing.response';
+import { CreateListingRequest, UpdateListingRequest } from './dto/listing-draft.request';
+import { ManagedListingFilterQuery } from './dto/listing-filter.query';
+import { InsightsQuery } from './dto/listing-insights.query';
+import { ListingInsightsResponse, ManagedInsightsResponse } from './dto/listing-insights.response';
+import { PhotoIntentRequest, PhotoIntentResponse, ReorderPhotosRequest } from './dto/listing-photo.request';
 import {
     toListingInsightsResponse,
     toManagedInsightsResponse,
@@ -30,7 +34,7 @@ import {
     toManagedListingResponse,
 } from './mapper/listing.mapper';
 
-/** The request's fields, one by one, into the service's draft (never passed on as is). */
+/** CORE-20: field by field, never passed on as is; a home for sale has no move-in day, whatever the form sent. */
 const toDraft = (request: CreateListingRequest): ListingDraft => ({
     title: request.title,
     description: request.description,
@@ -45,12 +49,10 @@ const toDraft = (request: CreateListingRequest): ListingDraft => ({
     cityId: request.cityId,
     neighborhood: request.neighborhood ?? null,
     zip: request.zip,
-    petsAllowed: request.petsAllowed,
-    furnished: request.furnished,
-    parking: request.parking,
-    // A home for sale has no move-in day, whatever the form sent.
-    availableFrom:
-        request.kind === 'RENT' && request.availableFrom ? new Date(`${request.availableFrom}T00:00:00Z`) : null,
+    isPetFriendly: request.isPetFriendly,
+    isFurnished: request.isFurnished,
+    hasParking: request.hasParking,
+    availableAt: request.kind === 'RENT' && request.availableAt ? new Date(`${request.availableAt}T00:00:00Z`) : null,
 });
 
 const MUTATION_ERRORS = [
@@ -69,7 +71,11 @@ const MUTATION_ERRORS = [
 @ApiTags('Managed listings')
 @Controller('api/v1/managed-listings')
 export class ManagedListingController {
-    constructor(private readonly listingService: ListingService) {}
+    constructor(
+        private readonly listingService: ListingService,
+        private readonly insightService: ListingInsightService,
+        private readonly photoService: ListingPhotoService,
+    ) {}
 
     @Get()
     @Authorize(can.manageListings)
@@ -129,7 +135,7 @@ export class ManagedListingController {
         @CurrentPrincipal() principal: Principal,
         @Query() query: InsightsQuery,
     ): Promise<ManagedInsightsResponse> {
-        return toManagedInsightsResponse(await this.listingService.findInsights(principal, query.period));
+        return toManagedInsightsResponse(await this.insightService.findInsights(principal, query.period));
     }
 
     @Get(':listingId')
@@ -157,7 +163,7 @@ export class ManagedListingController {
         @UuidParam('listingId') listingId: string,
         @Query() query: InsightsQuery,
     ): Promise<ListingInsightsResponse> {
-        return toListingInsightsResponse(await this.listingService.findListingInsights(listingId, query.period));
+        return toListingInsightsResponse(await this.insightService.findListingInsights(listingId, query.period));
     }
 
     @Put(':listingId')
@@ -247,7 +253,7 @@ export class ManagedListingController {
         @UuidParam('listingId') listingId: string,
         @Body() request: PhotoIntentRequest,
     ): Promise<PhotoIntentResponse> {
-        const intent = await this.listingService.createPhotoIntent(principal, listingId, {
+        const intent = await this.photoService.createPhotoIntent(principal, listingId, {
             filename: request.filename,
             contentType: request.contentType,
             sizeBytes: request.sizeBytes,
@@ -273,7 +279,7 @@ export class ManagedListingController {
         @UuidParam('listingId') listingId: string,
         @UuidParam('photoId') photoId: string,
     ): Promise<ManagedListingResponse> {
-        return toManagedListingResponse(await this.listingService.confirmPhoto(listingId, photoId));
+        return toManagedListingResponse(await this.photoService.confirmPhoto(listingId, photoId));
     }
 
     @Put(':listingId/photos')
@@ -285,7 +291,7 @@ export class ManagedListingController {
         @UuidParam('listingId') listingId: string,
         @Body() request: ReorderPhotosRequest,
     ): Promise<ManagedListingResponse> {
-        return toManagedListingResponse(await this.listingService.reorderPhotos(listingId, request.photoIds));
+        return toManagedListingResponse(await this.photoService.reorderPhotos(listingId, request.photoIds));
     }
 
     @Delete(':listingId/photos/:photoId')
@@ -294,6 +300,6 @@ export class ManagedListingController {
     @ApiOperation({ summary: 'Remove a photo' })
     @ApiErrors(...MUTATION_ERRORS, 'UPSTREAM_UNAVAILABLE')
     async removePhoto(@UuidParam('listingId') listingId: string, @UuidParam('photoId') photoId: string): Promise<void> {
-        await this.listingService.removePhoto(listingId, photoId);
+        await this.photoService.removePhoto(listingId, photoId);
     }
 }

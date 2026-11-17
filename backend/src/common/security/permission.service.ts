@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
+
+import type { Prisma } from '@/generated/prisma/client';
+
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../persistence/prisma.service';
-import type { Prisma } from '../../generated/prisma/client';
 import type { Principal } from './principal';
 
-/** Mirrors `listings.status` PUBLISHED (the listing module owns the value set). */
-const PUBLISHED = 'PUBLISHED';
+const PUBLISHED_LISTING_STATUS = 'PUBLISHED';
 
 /**
- * The only place ownership rules are written (security.md → Authorisation). Existence checks
+ * SEC-4: the only place ownership rules are written. Existence checks
  * only — returns booleans, never throws, never returns data. Every check starts at the caller:
  * their user id or their agency.
  */
@@ -53,7 +54,7 @@ export class PermissionService {
     }
 
     async isPublishedListing(listingId: string): Promise<boolean> {
-        const count = await this.prisma.listing.count({ where: { id: listingId, status: PUBLISHED } });
+        const count = await this.prisma.listing.count({ where: { id: listingId, status: PUBLISHED_LISTING_STATUS } });
         return count > 0;
     }
 
@@ -123,7 +124,7 @@ export class PermissionService {
         const count = await this.prisma.listing.count({
             where: {
                 id: listingId,
-                OR: [{ status: PUBLISHED }, ...(ownership ? [ownership] : [])],
+                OR: [{ status: PUBLISHED_LISTING_STATUS }, ...(ownership ? [ownership] : [])],
             },
         });
         return count > 0;

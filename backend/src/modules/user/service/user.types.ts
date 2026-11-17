@@ -17,7 +17,6 @@ export interface UserProfile {
     phone: string | null;
     role: UserRole;
     emailVerifiedAt: Date | null;
-    /** The agent's agency; null for every other role. */
     agency: { id: string; name: string } | null;
 }
 
@@ -26,6 +25,23 @@ export interface NewUser {
     firstName: string;
     lastName: string;
     role: UserRole;
-    /** Argon2 hash, computed before the transaction opens. */
+    passwordHash: string;
+}
+
+export interface UserExport {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    role: UserRole;
+    agencyName: string | null;
+    emailVerifiedAt: Date | null;
+    createdAt: Date;
+}
+
+export interface AnonymisedUser {
+    firstName: string;
+    lastName: string;
+    email: string;
     passwordHash: string;
 }

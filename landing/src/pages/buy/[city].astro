@@ -6,7 +6,7 @@ import CityJsonLd from '@/components/seo/CityJsonLd.astro';
 import { CATALOGUE } from '@/content/catalogue';
 import { LANDING } from '@/content/landing';
 import { CITIES } from '@/content/site';
-import Base from '@/layouts/Base.astro';
+import Base from '@/layouts/base.astro';
 
 /** One prerendered page per city: homes for sale (SEO entry points into the catalogue). */
 export const getStaticPaths = () => CITIES.map((city) => ({ params: { city: city.slug }, props: { city } }));

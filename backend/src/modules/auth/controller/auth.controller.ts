@@ -2,21 +2,22 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Query, 
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { ZodResponse } from 'nestjs-zod';
-import { AppConfigService } from '../../../common/config/app-config.service';
-import { ApiPageable, type Pageable, PageableQuery } from '../../../common/dto/pageable';
-import { SecurityLogQuery, toSecurityEventPage } from '../../../common/dto/security-event.response';
-import { UuidParam } from '../../../common/dto/uuid-param';
-import { ApiErrors } from '../../../common/exception/api-errors.decorator';
-import { IdempotencyExempt } from '../../../common/idempotency/idempotent.decorator';
-import { CurrentPrincipal } from '../../../common/security/current-principal.decorator';
-import { DemoRestricted } from '../../../common/security/demo.guard';
-import { can } from '../../../common/security/policies';
-import type { Principal } from '../../../common/security/principal';
-import { RateLimit, RateLimitName } from '../../../common/security/rate-limit';
-import { clientIp, clientUserAgent, readCookie } from '../../../common/security/request-client';
-import { Authorize, Public } from '../../../common/security/security.decorators';
-import { SessionCookies } from '../../../common/security/session-cookies';
-import { AUDIT_EVENT_PAGEABLE, type AuditEventSortField } from '../../audit/service/audit-sort';
+
+import { AppConfigService } from '@/common/config/app-config.service';
+import { ApiPageable, type Pageable, PageableQuery } from '@/common/dto/pageable';
+import { SecurityLogQuery, toSecurityEventPage } from '@/common/dto/security-event.response';
+import { UuidParam } from '@/common/dto/uuid-param';
+import { ApiErrors } from '@/common/exception/api-errors.decorator';
+import { IdempotencyExempt } from '@/common/idempotency/idempotent.decorator';
+import { CurrentPrincipal } from '@/common/security/current-principal.decorator';
+import { DemoRestricted } from '@/common/security/demo.guard';
+import { can } from '@/common/security/policies';
+import type { Principal } from '@/common/security/principal';
+import { RateLimit, RateLimitName } from '@/common/security/rate-limit';
+import { clientIp, clientUserAgent, readCookie } from '@/common/security/request-client';
+import { Authorize, Public } from '@/common/security/security.decorators';
+import { SessionCookies } from '@/common/security/session-cookies';
+
 import { AuthService } from '../service/auth.service';
 import { SessionService } from '../service/session.service';
 import { ChangePasswordRequest } from './dto/change-password.request';
@@ -181,17 +182,18 @@ export class AuthController {
     @Get('security-log')
     @Authorize(can.ownAccount)
     @ApiOperation({
-        summary: "The caller's security log: sign-ins, failed sign-ins, password changes, ended sessions",
+        summary:
+            "The caller's security log, newest first by cursor (`after` from the previous page's `nextCursor`): sign-ins, failed sign-ins, password changes, ended sessions",
     })
-    @ApiPageable(AUDIT_EVENT_PAGEABLE)
     @ZodResponse({ status: HttpStatus.OK, type: SecurityLogResponse })
-    @ApiErrors('INVALID_PARAMETER', 'UNAUTHORIZED', 'SESSION_EXPIRED')
+    @ApiErrors('VALIDATION_FAILED', 'UNAUTHORIZED', 'SESSION_EXPIRED')
     async securityLog(
         @CurrentPrincipal() principal: Principal,
         @Query() query: SecurityLogQuery,
-        @PageableQuery(AUDIT_EVENT_PAGEABLE) pageable: Pageable<AuditEventSortField>,
     ): Promise<SecurityLogResponse> {
-        return toSecurityEventPage(await this.authService.securityLog(principal, query.category ?? null, pageable));
+        return toSecurityEventPage(
+            await this.authService.securityLog(principal, query.category, query.after, query.size),
+        );
     }
 
     private toResponse(user: Parameters<typeof toCurrentUserResponse>[0]): CurrentUserResponse {

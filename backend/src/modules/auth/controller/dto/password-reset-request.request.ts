@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { EMAIL_MAX_LENGTH } from './login.request';
+
+import { EMAIL_MAX_LENGTH } from '@/common/dto/limits';
 
 export const PasswordResetRequestRequestSchema = z.object({
     email: z
@@ -12,7 +13,6 @@ export const PasswordResetRequestRequestSchema = z.object({
 
 export class PasswordResetRequestRequest extends createZodDto(PasswordResetRequestRequestSchema) {}
 
-/** Echoes the address the link was sent to — the same answer whether it has an account or not. */
-export const PasswordResetRequestResponseSchema = z.object({ email: z.string().max(254) });
+export const PasswordResetRequestResponseSchema = z.object({ email: z.string().max(EMAIL_MAX_LENGTH) });
 
 export class PasswordResetRequestResponse extends createZodDto(PasswordResetRequestResponseSchema) {}

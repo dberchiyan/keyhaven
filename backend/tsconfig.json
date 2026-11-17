@@ -23,7 +23,8 @@
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "verbatimModuleSyntax": false
+        "verbatimModuleSyntax": false,
+        "paths": { "@/*": ["./src/*"] }
     },
     "include": ["src/**/*.ts", "prisma/**/*.ts", "scripts/**/*.ts", "test/**/*.ts", "prisma.config.ts"]
 }

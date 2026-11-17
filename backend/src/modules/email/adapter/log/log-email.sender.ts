@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { type EmailMessage, EmailSender } from '../../service/email-sender';
+
+import { type EmailMessage, EmailSender } from '@/modules/email/service/email-sender';
 
 /**
  * Local development without a mail server (EMAIL_TRANSPORT=log): the whole message, links

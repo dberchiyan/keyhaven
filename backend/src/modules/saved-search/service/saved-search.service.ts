@@ -1,30 +1,35 @@
-import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { Transactional } from '@nestjs-cls/transactional';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { AppConfigService } from '../../../common/config/app-config.service';
+
+import { AppConfigService } from '@/common/config/app-config.service';
 import {
     BusinessRuleException,
     ConcurrentModificationException,
     ResourceNotFoundException,
-} from '../../../common/exception/api.exception';
-import { toDecimal } from '../../../common/persistence/money';
-import { EmailSender } from '../../email/service/email-sender';
-import type { ListingCriteria } from '../../listing/service/filter/listing.criteria';
-import { ListingService, toSearchTerms } from '../../listing/service/listing.service';
+} from '@/common/exception/api.exception';
+import { JobLock } from '@/common/persistence/job-lock';
+import { JobName } from '@/common/persistence/job-name';
+import { toDecimal } from '@/common/persistence/money';
+import { EmailSender } from '@/modules/email/service/email-sender';
+import type { ListingCriteria } from '@/modules/listing/service/filter/listing.criteria';
+import { ListingService, toSearchTerms } from '@/modules/listing/service/listing.service';
+
 import type { SavedSearchRecord } from '../repository/record/saved-search.record';
-import { MAX_SAVED_SEARCHES, SavedSearchRepository } from '../repository/saved-search.repository';
+import { SavedSearchRepository } from '../repository/saved-search.repository';
 import { digestEmail } from './digest-email';
-import { type SavedSearchCriteria, SavedSearchCriteriaSchema } from './saved-search-criteria';
 import type {
     CreateSavedSearchCommand,
     DigestSummary,
     SavedSearch,
     UpdateSavedSearchCommand,
 } from './saved-search.types';
+import { type SavedSearchCriteria, SavedSearchCriteriaSchema } from './saved-search-criteria';
+import { MAX_SAVED_SEARCHES } from './saved-search-limits';
 
-/** Homes listed in one digest email; the rest are counted. */
-const DIGEST_LISTINGS = 10;
+/** DATA-8: one digest email lists this many homes; the rest are only counted. */
+const MAX_DIGEST_LISTINGS = 10;
 
 /** A saved search's filters as the listing service's criteria (the same parsing as the query). */
 export const toCriteria = (criteria: SavedSearchCriteria, publishedAfter?: Date): ListingCriteria => ({
@@ -35,10 +40,10 @@ export const toCriteria = (criteria: SavedSearchCriteria, publishedAfter?: Date)
     ...(criteria.priceMax === undefined ? {} : { priceMax: toDecimal(criteria.priceMax) }),
     ...(criteria.beds === undefined ? {} : { bedroomsMin: criteria.beds }),
     ...(criteria.baths === undefined ? {} : { bathroomsMin: toDecimal(criteria.baths) }),
-    ...(criteria.pets === undefined ? {} : { petsAllowed: criteria.pets }),
-    ...(criteria.furnished === undefined ? {} : { furnished: criteria.furnished }),
-    ...(criteria.parking === undefined ? {} : { parking: criteria.parking }),
-    ...(criteria.availableBy === undefined ? {} : { availableBy: new Date(`${criteria.availableBy}T00:00:00Z`) }),
+    ...(criteria.isPetFriendly === undefined ? {} : { isPetFriendly: criteria.isPetFriendly }),
+    ...(criteria.isFurnished === undefined ? {} : { isFurnished: criteria.isFurnished }),
+    ...(criteria.hasParking === undefined ? {} : { hasParking: criteria.hasParking }),
+    ...(criteria.moveInAt === undefined ? {} : { moveInAt: new Date(`${criteria.moveInAt}T00:00:00Z`) }),
     searchTerms: toSearchTerms(criteria.q),
     ...(publishedAfter === undefined ? {} : { publishedAfter }),
 });
@@ -54,6 +59,7 @@ export class SavedSearchService {
         private readonly listingService: ListingService,
         private readonly emailSender: EmailSender,
         private readonly config: AppConfigService,
+        private readonly jobLock: JobLock,
         @InjectPinoLogger(SavedSearchService.name) private readonly logger: PinoLogger,
     ) {}
 
@@ -61,29 +67,24 @@ export class SavedSearchService {
         return (await this.savedSearchRepository.findByUser(userId)).map(toSavedSearch);
     }
 
+    /** DATA-23: the criteria are personal data, so they go with the account; joins the caller's transaction. */
+    async deleteAllForUser(userId: string): Promise<void> {
+        await this.savedSearchRepository.deleteByUser(userId);
+    }
+
     async create(userId: string, command: CreateSavedSearchCommand): Promise<SavedSearch> {
         const id = await this.createRow(userId, command);
         return this.find(userId, id);
     }
 
-    @Transactional()
-    private async createRow(userId: string, command: CreateSavedSearchCommand): Promise<string> {
-        if ((await this.savedSearchRepository.countByUser(userId)) >= MAX_SAVED_SEARCHES) {
-            throw new BusinessRuleException('errors.savedSearch.tooMany', { max: MAX_SAVED_SEARCHES });
-        }
-        // Validated again on the way in, so the document is always the schema's.
-        const criteria = SavedSearchCriteriaSchema.parse(command.criteria);
-        return this.savedSearchRepository.create(userId, command.name, criteria, command.emailAlerts);
-    }
-
     async update(userId: string, id: string, command: UpdateSavedSearchCommand): Promise<SavedSearch> {
         const before = await this.find(userId, id);
-        if (before.name === command.name && before.emailAlerts === command.emailAlerts) {
+        if (before.name === command.name && before.hasEmailAlerts === command.hasEmailAlerts) {
             return before;
         }
         const updated = await this.savedSearchRepository.update(userId, id, command.version, {
             name: command.name,
-            emailAlerts: command.emailAlerts,
+            hasEmailAlerts: command.hasEmailAlerts,
         });
         if (!updated) {
             throw new ConcurrentModificationException();
@@ -106,8 +107,10 @@ export class SavedSearchService {
     /** Every morning (UTC). Idempotent: a search is marked before its email goes out. */
     @Cron('0 8 * * *', { timeZone: 'UTC' })
     async sendDailyDigests(): Promise<void> {
-        const summary = await this.sendDigests(new Date());
-        this.logger.info(summary, 'Saved-search digests sent');
+        await this.jobLock.runExclusive(JobName.SEND_SAVED_SEARCH_DIGESTS, async () => {
+            const summary = await this.sendDigests(new Date());
+            this.logger.info(summary, 'Saved-search digests sent');
+        });
     }
 
     /**
@@ -127,7 +130,7 @@ export class SavedSearchService {
             const since = search.lastNotifiedAt ?? search.createdAt;
             const matches = await this.listingService.search(
                 toCriteria(criteria.data, since),
-                { page: 0, size: DIGEST_LISTINGS, sort: { field: 'publishedAt', direction: 'desc' } },
+                { page: 0, size: MAX_DIGEST_LISTINGS, sort: { field: 'publishedAt', direction: 'desc' } },
                 null,
             );
             await this.savedSearchRepository.markNotified(search.id, now);
@@ -152,16 +155,26 @@ export class SavedSearchService {
         }
         return { searches: searches.length, emails };
     }
+
+    /** DATA-22: the criteria are validated again on the way in, so the stored document is always the schema's. */
+    @Transactional()
+    private async createRow(userId: string, command: CreateSavedSearchCommand): Promise<string> {
+        if ((await this.savedSearchRepository.countByUser(userId)) >= MAX_SAVED_SEARCHES) {
+            throw new BusinessRuleException('errors.savedSearch.tooMany', { max: MAX_SAVED_SEARCHES });
+        }
+        const criteria = SavedSearchCriteriaSchema.parse(command.criteria);
+        return this.savedSearchRepository.create(userId, command.name, criteria, command.hasEmailAlerts);
+    }
 }
 
+/** DATA-22: a stored document that no longer parses shows as "everything" rather than failing the list. */
 const toSavedSearch = (record: SavedSearchRecord): SavedSearch => {
     const criteria = SavedSearchCriteriaSchema.safeParse(record.criteria);
     return {
         id: record.id,
         name: record.name,
-        // A document that no longer parses shows as "everything" rather than failing the list.
         criteria: criteria.success ? criteria.data : {},
-        emailAlerts: record.emailAlerts,
+        hasEmailAlerts: record.hasEmailAlerts,
         lastNotifiedAt: record.lastNotifiedAt,
         createdAt: record.createdAt,
         version: record.version,

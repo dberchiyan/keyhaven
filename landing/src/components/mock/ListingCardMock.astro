@@ -1,4 +1,5 @@
 ---
+import Photo from '@/components/ui/Photo.astro';
 import type { ShowcaseHome } from '@/content/showcase';
 
 /**
@@ -19,13 +20,12 @@ const { home, saved = false, i = 0 } = Astro.props;
 
 <div class="anim-rise flex flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass" style={`--i: ${i}`}>
     <div class="relative aspect-[4/3] bg-surface-2">
-        <img
+        <Photo
             src={home.photo}
-            alt=""
-            width="1200"
-            height="800"
-            loading="lazy"
-            decoding="async"
+            width={1200}
+            height={800}
+            widths={[400, 800]}
+            sizes="(min-width: 1024px) 24rem, (min-width: 640px) 33vw, 100vw"
             class="size-full object-cover"
         />
         <span

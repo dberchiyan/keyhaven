@@ -1,0 +1,57 @@
+---
+import Container from '@/components/ui/Container.astro';
+import type { LegalPage } from '@/content/legal';
+
+interface Props {
+    page: LegalPage;
+}
+
+const { page } = Astro.props;
+const updated = new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' }).format(
+    new Date(`${page.updated}T00:00:00Z`),
+);
+const external = (href: string) => (href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {});
+---
+
+<!-- Privacy and terms: one readable column, a heading per section. -->
+<article aria-labelledby="legal-title">
+    <Container class="pt-12 pb-16 sm:pt-16">
+        <div class="max-w-3xl">
+            <h1 id="legal-title" class="type-title">
+                {page.heading}
+            </h1>
+            <p class="mt-3 text-sm text-subtle">
+                {page.updatedLabel}: <time datetime={page.updated}>{updated}</time>
+            </p>
+            <p class="type-lead mt-6 text-muted">{page.lead}</p>
+            {page.sections.map((section) => (
+                <section aria-labelledby={section.id} class="mt-10">
+                    <h2 id={section.id} class="text-xl font-semibold text-ink">
+                        {section.title}
+                    </h2>
+                    {section.paragraphs?.map((text) => (
+                        <p class="mt-3 leading-relaxed text-ink-2">{text}</p>
+                    ))}
+                    {section.items && (
+                        <ul class="mt-3 flex list-disc flex-col gap-2 pl-5 leading-relaxed text-ink-2 marker:text-subtle">
+                            {section.items.map((text) => (
+                                <li>{text}</li>
+                            ))}
+                        </ul>
+                    )}
+                    {section.link && (
+                        <p class="mt-3">
+                            <a
+                                href={section.link.href}
+                                class="inline-flex min-h-11 items-center font-medium text-brand underline underline-offset-4 hover:text-brand-strong"
+                                {...external(section.link.href)}
+                            >
+                                {section.link.label}
+                            </a>
+                        </p>
+                    )}
+                </section>
+            ))}
+        </div>
+    </Container>
+</article>

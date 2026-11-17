@@ -1,56 +1,71 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { pageResponseSchema } from '../../../../common/dto/page.response';
-import { LISTING_KINDS } from '../../../listing/service/listing-kind';
-import { MAX_OWN_VIEWINGS, MAX_SLOT_DAYS } from '../../service/viewing-limits';
-import { SCHEDULE_LIMITS, SLOT_MINUTES, ViewingWindowSchema } from '../../service/viewing-schedule';
-import { CANCELLED_BY, VIEWING_STATUSES } from '../../service/viewing-status';
+
+import {
+    ADDRESS_LINE_MAX_LENGTH,
+    CITY_NAME_MAX_LENGTH,
+    CITY_SLUG_MAX_LENGTH,
+    EMAIL_MAX_LENGTH,
+    LISTING_TITLE_MAX_LENGTH,
+    NEIGHBORHOOD_MAX_LENGTH,
+    PERSON_NAME_MAX_LENGTH,
+    PHONE_MAX_LENGTH,
+    PHOTO_URL_MAX_LENGTH,
+    TIME_ZONE_MAX_LENGTH,
+} from '@/common/dto/limits';
+import { pageResponseSchema } from '@/common/dto/page.response';
+import { LISTING_KINDS } from '@/modules/listing/service/listing-kind';
+import { MAX_OWN_VIEWINGS, MAX_SLOT_DAYS } from '@/modules/viewing/service/viewing-limits';
+import {
+    LONGEST_SLOT_MINUTES,
+    MAX_WINDOWS,
+    SCHEDULE_LIMITS,
+    SHORTEST_SLOT_MINUTES,
+    ViewingWindowSchema,
+} from '@/modules/viewing/service/viewing-schedule';
+import { CANCELLED_BY, VIEWING_STATUSES } from '@/modules/viewing/service/viewing-status';
+
+import { VIEWING_MESSAGE_MAX, VIEWING_NOTE_MAX } from './viewing.request';
+
+const STATE_CODE_LENGTH = 2;
+const MAX_SLOTS_PER_DAY = 300;
 
 export const ViewingStatusSchema = z.enum(VIEWING_STATUSES).meta({ id: 'ViewingStatus' });
 
-/** The owner's hours as stored, with the zone they are written in. */
 export const ViewingScheduleSchema = z
     .object({
         listingId: z.uuid(),
-        timeZone: z.string().max(64),
-        slotMinutes: z
-            .number()
-            .int()
-            .min(SLOT_MINUTES[0])
-            .max(SLOT_MINUTES[SLOT_MINUTES.length - 1] ?? 60),
+        timeZone: z.string().max(TIME_ZONE_MAX_LENGTH),
+        slotMinutes: z.number().int().min(SHORTEST_SLOT_MINUTES).max(LONGEST_SLOT_MINUTES),
         noticeHours: z.number().int().min(0).max(SCHEDULE_LIMITS.noticeHoursMax),
         horizonDays: z.number().int().min(1).max(SCHEDULE_LIMITS.horizonDaysMax),
-        windows: z.array(ViewingWindowSchema.meta({ id: 'ViewingWindow' })).max(7 * SCHEDULE_LIMITS.windowsPerDay),
+        windows: z.array(ViewingWindowSchema.meta({ id: 'ViewingWindow' })).max(MAX_WINDOWS),
         blockedDays: z.array(z.iso.date()).max(SCHEDULE_LIMITS.blockedDays),
         updatedAt: z.iso.datetime(),
         version: z.number().int().min(0),
     })
     .meta({ id: 'ViewingSchedule' });
 
-/** The listing's hours, or none yet (`schedule: null`) — the zone is always there for the editor. */
 export const ViewingScheduleStateSchema = z
-    .object({ schedule: ViewingScheduleSchema.nullable(), timeZone: z.string().max(64) })
+    .object({ schedule: ViewingScheduleSchema.nullable(), timeZone: z.string().max(TIME_ZONE_MAX_LENGTH) })
     .meta({ id: 'ViewingScheduleState' });
 
 const ViewingSlotSchema = z
     .object({ startsAt: z.iso.datetime(), endsAt: z.iso.datetime() })
     .meta({ id: 'ViewingSlot' });
 
-/** The slots a tenant can book, grouped by the city's local day. */
 export const ViewingSlotsSchema = z
     .object({
-        /** False when the home has no viewing hours: nothing to book, contact the lister. */
-        open: z.boolean(),
-        timeZone: z.string().max(64),
-        slotMinutes: z.number().int().min(0).max(60).nullable(),
+        isOpen: z.boolean(),
+        timeZone: z.string().max(TIME_ZONE_MAX_LENGTH),
+        slotMinutes: z.number().int().min(0).max(LONGEST_SLOT_MINUTES).nullable(),
         noticeHours: z.number().int().min(0).max(SCHEDULE_LIMITS.noticeHoursMax),
-        /** The last local day slots are offered for (the owner's horizon). */
-        horizonEnd: z.iso.date(),
+        horizonEndsAt: z.iso.date(),
         from: z.iso.date(),
         days: z
             .array(
                 z
-                    .object({ day: z.iso.date(), slots: z.array(ViewingSlotSchema).max(300) })
+                    .object({ day: z.iso.date(), slots: z.array(ViewingSlotSchema).max(MAX_SLOTS_PER_DAY) })
                     .meta({ id: 'ViewingSlotDay' }),
             )
             .max(MAX_SLOT_DAYS),
@@ -60,31 +75,33 @@ export const ViewingSlotsSchema = z
 const ViewingListingSchema = z
     .object({
         id: z.uuid(),
-        title: z.string().max(120),
+        title: z.string().max(LISTING_TITLE_MAX_LENGTH),
         kind: z.enum(LISTING_KINDS),
-        coverPhotoUrl: z.string().max(500).nullable(),
-        neighborhood: z.string().max(100).nullable(),
+        coverPhotoUrl: z.string().max(PHOTO_URL_MAX_LENGTH).nullable(),
+        neighborhood: z.string().max(NEIGHBORHOOD_MAX_LENGTH).nullable(),
         city: z.object({
-            name: z.string().max(100),
-            state: z.string().length(2),
-            slug: z.string().max(100),
-            timeZone: z.string().max(64),
+            name: z.string().max(CITY_NAME_MAX_LENGTH),
+            state: z.string().length(STATE_CODE_LENGTH),
+            slug: z.string().max(CITY_SLUG_MAX_LENGTH),
+            timeZone: z.string().max(TIME_ZONE_MAX_LENGTH),
         }),
-        /** The exact address: the owner's side always, the tenant's once the viewing is confirmed. */
-        address: z.object({ line1: z.string().max(255), line2: z.string().max(255).nullable() }).nullable(),
-        /** A showcase home of the public demo. */
-        demo: z.boolean(),
+        address: z
+            .object({
+                line1: z.string().max(ADDRESS_LINE_MAX_LENGTH),
+                line2: z.string().max(ADDRESS_LINE_MAX_LENGTH).nullable(),
+            })
+            .nullable(),
+        isDemo: z.boolean(),
     })
     .meta({ id: 'ViewingListing' });
 
-/** Who asked — the owner's side only; null on the tenant's own view. */
 const ViewingTenantSchema = z
     .object({
         id: z.uuid(),
-        firstName: z.string().max(100),
-        lastName: z.string().max(100),
-        email: z.string().max(254),
-        phone: z.string().max(32).nullable(),
+        firstName: z.string().max(PERSON_NAME_MAX_LENGTH),
+        lastName: z.string().max(PERSON_NAME_MAX_LENGTH),
+        email: z.string().max(EMAIL_MAX_LENGTH),
+        phone: z.string().max(PHONE_MAX_LENGTH).nullable(),
     })
     .meta({ id: 'ViewingTenant' });
 
@@ -94,8 +111,8 @@ export const ViewingSchema = z
         status: ViewingStatusSchema,
         startsAt: z.iso.datetime(),
         endsAt: z.iso.datetime(),
-        message: z.string().max(500).nullable(),
-        note: z.string().max(300).nullable(),
+        message: z.string().max(VIEWING_MESSAGE_MAX).nullable(),
+        note: z.string().max(VIEWING_NOTE_MAX).nullable(),
         cancelledBy: z.enum(CANCELLED_BY).nullable(),
         decidedAt: z.iso.datetime().nullable(),
         createdAt: z.iso.datetime(),
@@ -116,7 +133,6 @@ export class ViewingPageResponse extends createZodDto(pageResponseSchema(Viewing
 export class ViewingSlotsResponse extends createZodDto(z.object(ViewingSlotsSchema.shape)) {}
 export class ViewingScheduleResponse extends createZodDto(z.object(ViewingScheduleSchema.shape)) {}
 export class ViewingScheduleStateResponse extends createZodDto(z.object(ViewingScheduleStateSchema.shape)) {}
-/** Requests waiting for an answer and confirmed viewings ahead, over the caller's scope. */
 export class ViewingSummaryResponse extends createZodDto(
     z.object({ requested: z.number().int().min(0), upcoming: z.number().int().min(0) }),
 ) {}

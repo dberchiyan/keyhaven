@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AppConfigService } from '../../common/config/app-config.service';
-import { EmailTransport } from '../../common/config/env.schema';
+
+import { AppConfigService } from '@/common/config/app-config.service';
+import { EmailTransport } from '@/common/config/env.schema';
+
 import { LogEmailSender } from './adapter/log/log-email.sender';
 import { SmtpEmailSender } from './adapter/smtp/smtp-email.sender';
 import { EmailSender } from './service/email-sender';

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+
 import { bodyOf, Client, createTestApp, type TestApp } from './app';
 import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
 
@@ -12,10 +13,6 @@ interface Point {
 const seriesOf = (response: { body: unknown }): Point[] =>
     (bodyOf(response as never).series as Point[] | undefined) ?? [];
 
-/**
- * The owner's insights: views and saves per day over a window, the previous window for the
- * comparison, the busiest listings — scoped like the dashboard (403 for someone else's).
- */
 describe('Listing insights', () => {
     let testApp: TestApp;
     let f: Fixtures;
@@ -42,7 +39,6 @@ describe('Listing insights', () => {
         ] as const) {
             expect((await client.login(user.email, PASSWORD)).status).toBe(200);
         }
-        // Today: the tenant and a visitor open the landlord's home; the tenant saves it.
         expect((await tenant.get(`/api/v1/listings/${f.landlordPublished}`)).status).toBe(200);
         const visitor = new Client(testApp.app);
         expect((await visitor.get(`/api/v1/listings/${f.landlordPublished}`)).status).toBe(200);
@@ -65,7 +61,6 @@ describe('Listing insights', () => {
         const series = seriesOf(response);
         expect(series).toHaveLength(30);
         expect(series.at(-1)).toEqual({ day: todayUtc(), views: 2, saves: 1 });
-        // Every other day is present and quiet — the chart never has holes.
         expect(series.slice(0, -1).every((point) => point.views === 0 && point.saves === 0)).toBe(true);
         expect(bodyOf(response).from).toBe(series[0]?.day);
     });
@@ -86,13 +81,10 @@ describe('Listing insights', () => {
         const response = await landlord.get('/api/v1/managed-listings/insights');
         expect(response.status).toBe(200);
         expect(response.body).toMatchObject({ totals: { views: 2, saves: 1 } });
-        // toMatchObject on an array checks its length as well as each row.
         expect(bodyOf(response).top).toMatchObject([{ listing: { id: f.landlordPublished }, views: 2, saves: 1 }]);
-        // The agency saw nothing: a quiet scope has empty totals and no top rows.
         const agency = await agent.get('/api/v1/managed-listings/insights');
         expect(agency.status).toBe(200);
         expect(agency.body).toMatchObject({ totals: { views: 0, saves: 0 }, top: [] });
-        // Admins see the whole site.
         const all = await admin.get('/api/v1/managed-listings/insights?period=7');
         expect(all.status).toBe(200);
         expect((bodyOf(all).totals as { views: number }).views).toBeGreaterThanOrEqual(2);
@@ -103,7 +95,6 @@ describe('Listing insights', () => {
         expect((await tenant.get(`/api/v1/managed-listings/${f.landlordPublished}/insights`)).status).toBe(403);
         expect((await otherLandlord.get(`/api/v1/managed-listings/${f.landlordPublished}/insights`)).status).toBe(403);
         expect((await agent.get(`/api/v1/managed-listings/${f.landlordPublished}/insights`)).status).toBe(403);
-        // An admin reaches any listing; an unknown id is 404.
         expect((await admin.get(`/api/v1/managed-listings/${f.landlordPublished}/insights`)).status).toBe(200);
         expect((await admin.get(`/api/v1/managed-listings/${randomUUID()}/insights`)).status).toBe(404);
     });

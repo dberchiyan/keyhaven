@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { newPasswordSchema, PASSWORD_LIMITS } from '@/shared/lib/passwordRules';
+
+import { newPasswordSchema, PASSWORD_LIMITS } from '@/shared/lib/password-rules';
 
 /** Mirrors backend ChangePasswordRequest (auth/controller/dto/change-password.request.ts). */
 export const changePasswordSchema = z
@@ -36,3 +37,13 @@ export const editNameSchema = z.object({
 });
 
 export type EditNameValues = z.infer<typeof editNameSchema>;
+
+/** Mirrors backend EraseAccountRequest (privacy/controller/dto/erase-account.request.ts). */
+export const eraseAccountSchema = z.object({
+    password: z
+        .string()
+        .min(1, 'validation:currentPassword.required')
+        .max(PASSWORD_LIMITS.max, 'validation:password.tooLong'),
+});
+
+export type EraseAccountValues = z.infer<typeof eraseAccountSchema>;

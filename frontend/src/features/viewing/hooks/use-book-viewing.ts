@@ -1,0 +1,91 @@
+import { type RefObject, useEffect, useRef, useState } from 'react';
+
+import { isApiError } from '@/shared/api/api-error';
+import type { ErrorCode } from '@/shared/types';
+
+import type { ViewingSlot } from '../types';
+import { useRequestViewing } from './use-viewing-queries';
+
+export const MESSAGE_MAX = 500;
+
+export interface UseBookViewingResult {
+    slot: ViewingSlot | undefined;
+    setSlot: (next: ViewingSlot | undefined) => void;
+    message: string;
+    setMessage: (value: string) => void;
+    submit: () => Promise<void>;
+    isPending: boolean;
+    errorCode: ErrorCode | undefined;
+    slotMissing: boolean;
+    errorRef: RefObject<HTMLDivElement | null>;
+}
+
+/**
+ * The booking form on a listing page: the chosen slot, an optional note, one Idempotency-Key per
+ * attempt (QRY-12) — once the server answered, the next try is a new operation, so the key
+ * changes; a taken slot is dropped so the tenant picks again. Errors focus the error line (A11Y-3).
+ */
+export const useBookViewing = (listingId: string, onBooked: () => void): UseBookViewingResult => {
+    const request = useRequestViewing();
+    const [slot, setSlot] = useState<ViewingSlot | undefined>(undefined);
+    const [message, setMessage] = useState('');
+    const [key, setKey] = useState(() => crypto.randomUUID());
+    const [errorCode, setErrorCode] = useState<ErrorCode | undefined>(undefined);
+    const [slotMissing, setSlotMissing] = useState(false);
+    const errorRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (errorCode || slotMissing) {
+            errorRef.current?.focus();
+        }
+    }, [errorCode, slotMissing]);
+
+    const submit = async (): Promise<void> => {
+        setErrorCode(undefined);
+        if (!slot) {
+            setSlotMissing(true);
+            return;
+        }
+        setSlotMissing(false);
+        try {
+            await request.mutateAsync({
+                request: {
+                    listingId,
+                    startsAt: slot.startsAt,
+                    ...(message.trim() ? { message: message.trim() } : {}),
+                },
+                key,
+            });
+            setSlot(undefined);
+            setMessage('');
+            onBooked();
+        } catch (error) {
+            if (!isApiError(error)) {
+                throw error;
+            }
+            setErrorCode(error.code);
+            setKey(crypto.randomUUID());
+            if (error.code === 'VIEWING_SLOT_TAKEN' || error.code === 'BUSINESS_RULE_VIOLATION') {
+                setSlot(undefined);
+            }
+        }
+    };
+
+    return {
+        slot,
+        setSlot: (next: ViewingSlot | undefined) => {
+            setSlot(next);
+            setSlotMissing(false);
+            setErrorCode(undefined);
+        },
+        message,
+        setMessage: (value: string) => {
+            setMessage(value.slice(0, MESSAGE_MAX));
+        },
+        submit,
+        isPending: request.isPending,
+        errorCode,
+        slotMissing,
+        errorRef,
+    };
+};

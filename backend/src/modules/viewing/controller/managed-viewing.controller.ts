@@ -1,18 +1,19 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import { ApiPageable, type Pageable, PageableQuery } from '../../../common/dto/pageable';
-import { UuidParam } from '../../../common/dto/uuid-param';
-import { ApiErrors } from '../../../common/exception/api-errors.decorator';
-import { CurrentPrincipal } from '../../../common/security/current-principal.decorator';
-import { can } from '../../../common/security/policies';
-import type { Principal } from '../../../common/security/principal';
-import { Authorize } from '../../../common/security/security.decorators';
+
+import { ApiPageable, type Pageable, PageableQuery } from '@/common/dto/pageable';
+import { UuidParam } from '@/common/dto/uuid-param';
+import { ApiErrors } from '@/common/exception/api-errors.decorator';
+import { CurrentPrincipal } from '@/common/security/current-principal.decorator';
+import { can } from '@/common/security/policies';
+import type { Principal } from '@/common/security/principal';
+import { Authorize } from '@/common/security/security.decorators';
+
+import type { ViewingCriteria } from '../service/viewing.types';
+import { ViewingQueryService } from '../service/viewing-query.service';
 import { ViewingScheduleService } from '../service/viewing-schedule.service';
 import { VIEWING_PAGEABLE, type ViewingSortField } from '../service/viewing-sort';
-import { ViewingService } from '../service/viewing.service';
-import type { ViewingCriteria } from '../service/viewing.types';
-import { SaveViewingScheduleRequest } from './dto/viewing-schedule.request';
 import { ManagedViewingFilterQuery } from './dto/viewing.query';
 import {
     ViewingListResponse,
@@ -21,13 +22,14 @@ import {
     ViewingScheduleStateResponse,
     ViewingSummaryResponse,
 } from './dto/viewing.response';
+import { SaveViewingScheduleRequest } from './dto/viewing-schedule.request';
 import { toViewingResponse, toViewingScheduleResponse } from './mapper/viewing.mapper';
 
-/** The query's fields, one by one, into the service's criteria (never passed on as is). */
+/** CORE-20: the query's fields, one by one, into the service's criteria (never passed on as is). */
 const toCriteria = (query: ManagedViewingFilterQuery): ViewingCriteria => ({
     ...(query.status === undefined ? {} : { status: query.status }),
     ...(query.listingId === undefined ? {} : { listingId: query.listingId }),
-    ...(query.upcoming === undefined ? {} : { upcoming: query.upcoming }),
+    ...(query.isUpcoming === undefined ? {} : { isUpcoming: query.isUpcoming }),
 });
 
 /** The owner's side: the viewings of their homes and each home's viewing hours. */
@@ -35,7 +37,7 @@ const toCriteria = (query: ManagedViewingFilterQuery): ViewingCriteria => ({
 @Controller('api/v1')
 export class ManagedViewingController {
     constructor(
-        private readonly viewingService: ViewingService,
+        private readonly viewingQueryService: ViewingQueryService,
         private readonly scheduleService: ViewingScheduleService,
     ) {}
 
@@ -53,7 +55,7 @@ export class ManagedViewingController {
         @Query() query: ManagedViewingFilterQuery,
         @PageableQuery(VIEWING_PAGEABLE) pageable: Pageable<ViewingSortField>,
     ): Promise<ViewingPageResponse> {
-        const page = await this.viewingService.managedPage(principal, toCriteria(query), pageable);
+        const page = await this.viewingQueryService.managedPage(principal, toCriteria(query), pageable);
         return { content: page.content.map(toViewingResponse), totalElements: page.totalElements };
     }
 
@@ -65,7 +67,7 @@ export class ManagedViewingController {
     @ZodResponse({ status: HttpStatus.OK, type: ViewingSummaryResponse })
     @ApiErrors('UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN')
     summary(@CurrentPrincipal() principal: Principal): Promise<ViewingSummaryResponse> {
-        return this.viewingService.summary(principal);
+        return this.viewingQueryService.summary(principal);
     }
 
     @Get('managed-listings/:listingId/viewings')
@@ -75,7 +77,7 @@ export class ManagedViewingController {
     @ApiErrors('INVALID_PARAMETER', 'UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN', 'RESOURCE_NOT_FOUND')
     async listForListing(@UuidParam('listingId') listingId: string): Promise<ViewingListResponse> {
         return {
-            content: (await this.viewingService.listForListing(listingId)).map(toViewingResponse),
+            content: (await this.viewingQueryService.listForListing(listingId)).map(toViewingResponse),
         };
     }
 
@@ -116,18 +118,22 @@ export class ManagedViewingController {
         @Body() request: SaveViewingScheduleRequest,
     ): Promise<ViewingScheduleResponse> {
         return toViewingScheduleResponse(
-            await this.scheduleService.save(principal, listingId, {
-                slotMinutes: request.slotMinutes,
-                noticeHours: request.noticeHours,
-                horizonDays: request.horizonDays,
-                windows: request.windows.map((window) => ({
-                    weekday: window.weekday,
-                    start: window.start,
-                    end: window.end,
-                })),
-                blockedDays: [...request.blockedDays],
-                version: request.version,
-            }),
+            await this.scheduleService.save(
+                listingId,
+                {
+                    slotMinutes: request.slotMinutes,
+                    noticeHours: request.noticeHours,
+                    horizonDays: request.horizonDays,
+                    windows: request.windows.map((window) => ({
+                        weekday: window.weekday,
+                        start: window.start,
+                        end: window.end,
+                    })),
+                    blockedDays: [...request.blockedDays],
+                    version: request.version,
+                },
+                principal.userId,
+            ),
         );
     }
 

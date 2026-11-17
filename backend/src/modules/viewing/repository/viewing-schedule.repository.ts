@@ -1,8 +1,10 @@
+import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Injectable } from '@nestjs/common';
-import type { PrismaService } from '../../../common/persistence/prisma.service';
-import type { Prisma } from '../../../generated/prisma/client';
+
+import type { PrismaService } from '@/common/persistence/prisma.service';
+import type { Prisma } from '@/generated/prisma/client';
+
 import { type ViewingScheduleRecord, viewingScheduleSelect } from './record/viewing.record';
 
 export interface ScheduleColumns {
@@ -31,7 +33,7 @@ export class ViewingScheduleRepository {
         });
     }
 
-    /** Optimistic replace of the whole document; false when the row changed meanwhile. */
+    /** DATA-16: optimistic replace of the whole document; false when the row changed meanwhile. */
     async update(listingId: string, version: number, data: ScheduleColumns, actorUserId: string): Promise<boolean> {
         const { count } = await this.txHost.tx.viewingSchedule.updateMany({
             where: { listingId, version },

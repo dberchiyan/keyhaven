@@ -3,8 +3,8 @@ import { policy, publicPolicy } from './policy';
 import type { Principal } from './principal';
 
 /**
- * An unknown id — or one the caller may not know about — answers 404, once the authority passed
- * (no authority → 403). Used by admin-style policies (security.md → Authorisation).
+ * SEC-5: an unknown id — or one the caller may not know about — answers 404, once the authority passed
+ * (no authority → 403). Used by admin-style policies.
  */
 const orNotFound = (exists: boolean): true => {
     if (!exists) {
@@ -30,7 +30,6 @@ const isTenant = (principal: Principal): boolean => principal.hasAuthority('TENA
 const isLister = (principal: Principal): boolean =>
     principal.hasAuthority('LANDLORD') || principal.hasAuthority('AGENT');
 
-/** Declared constants, never built inline. The product's access matrix. */
 export const can = {
     /** The caller's own account (sign-out, password, sessions, verification email) — any state. */
     ownAccount: policy([], () => true, 'account'),

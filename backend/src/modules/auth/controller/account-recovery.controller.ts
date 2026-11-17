@@ -2,16 +2,18 @@ import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { ZodResponse } from 'nestjs-zod';
-import { AppConfigService } from '../../../common/config/app-config.service';
-import { ApiErrors } from '../../../common/exception/api-errors.decorator';
-import { IdempotencyExempt } from '../../../common/idempotency/idempotent.decorator';
-import { CurrentPrincipal } from '../../../common/security/current-principal.decorator';
-import { can } from '../../../common/security/policies';
-import type { Principal } from '../../../common/security/principal';
-import { RateLimit, RateLimitName } from '../../../common/security/rate-limit';
-import { clientIp, clientUserAgent, readCookie } from '../../../common/security/request-client';
-import { Authorize, Public } from '../../../common/security/security.decorators';
-import { SessionCookies } from '../../../common/security/session-cookies';
+
+import { AppConfigService } from '@/common/config/app-config.service';
+import { ApiErrors } from '@/common/exception/api-errors.decorator';
+import { IdempotencyExempt } from '@/common/idempotency/idempotent.decorator';
+import { CurrentPrincipal } from '@/common/security/current-principal.decorator';
+import { can } from '@/common/security/policies';
+import type { Principal } from '@/common/security/principal';
+import { RateLimit, RateLimitName } from '@/common/security/rate-limit';
+import { clientIp, clientUserAgent, readCookie } from '@/common/security/request-client';
+import { Authorize, Public } from '@/common/security/security.decorators';
+import { SessionCookies } from '@/common/security/session-cookies';
+
 import { AccountService } from '../service/account.service';
 import { CurrentUserResponse } from './dto/current-user.response';
 import { EmailVerificationResponse } from './dto/email-verification.response';

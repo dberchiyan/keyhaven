@@ -1,19 +1,16 @@
 import { randomUUID } from 'node:crypto';
+
+import { MAX_PENDING_PHOTOS } from '@/modules/listing/service/photo-status';
+
 import { bodyOf, Client, createTestApp, type TestApp } from './app';
 import { FakeEmailSender } from './fake-email.sender';
 import { PNG_HEAD } from './fake-object.storage';
 import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
-import { MAX_PENDING_PHOTOS } from '../src/modules/listing/service/photo-status';
 
 const rows = (response: { body: unknown }): Record<string, unknown>[] =>
     (bodyOf(response as never).content as Record<string, unknown>[] | undefined) ?? [];
 const titles = (response: { body: unknown }): string[] => rows(response).map((row) => String(row.title));
 
-/**
- * M1: search (filters, typo-tolerant text, paging), a tenant's saved homes and searches with
- * the daily digest, and the owner's writing: create, edit, photos, publish — with the access
- * rules around them.
- */
 describe('Listings and search (M1)', () => {
     let testApp: TestApp;
     let f: Fixtures;
@@ -37,10 +34,10 @@ describe('Listings and search (M1)', () => {
         cityId,
         neighborhood: 'Testville Heights',
         zip: '75001',
-        petsAllowed: true,
-        furnished: false,
-        parking: true,
-        availableFrom: '2026-12-15',
+        isPetFriendly: true,
+        isFurnished: false,
+        hasParking: true,
+        availableAt: '2026-12-15',
         ...overrides,
     });
 
@@ -80,12 +77,11 @@ describe('Listings and search (M1)', () => {
             const beds = await tenant.get('/api/v1/listings?city=testville&beds=3');
             expect(beds.body).toMatchObject({ totalElements: 0 });
             const twoBeds = await tenant.get(
-                '/api/v1/listings?city=testville&beds=2&baths=1&pets=true&parking=true&furnished=false&priceMin=1000&priceMax=2000&availableBy=2026-12-01&size=50',
+                '/api/v1/listings?city=testville&beds=2&baths=1&isPetFriendly=true&hasParking=true&isFurnished=false&priceMin=1000&priceMax=2000&moveInAt=2026-12-01&size=50',
             );
             expect(bodyOf(twoBeds).totalElements).toBeGreaterThanOrEqual(2);
-            const late = await tenant.get('/api/v1/listings?city=testville&availableBy=2026-11-01');
+            const late = await tenant.get('/api/v1/listings?city=testville&moveInAt=2026-11-01');
             expect(late.body).toMatchObject({ totalElements: 0 });
-            // The kind leads every search: the fixtures are rentals, so "for sale" finds none.
             const forSale = await tenant.get('/api/v1/listings?city=testville&kind=SALE');
             expect(forSale.body).toMatchObject({ totalElements: 0 });
             const houses = await tenant.get('/api/v1/listings?city=testville&type=HOUSE');
@@ -98,11 +94,9 @@ describe('Listings and search (M1)', () => {
             const open = await visitor.get('/api/v1/listings?city=testville&size=50');
             expect(open.status).toBe(200);
             expect(rows(open).map((row) => row.id)).toContain(f.landlordPublished);
-            expect(rows(open).every((row) => row.saved === false)).toBe(true);
-            // A published page opens; a draft answers 404 to a visitor, exactly like an unknown id.
+            expect(rows(open).every((row) => row.isSaved === false)).toBe(true);
             expect((await visitor.get(`/api/v1/listings/${f.landlordPublished}`)).status).toBe(200);
             expect((await visitor.get(`/api/v1/listings/${f.landlordDraft}`)).status).toBe(404);
-            // Saving needs an account.
             expect((await visitor.put(`/api/v1/saved-listings/${f.landlordPublished}`)).status).toBe(401);
         });
 
@@ -132,7 +126,7 @@ describe('Listings and search (M1)', () => {
         it('a tenant saves and unsaves; the card shows it; only published homes can be saved', async () => {
             const saved = await tenant.put(`/api/v1/saved-listings/${f.landlordPublished}`);
             expect(saved.status).toBe(200);
-            expect(saved.body).toMatchObject({ listingId: f.landlordPublished, saved: true });
+            expect(saved.body).toMatchObject({ listingId: f.landlordPublished, isSaved: true });
             expect((await tenant.put(`/api/v1/saved-listings/${f.landlordPublished}`)).status).toBe(200);
 
             const page = await tenant.get('/api/v1/saved-listings');
@@ -141,7 +135,7 @@ describe('Listings and search (M1)', () => {
             const card = rows(await tenant.get('/api/v1/listings?city=testville&size=50')).find(
                 (row) => row.id === f.landlordPublished,
             );
-            expect(card).toMatchObject({ saved: true });
+            expect(card).toMatchObject({ isSaved: true });
 
             expect((await tenant.put(`/api/v1/saved-listings/${f.landlordDraft}`)).status).toBe(404);
             expect((await landlord.put(`/api/v1/saved-listings/${f.landlordPublished}`)).status).toBe(403);
@@ -186,10 +180,9 @@ describe('Listings and search (M1)', () => {
             expect(badCity.status).toBe(422);
             expect(badCity.body).toMatchObject({ details: [{ field: 'cityId' }] });
 
-            // A rental needs its move-in day; a home for sale has none, whatever the form sent.
-            const noDay = await landlord.postIdempotent('/api/v1/managed-listings', draft({ availableFrom: null }));
+            const noDay = await landlord.postIdempotent('/api/v1/managed-listings', draft({ availableAt: null }));
             expect(noDay.status).toBe(400);
-            expect(noDay.body).toMatchObject({ details: [{ field: 'availableFrom' }] });
+            expect(noDay.body).toMatchObject({ details: [{ field: 'availableAt' }] });
             const forSale = await landlord.postIdempotent(
                 '/api/v1/managed-listings',
                 draft({ kind: 'SALE', price: '425000', title: 'Corner house for sale' }),
@@ -198,7 +191,7 @@ describe('Listings and search (M1)', () => {
             expect(forSale.body).toMatchObject({
                 kind: 'SALE',
                 price: { amount: '425000.0000' },
-                availableFrom: null,
+                availableAt: null,
             });
         });
 
@@ -257,14 +250,12 @@ describe('Listings and search (M1)', () => {
                 };
             };
 
-            // An intent the browser never uploaded: confirming it is refused.
             const abandoned = await intent();
             const notUploaded = await landlord.post(
                 `/api/v1/managed-listings/${listingId}/photos/${abandoned.photoId}/confirmation`,
             );
             expect(notUploaded.status).toBe(422);
 
-            // The real thing: bytes that are a PNG, then a confirmation.
             const first = await intent();
             testApp.storage.upload(first.uploadUrl, PNG_HEAD, 'image/png');
             const confirmed = await landlord.post(
@@ -275,13 +266,11 @@ describe('Listings and search (M1)', () => {
                 bodyOf(confirmed).managedPhotos as { id: string; status: string; position: number | null }[]
             ).find((photo) => photo.id === first.photoId);
             expect(readyAfterFirst).toMatchObject({ status: 'READY', position: 0 });
-            // Confirming again changes nothing.
             expect(
                 (await landlord.post(`/api/v1/managed-listings/${listingId}/photos/${first.photoId}/confirmation`))
                     .status,
             ).toBe(200);
 
-            // Bytes that are not the announced type are refused and the object removed.
             const lie = await intent();
             testApp.storage.upload(lie.uploadUrl, new Uint8Array(PNG_HEAD.length).fill(0x41), 'image/png');
             const rejected = await landlord.post(
@@ -310,15 +299,12 @@ describe('Listings and search (M1)', () => {
             });
             expect(partial.status).toBe(422);
 
-            // Someone else cannot touch the photos.
             expect((await agent.delete(`/api/v1/managed-listings/${listingId}/photos/${first.photoId}`)).status).toBe(
                 403,
             );
             expect(
                 (await landlord.delete(`/api/v1/managed-listings/${listingId}/photos/${second.photoId}`)).status,
             ).toBe(204);
-            // The ready gallery is the first photo alone; the abandoned intent stays pending until the
-            // hourly cleanup removes it.
             const after = bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`));
             const gallery = after.managedPhotos as {
                 id: string;
@@ -352,8 +338,8 @@ describe('Listings and search (M1)', () => {
         it('publishes, appears in search, counts a view, and the saved search mails the match', async () => {
             const search = await tenant.postIdempotent('/api/v1/saved-searches', {
                 name: 'Lofts in Testville',
-                emailAlerts: true,
-                criteria: { city: 'testville', q: 'loft', pets: true },
+                hasEmailAlerts: true,
+                criteria: { city: 'testville', q: 'loft', isPetFriendly: true },
             });
             expect(search.status).toBe(200);
             expect(search.body).toMatchObject({ lastNotifiedAt: null, criteria: { city: 'testville' } });
@@ -366,12 +352,8 @@ describe('Listings and search (M1)', () => {
             const found = await tenant.get(`/api/v1/listings?city=testville&q=${encodeURIComponent('renamd loft')}`);
             expect(titles(found)).toContain('Renamed loft');
 
-            // The tenant opens it: no address, one view counted (once per day).
             const page = await tenant.get(`/api/v1/listings/${listingId}`);
             expect(page.status).toBe(200);
-            // The comparable rentals in Testville are the fixtures' published apartments at $1,500
-            // (five per test file, this one's and those of the files that ran before it): the median
-            // comes from the city, and $2,200.50 is 47 % above it.
             expect(page.body).toMatchObject({
                 address: null,
                 priceContext: { scope: 'CITY', median: { amount: '1500.0000' }, differencePercent: 47 },
@@ -383,19 +365,16 @@ describe('Listings and search (M1)', () => {
             expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`))).toMatchObject({
                 viewCount: 1,
             });
-            // A visitor without an account counts too — once a day, however often they come back.
             const visitor = new Client(testApp.app);
             await visitor.get(`/api/v1/listings/${listingId}`);
             await visitor.get(`/api/v1/listings/${listingId}`);
             expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`))).toMatchObject({
                 viewCount: 2,
             });
-            // Every card and page carries the count; the tenant's second visit today adds nothing.
             expect(bodyOf(await tenant.get(`/api/v1/listings/${listingId}`))).toMatchObject({
                 viewCount: 2,
             });
 
-            // The digest: admins may run it now; the scheduler runs it daily.
             expect((await tenant.post('/api/v1/saved-search-digests')).status).toBe(403);
             const sent = await admin.post('/api/v1/saved-search-digests');
             expect(sent.status).toBe(200);
@@ -404,7 +383,6 @@ describe('Listings and search (M1)', () => {
             expect(mail?.subject).toContain('Lofts in Testville');
             expect(mail?.text).toContain('Renamed loft');
             expect(mail?.text).toContain(`/listings/${listingId}`);
-            // A second run has nothing new.
             const again = await admin.post('/api/v1/saved-search-digests');
             expect(testApp.emails.sent.filter((m) => m.to === f.tenant.email)).toHaveLength(1);
             expect(again.status).toBe(200);
@@ -414,11 +392,11 @@ describe('Listings and search (M1)', () => {
             expect(typeof rows(list)[0]?.lastNotifiedAt).toBe('string');
             const renamed = await tenant.put(`/api/v1/saved-searches/${savedSearchId}`, {
                 name: 'Quiet lofts',
-                emailAlerts: false,
+                hasEmailAlerts: false,
                 version: bodyOf(search).version,
             });
             expect(renamed.status).toBe(200);
-            expect(renamed.body).toMatchObject({ name: 'Quiet lofts', emailAlerts: false });
+            expect(renamed.body).toMatchObject({ name: 'Quiet lofts', hasEmailAlerts: false });
             const other = new Client(testApp.app);
             await other.login(f.otherLandlord.email, PASSWORD);
             expect((await other.delete(`/api/v1/saved-searches/${savedSearchId}`)).status).toBe(403);
@@ -427,7 +405,6 @@ describe('Listings and search (M1)', () => {
     });
 
     it('similar homes, recently viewed, and cards by id', async () => {
-        // The two fixture rentals are alike (2 beds, $1,500, Testville): each is the other's similar home.
         const visitor = new Client(testApp.app);
         const similar = await visitor.get(`/api/v1/listings/${f.landlordPublished}/similar`);
         expect(similar.status).toBe(200);
@@ -437,7 +414,6 @@ describe('Listings and search (M1)', () => {
         expect(similarIds).not.toContain(f.landlordDraft);
         expect((await visitor.get(`/api/v1/listings/${f.landlordDraft}/similar`)).status).toBe(404);
 
-        // A visitor keeps their own list of ids; the cards come back in that order, published only.
         const cards = await visitor.get(
             `/api/v1/listing-cards?ids=${f.agencyPublished},${f.landlordDraft},${f.landlordPublished}`,
         );
@@ -446,7 +422,6 @@ describe('Listings and search (M1)', () => {
         expect((await visitor.get('/api/v1/listing-cards?ids=not-an-id')).status).toBe(400);
         expect((await visitor.get('/api/v1/recent-listings')).status).toBe(401);
 
-        // A signed-in person's recent homes come from their views, latest first, each once.
         await tenant.get(`/api/v1/listings/${f.agencyPublished}`);
         await tenant.get(`/api/v1/listings/${f.landlordPublished}`);
         await tenant.get(`/api/v1/listings/${f.agencyPublished}`);

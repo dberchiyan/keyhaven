@@ -1,3 +1,4 @@
+import { toUtcDay } from '@/common/time/utc-day';
 import type {
     ListingCard,
     ListingCity,
@@ -6,8 +7,8 @@ import type {
     ManagedInsights,
     ManagedListing,
     ManagedListingCard,
-} from '../../service/listing.types';
-import type { ListingInsightsBody, ManagedInsightsBody } from '../dto/listing-insights.response';
+} from '@/modules/listing/service/listing.types';
+
 import type {
     CitiesResponse,
     ListingDetailBody,
@@ -15,11 +16,10 @@ import type {
     ManagedListingBody,
     ManagedListingPageResponse,
 } from '../dto/listing.response';
+import type { ListingInsightsBody, ManagedInsightsBody } from '../dto/listing-insights.response';
 
 type CityItem = CitiesResponse['content'][number];
 type CardItem = ListingPageResponse['content'][number];
-
-const toDay = (date: Date): string => date.toISOString().slice(0, 10);
 
 export const toCityResponse = (city: ListingCity): CityItem => ({
     id: city.id,
@@ -40,11 +40,11 @@ export const toListingCardResponse = (listing: ListingCard): CardItem => ({
     sizeSqft: listing.sizeSqft,
     city: toCityResponse(listing.city),
     neighborhood: listing.neighborhood,
-    availableFrom: listing.availableFrom ? toDay(listing.availableFrom) : null,
+    availableAt: listing.availableAt ? toUtcDay(listing.availableAt) : null,
     publishedAt: listing.publishedAt?.toISOString() ?? null,
     coverPhotoUrl: listing.coverPhotoUrl,
     viewCount: listing.viewCount,
-    saved: listing.saved,
+    isSaved: listing.isSaved,
 });
 
 export const toListingCardsResponse = (cards: ListingCard[]): { content: CardItem[] } => ({
@@ -64,7 +64,7 @@ type ManagedCardItem = ManagedListingPageResponse['content'][number];
 export const toManagedListingCardResponse = (listing: ManagedListingCard): ManagedCardItem => ({
     ...toListingCardResponse(listing),
     status: listing.status,
-    demo: listing.demo,
+    isDemo: listing.isDemo,
     saveCount: listing.saveCount,
 });
 
@@ -100,11 +100,11 @@ export const toManagedInsightsResponse = (insights: ManagedInsights): ManagedIns
 
 export const toListingDetailResponse = (listing: ListingDetail): ListingDetailBody => ({
     ...toListingCardResponse(listing),
-    demo: listing.demo,
+    isDemo: listing.isDemo,
     description: listing.description,
-    furnished: listing.furnished,
-    petsAllowed: listing.petsAllowed,
-    parking: listing.parking,
+    isFurnished: listing.isFurnished,
+    isPetFriendly: listing.isPetFriendly,
+    hasParking: listing.hasParking,
     zip: listing.zip,
     photos: listing.photos,
     listedBy: listing.listedBy,

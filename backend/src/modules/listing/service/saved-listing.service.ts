@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+
 import { SavedListingRepository } from '../repository/saved-listing.repository';
 import { ListingService } from './listing.service';
 import type { ListingCard } from './listing.types';

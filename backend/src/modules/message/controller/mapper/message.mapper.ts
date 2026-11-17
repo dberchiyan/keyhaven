@@ -1,4 +1,10 @@
-import type { Conversation, ConversationDetail, Message } from '../../service/message.types';
+import type {
+    Conversation,
+    ConversationDetail,
+    ConversationListing,
+    Message,
+} from '@/modules/message/service/message.types';
+
 import type { ConversationBody, ConversationDetailBody, MessageBody } from '../dto/message.response';
 
 export const toMessageResponse = (message: Message): MessageBody => ({
@@ -11,13 +17,23 @@ export const toMessageResponse = (message: Message): MessageBody => ({
         lastName: message.sender.lastName,
     },
     body: message.body,
+    isRemoved: message.isRemoved,
     createdAt: message.createdAt.toISOString(),
+});
+
+const toConversationListingResponse = (listing: ConversationListing): ConversationBody['listing'] => ({
+    id: listing.id,
+    title: listing.title,
+    coverPhotoUrl: listing.coverPhotoUrl,
+    neighborhood: listing.neighborhood,
+    city: { name: listing.city.name, state: listing.city.state, timeZone: listing.city.timeZone },
+    address: listing.address,
 });
 
 export const toConversationResponse = (conversation: Conversation): ConversationBody => ({
     id: conversation.id,
     kind: conversation.kind,
-    open: conversation.open,
+    isOpen: conversation.isOpen,
     side: conversation.side,
     viewing: conversation.viewing
         ? {
@@ -34,24 +50,12 @@ export const toConversationResponse = (conversation: Conversation): Conversation
               closedAt: conversation.support.closedAt?.toISOString() ?? null,
           }
         : null,
-    listing: conversation.listing
-        ? {
-              id: conversation.listing.id,
-              title: conversation.listing.title,
-              coverPhotoUrl: conversation.listing.coverPhotoUrl,
-              neighborhood: conversation.listing.neighborhood,
-              city: {
-                  name: conversation.listing.city.name,
-                  state: conversation.listing.city.state,
-                  timeZone: conversation.listing.city.timeZone,
-              },
-              address: conversation.listing.address,
-          }
-        : null,
+    listing: conversation.listing ? toConversationListingResponse(conversation.listing) : null,
     counterpart: { name: conversation.counterpart.name, kind: conversation.counterpart.kind },
     lastMessage: conversation.lastMessage
         ? {
               body: conversation.lastMessage.body,
+              isRemoved: conversation.lastMessage.isRemoved,
               side: conversation.lastMessage.side,
               createdAt: conversation.lastMessage.createdAt.toISOString(),
           }

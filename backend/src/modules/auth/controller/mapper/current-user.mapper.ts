@@ -1,11 +1,12 @@
-import type { UserProfile } from '../../../user/service/user.types';
+import type { UserProfile } from '@/modules/user/service/user.types';
+
 import type { CurrentUserResponse } from '../dto/current-user.response';
 
 export const toCurrentUserResponse = (
     user: UserProfile,
     idleTimeoutMinutes: number,
-    demoRestricted: boolean,
-    demoMode: boolean,
+    isDemoRestricted: boolean,
+    isDemoMode: boolean,
 ): CurrentUserResponse => ({
     id: user.id,
     email: user.email,
@@ -16,6 +17,6 @@ export const toCurrentUserResponse = (
     emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
     agency: user.agency ? { id: user.agency.id, name: user.agency.name } : null,
     idleTimeoutMinutes,
-    demoRestricted,
-    demoMode,
+    isDemoRestricted,
+    isDemoMode,
 });

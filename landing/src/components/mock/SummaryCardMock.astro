@@ -1,4 +1,5 @@
 ---
+import Photo from '@/components/ui/Photo.astro';
 import MockFrame from './MockFrame.astro';
 import { SUMMARY_HOME } from '@/content/showcase';
 
@@ -25,13 +26,12 @@ const FACTS = [
     <div class="overflow-hidden rounded-panel bg-surface shadow-window ring-glass">
         {home && (
             <div class="anim-fade relative aspect-[16/9] bg-surface-2" style="--i: 0">
-                <img
+                <Photo
                     src={home.photo}
-                    alt=""
-                    width="1200"
-                    height="675"
-                    loading="lazy"
-                    decoding="async"
+                    width={1200}
+                    height={675}
+                    widths={[480, 960]}
+                    sizes="(min-width: 1024px) 30rem, 100vw"
                     class="size-full object-cover"
                 />
                 <span class="absolute bottom-3 left-3 rounded-full bg-ink/70 px-2.5 py-1 text-xs font-medium text-on-brand backdrop-blur">

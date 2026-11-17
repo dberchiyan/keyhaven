@@ -1,6 +1,6 @@
-import type { PrismaClient } from '../src/generated/prisma/client';
-import { ConversationKind, MessageSide } from '../src/modules/message/service/message-side';
-import { ViewingStatus } from '../src/modules/viewing/service/viewing-status';
+import type { PrismaClient } from '@/generated/prisma/client';
+import { ConversationKind, MessageSide } from '@/modules/message/service/message-side';
+import { ViewingStatus } from '@/modules/viewing/service/viewing-status';
 
 const HOUR_MS = 3_600_000;
 const MINUTE_MS = 60_000;
@@ -8,47 +8,43 @@ const MINUTE_MS = 60_000;
 interface Line {
     side: 'TENANT' | 'OWNER';
     body: string;
-    /** Minutes after the previous line. */
-    after: number;
+    minutesAfterPrevious: number;
 }
 
-/** The showcase tenant and the showcase landlord, before a confirmed viewing ahead. */
-const AHEAD: readonly Line[] = [
+const CHAT_BEFORE_VIEWING: readonly Line[] = [
     {
         side: 'TENANT',
         body: 'Hi Daniel, thanks for confirming! Is there street parking nearby, or is the spot in the garage?',
-        after: 0,
+        minutesAfterPrevious: 0,
     },
     {
         side: 'OWNER',
         body: 'Hi Maya — one assigned spot in the garage, included in the rent. Street parking is easy too.',
-        after: 170,
+        minutesAfterPrevious: 170,
     },
     {
         side: 'TENANT',
         body: 'Perfect. We will be there a few minutes early. Could we also see the storage unit?',
-        after: 55,
+        minutesAfterPrevious: 55,
     },
-    { side: 'OWNER', body: 'Of course, I will bring the key. See you then.', after: 40 },
+    { side: 'OWNER', body: 'Of course, I will bring the key. See you then.', minutesAfterPrevious: 40 },
 ];
 
-/** The same two after a viewing that took place last week. */
-const HELD: readonly Line[] = [
+const CHAT_AFTER_VIEWING: readonly Line[] = [
     {
         side: 'TENANT',
         body: 'Thank you for the tour today — the light in the living room is wonderful.',
-        after: 0,
+        minutesAfterPrevious: 0,
     },
     {
         side: 'OWNER',
         body: 'Glad you liked it! Let me know if you want to apply; I can hold it until Friday.',
-        after: 95,
+        minutesAfterPrevious: 95,
     },
-    { side: 'TENANT', body: 'We would love to. What do you need from us?', after: 30 },
+    { side: 'TENANT', body: 'We would love to. What do you need from us?', minutesAfterPrevious: 30 },
 ];
 
-/** Other renters writing to the showcase landlord before their confirmed viewings (unread for him). */
-const QUESTIONS = [
+const RENTER_QUESTIONS = [
     'Hello! Looking forward to Thursday. Is the apartment free from the 1st, or could it be earlier?',
     'Hi, a quick question before the viewing — are cats OK? We have one, very quiet.',
     'We might be ten minutes late, coming straight from the airport. Hope that is fine!',
@@ -59,7 +55,6 @@ interface ThreadPlan {
     tenantId: string;
     base: Date;
     lines: readonly Line[];
-    /** Whose side read the thread up to its last line (the other side has the tail unread). */
     readBy: readonly ('TENANT' | 'OWNER')[];
 }
 
@@ -67,8 +62,9 @@ interface ThreadPlan {
  * A few conversations for the demo: the showcase tenant chatting with the showcase landlord about
  * a viewing ahead (his last line unread for her) and about one that took place, three renters'
  * questions waiting for the landlord (his badge), and two requests to Keyhaven (one answered, one
- * waiting for the staff). Idempotent: a viewing that has a thread is skipped and the requests are
- * seeded once, so a second run adds nothing.
+ * waiting for the staff, so the admin's inbox has work on day one). `readBy` names the sides that read a thread to
+ * its last line; the other side has the tail unread. The viewings read is bounded by the viewings seed. Idempotent: a
+ * viewing that has a thread is skipped and the requests are seeded once, so a second run adds nothing.
  */
 export const seedMessages = async (
     prisma: PrismaClient,
@@ -86,7 +82,6 @@ export const seedMessages = async (
         },
         select: { id: true, tenantId: true, startsAt: true, endsAt: true },
         orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
-        // Bounded by the viewings seed: the showcase landlord has a few dozen at most.
         take: 100,
     });
     const ahead = confirmed.filter((viewing) => viewing.startsAt.getTime() > now.getTime());
@@ -97,9 +92,8 @@ export const seedMessages = async (
         plans.push({
             viewingId: mayaAhead.id,
             tenantId: demoTenantId,
-            // Yesterday evening: the viewing lies ahead, the chat already happened.
             base: new Date(now.getTime() - 26 * HOUR_MS),
-            lines: AHEAD,
+            lines: CHAT_BEFORE_VIEWING,
             readBy: ['OWNER'],
         });
     }
@@ -109,19 +103,19 @@ export const seedMessages = async (
             viewingId: mayaHeld.id,
             tenantId: demoTenantId,
             base: new Date(mayaHeld.endsAt.getTime() + HOUR_MS),
-            lines: HELD,
+            lines: CHAT_AFTER_VIEWING,
             readBy: ['TENANT', 'OWNER'],
         });
     }
     ahead
         .filter((viewing) => viewing.tenantId !== demoTenantId)
-        .slice(0, QUESTIONS.length)
+        .slice(0, RENTER_QUESTIONS.length)
         .forEach((viewing, index) => {
             plans.push({
                 viewingId: viewing.id,
                 tenantId: viewing.tenantId,
                 base: new Date(now.getTime() - (3 + index * 5) * HOUR_MS),
-                lines: [{ side: 'TENANT', body: QUESTIONS[index] ?? '', after: 0 }],
+                lines: [{ side: 'TENANT', body: RENTER_QUESTIONS[index] ?? '', minutesAfterPrevious: 0 }],
                 readBy: ['TENANT'],
             });
         });
@@ -131,7 +125,7 @@ export const seedMessages = async (
     for (const plan of plans) {
         let at = plan.base.getTime();
         const rows = plan.lines.map((line) => {
-            at += line.after * MINUTE_MS;
+            at += line.minutesAfterPrevious * MINUTE_MS;
             return {
                 senderId: line.side === 'TENANT' ? plan.tenantId : demoLandlordId,
                 side: line.side === 'TENANT' ? MessageSide.REQUESTER : MessageSide.RESPONDER,
@@ -163,8 +157,6 @@ export const seedMessages = async (
         threads += 1;
         messages += rows.length;
     }
-    // Requests to Keyhaven: the showcase landlord's, answered (his reply unread for the staff),
-    // and the showcase agent's, waiting — so the admin's inbox has work on day one.
     const supportOpen = await prisma.conversation.count({
         where: { kind: ConversationKind.SUPPORT },
     });
@@ -184,17 +176,17 @@ export const seedMessages = async (
                     {
                         side: 'TENANT',
                         body: 'Hi! I published my LoHi apartment with the wrong unit number. Can I fix the address without unpublishing it?',
-                        after: 0,
+                        minutesAfterPrevious: 0,
                     },
                     {
                         side: 'OWNER',
                         body: 'Hi Daniel — yes: open the listing, choose Edit details and change the address; the home stays on the site. Tenants with a confirmed viewing get the corrected address by email.',
-                        after: 140,
+                        minutesAfterPrevious: 140,
                     },
                     {
                         side: 'TENANT',
                         body: 'Done, thank you! One more thing: can I change the city as well?',
-                        after: 60,
+                        minutesAfterPrevious: 60,
                     },
                 ],
                 readBy: ['REQUESTER'],
@@ -207,7 +199,7 @@ export const seedMessages = async (
                     {
                         side: 'TENANT',
                         body: 'A new agent joined us this week. How do we add her to the agency so she can manage our listings?',
-                        after: 0,
+                        minutesAfterPrevious: 0,
                     },
                 ],
                 readBy: ['REQUESTER'],
@@ -216,7 +208,7 @@ export const seedMessages = async (
         for (const request of requests) {
             let at = request.base.getTime();
             const rows = request.lines.map((line) => {
-                at += line.after * MINUTE_MS;
+                at += line.minutesAfterPrevious * MINUTE_MS;
                 return {
                     senderId: line.side === 'TENANT' ? request.openedById : demoAdminId,
                     side: line.side === 'TENANT' ? MessageSide.REQUESTER : MessageSide.RESPONDER,

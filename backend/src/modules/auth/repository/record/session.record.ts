@@ -1,4 +1,4 @@
-import type { Prisma } from '../../../../generated/prisma/client';
+import type { Prisma } from '@/generated/prisma/client';
 
 export const sessionAuthenticationSelect = {
     id: true,
@@ -15,7 +15,6 @@ export type SessionAuthenticationRecord = Prisma.SessionGetPayload<{
     select: typeof sessionAuthenticationSelect;
 }>;
 
-/** A session as its owner sees it in Settings. */
 export const sessionListSelect = {
     id: true,
     clientType: true,

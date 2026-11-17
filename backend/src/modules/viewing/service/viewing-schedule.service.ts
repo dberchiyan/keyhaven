@@ -1,15 +1,15 @@
-import { Transactional } from '@nestjs-cls/transactional';
 import { Injectable } from '@nestjs/common';
-import { ConcurrentModificationException, ResourceNotFoundException } from '../../../common/exception/api.exception';
-import type { Principal } from '../../../common/security/principal';
-import { AuditTargetType } from '../../audit/service/audit-action';
-import { AuditAction } from '../../audit/service/audit-action';
-import { AuditService } from '../../audit/service/audit.service';
+import { Transactional } from '@nestjs-cls/transactional';
+
+import { ConcurrentModificationException, ResourceNotFoundException } from '@/common/exception/api.exception';
+import { AuditService } from '@/modules/audit/service/audit.service';
+import { AuditAction, AuditTargetType } from '@/modules/audit/service/audit-action';
+
 import type { ViewingScheduleRecord } from '../repository/record/viewing.record';
-import { ViewingScheduleRepository } from '../repository/viewing-schedule.repository';
 import { ViewingRepository } from '../repository/viewing.repository';
-import { ViewingScheduleSchema } from './viewing-schedule';
+import { ViewingScheduleRepository } from '../repository/viewing-schedule.repository';
 import type { SaveScheduleCommand, ViewingSchedule } from './viewing.types';
+import { ViewingScheduleSchema } from './viewing-schedule';
 
 /** A listing's viewing hours: read on the owner's page, replaced as one document. */
 @Injectable()
@@ -33,8 +33,8 @@ export class ViewingScheduleService {
         return { schedule: null, timeZone: listing.city.timeZone };
     }
 
-    async save(principal: Principal, listingId: string, command: SaveScheduleCommand): Promise<ViewingSchedule> {
-        await this.replace(principal, listingId, command);
+    async save(listingId: string, command: SaveScheduleCommand, actorUserId: string): Promise<ViewingSchedule> {
+        await this.replace(listingId, command, actorUserId);
         const record = await this.scheduleRepository.findByListing(listingId);
         const schedule = record ? toSchedule(record) : null;
         if (!schedule) {
@@ -44,11 +44,11 @@ export class ViewingScheduleService {
     }
 
     /**
-     * Replace the whole document (api.md → a replaceable set is a PUT). Existing viewings stay as
-     * they are: a confirmed visit is a promise, hours changing later do not undo it.
+     * Replace the whole document (a PUT, DATA-16 on the version the owner edited). Existing viewings
+     * stay as they are: a confirmed visit is a promise, hours changing later do not undo it.
      */
     @Transactional()
-    private async replace(principal: Principal, listingId: string, command: SaveScheduleCommand): Promise<void> {
+    private async replace(listingId: string, command: SaveScheduleCommand, actorUserId: string): Promise<void> {
         const { version, ...document } = command;
         const columns = {
             slotMinutes: document.slotMinutes,
@@ -62,7 +62,7 @@ export class ViewingScheduleService {
             if (version !== existing.version) {
                 throw new ConcurrentModificationException();
             }
-            if (!(await this.scheduleRepository.update(listingId, existing.version, columns, principal.userId))) {
+            if (!(await this.scheduleRepository.update(listingId, existing.version, columns, actorUserId))) {
                 throw new ConcurrentModificationException();
             }
         } else {
@@ -70,7 +70,7 @@ export class ViewingScheduleService {
             if (!listing) {
                 throw new ResourceNotFoundException();
             }
-            await this.scheduleRepository.create(listingId, columns, principal.userId);
+            await this.scheduleRepository.create(listingId, columns, actorUserId);
         }
         const listing = await this.viewingRepository.findBookable(listingId);
         await this.auditService.record({
@@ -95,7 +95,7 @@ export class ViewingScheduleService {
     }
 }
 
-/** A stored document that no longer parses shows as closed hours rather than failing the page. */
+/** DATA-22: parsed on read as on write; a stored document that no longer parses shows as closed hours rather than failing the page. */
 export const toSchedule = (record: ViewingScheduleRecord): ViewingSchedule | null => {
     const parsed = ViewingScheduleSchema.safeParse({
         slotMinutes: record.slotMinutes,

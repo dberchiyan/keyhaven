@@ -16,8 +16,6 @@ export default defineConfig(({ command }) => ({
     build: {
         rolldownOptions: {
             output: {
-                // The core libraries every page needs, in named chunks that change rarely, so browsers
-                // keep them across deploys. MUI stays split per component (only what a page uses).
                 codeSplitting: {
                     groups: [
                         {
@@ -42,7 +40,6 @@ export default defineConfig(({ command }) => ({
     },
     server: {
         port: 5180,
-        // Same origin in development: the session and XSRF cookies belong to the dev server host.
         proxy: { '/api': { target: 'http://localhost:3000', changeOrigin: false } },
     },
 }));

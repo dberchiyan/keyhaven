@@ -1,17 +1,16 @@
 import { Injectable, type OnApplicationShutdown } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { Observable, Subject } from 'rxjs';
+
 import { type LiveEvent, LiveEventType } from './live-event';
 
-/** Well under Cloudflare's 100 s idle cut-off and nginx's read timeout. */
 const HEARTBEAT_MS = 25_000;
-/** As many open streams per person as sessions (a tab each); the oldest closes beyond it. */
+/** DATA-8: as many open streams per person as sessions (a tab each); the oldest closes beyond it. */
 const MAX_STREAMS_PER_USER = 10;
 
 interface Stream {
     userId: string;
     agencyId: string | null;
-    /** Keyhaven staff: they share the support inbox. */
     isAdmin: boolean;
     subject: Subject<LiveEvent>;
     openedAt: number;
@@ -20,7 +19,7 @@ interface Stream {
 /**
  * The live channel (SSE): every signed-in browser holds one stream, and the services publish
  * what changed for a person (or for an agency, whose agents share one inbox) after their
- * transaction committed. The set of open streams is the one stateful singleton by design — it
+ * transaction committed — ids only, the client reads the rest. The set of open streams is the one stateful singleton by design — it
  * is this instance's connections, like a pool, never business data; a second instance would
  * need Postgres LISTEN/NOTIFY to share events (recorded in Project decisions).
  */
@@ -30,7 +29,11 @@ export class EventService implements OnApplicationShutdown {
 
     constructor(@InjectPinoLogger(EventService.name) private readonly logger: PinoLogger) {}
 
-    /** A stream for this person: their events, with a heartbeat; torn down when the browser leaves. */
+    /**
+     * A stream for this person: their events, with a heartbeat well under Cloudflare's 100 s idle
+     * cut-off and nginx's read timeout; torn down when the browser leaves. Admins' streams share
+     * the support inbox.
+     */
     subscribe(userId: string, agencyId: string | null, isAdmin: boolean): Observable<LiveEvent> {
         return new Observable<LiveEvent>((observer) => {
             const subject = new Subject<LiveEvent>();

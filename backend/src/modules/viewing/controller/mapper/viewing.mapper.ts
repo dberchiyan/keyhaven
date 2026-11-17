@@ -1,4 +1,5 @@
-import type { Viewing, ViewingSchedule, ViewingSlots } from '../../service/viewing.types';
+import type { Viewing, ViewingSchedule, ViewingSlots } from '@/modules/viewing/service/viewing.types';
+
 import type { ViewingBody, ViewingScheduleBody, ViewingSlotsBody } from '../dto/viewing.response';
 
 export const toViewingResponse = (viewing: Viewing): ViewingBody => ({
@@ -25,7 +26,7 @@ export const toViewingResponse = (viewing: Viewing): ViewingBody => ({
             timeZone: viewing.listing.city.timeZone,
         },
         address: viewing.listing.address,
-        demo: viewing.listing.demo,
+        isDemo: viewing.listing.isDemo,
     },
     tenant: viewing.tenant
         ? {
@@ -55,11 +56,11 @@ export const toViewingScheduleResponse = (schedule: ViewingSchedule): ViewingSch
 });
 
 export const toViewingSlotsResponse = (slots: ViewingSlots): ViewingSlotsBody => ({
-    open: slots.open,
+    isOpen: slots.isOpen,
     timeZone: slots.timeZone,
     slotMinutes: slots.slotMinutes,
     noticeHours: slots.noticeHours,
-    horizonEnd: slots.horizonEnd,
+    horizonEndsAt: slots.horizonEndsAt,
     from: slots.from,
     days: slots.days.map((day) => ({
         day: day.day,

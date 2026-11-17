@@ -5,8 +5,9 @@
 export const SITE = {
     name: 'Keyhaven',
     title: 'Keyhaven · Homes to rent and buy in six US cities',
+    /** Meta description (≤ 155 characters). */
     description:
-        'Browse homes for rent and for sale in Austin, Denver, Seattle, Chicago, Atlanta and Phoenix — no account needed. Save homes and searches, book a viewing; landlords and agents list in minutes. A live demo with fictional data.',
+        'Homes to rent and buy in Austin, Denver, Seattle, Chicago, Atlanta and Phoenix. Browse without an account, save searches, book viewings. Fictional homes.',
     locale: 'en',
     ogLocale: 'en_US',
     themeColor: { light: '#f5f1ea', dark: '#1a211d' },

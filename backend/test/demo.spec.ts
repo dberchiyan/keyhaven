@@ -1,13 +1,11 @@
 import './demo-env';
+
 import { randomUUID } from 'node:crypto';
+
 import { bodyOf, Client, createTestApp, type TestApp } from './app';
+import { DEMO_RUN } from './demo-env';
 import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
 
-/**
- * The public demo (DEMO_MODE=true): the seed's showcase listings (`is_demo`) are read-only for
- * everyone — their owner, the agency's agents and admins alike — while anything else stays
- * writable as usual. Ownership is still checked first: a foreign showcase listing is a plain 403.
- */
 describe('Public demo: showcase listings are read-only', () => {
     let testApp: TestApp;
     let f: Fixtures;
@@ -17,7 +15,7 @@ describe('Public demo: showcase listings are read-only', () => {
 
     beforeAll(async () => {
         testApp = await createTestApp();
-        f = await createFixtures(`demo-${randomUUID().slice(0, 8)}`);
+        f = await createFixtures(DEMO_RUN);
         landlord = new Client(testApp.app);
         agent = new Client(testApp.app);
         admin = new Client(testApp.app);
@@ -33,6 +31,7 @@ describe('Public demo: showcase listings are read-only', () => {
     afterAll(async () => {
         await testApp.close();
         process.env.DEMO_MODE = 'false';
+        process.env.DEMO_PROTECTED_EMAILS = '';
     });
 
     const edit = (version: number) => ({
@@ -49,30 +48,30 @@ describe('Public demo: showcase listings are read-only', () => {
         cityId: f.cityId,
         neighborhood: 'Testville Heights',
         zip: '75001',
-        petsAllowed: true,
-        furnished: false,
-        parking: true,
-        availableFrom: '2026-12-15',
+        isPetFriendly: true,
+        isFurnished: false,
+        hasParking: true,
+        availableAt: '2026-12-15',
         version,
     });
 
     it('tells the session the demo is on and flags the showcase rows', async () => {
-        expect(bodyOf(await landlord.get('/api/v1/auth/me'))).toMatchObject({ demoMode: true });
+        expect(bodyOf(await landlord.get('/api/v1/auth/me'))).toMatchObject({ isDemoMode: true });
         expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${f.landlordDemo}`))).toMatchObject({
-            demo: true,
+            isDemo: true,
         });
         expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${f.landlordDraft}`))).toMatchObject({
-            demo: false,
+            isDemo: false,
         });
         expect(bodyOf(await admin.get(`/api/v1/listings/${f.agencyDemo}`))).toMatchObject({
-            demo: true,
+            isDemo: true,
         });
         const rows = bodyOf(await landlord.get('/api/v1/managed-listings')).content as {
             id: string;
-            demo: boolean;
+            isDemo: boolean;
         }[];
-        expect(rows.find((row) => row.id === f.landlordDemo)?.demo).toBe(true);
-        expect(rows.find((row) => row.id === f.landlordDraft)?.demo).toBe(false);
+        expect(rows.find((row) => row.id === f.landlordDemo)?.isDemo).toBe(true);
+        expect(rows.find((row) => row.id === f.landlordDraft)?.isDemo).toBe(false);
     });
 
     it('refuses every write on a showcase listing with 403 DEMO_READ_ONLY', async () => {
@@ -101,7 +100,6 @@ describe('Public demo: showcase listings are read-only', () => {
                 error: 'DEMO_READ_ONLY',
             });
         }
-        // Ownership comes first: someone else's showcase listing is the usual 403.
         const foreign = await agent.put(base, edit(0));
         expect(foreign.status).toBe(403);
         expect(foreign.body).toMatchObject({ error: 'FORBIDDEN' });
@@ -115,5 +113,16 @@ describe('Public demo: showcase listings are read-only', () => {
             (await landlord.postIdempotent(`/api/v1/managed-listings/${f.landlordDraft}/publication`, {})).status,
         ).toBe(200);
         expect((await admin.post(`/api/v1/managed-listings/${f.landlordPublished}/suspension`)).status).toBe(200);
+    });
+
+    it('refuses to erase a showcase account (DEMO_RESTRICTED) and keeps it signed in', async () => {
+        const showcase = new Client(testApp.app);
+        expect((await showcase.login(f.tenant.email, PASSWORD)).status).toBe(200);
+        expect(bodyOf(await showcase.get('/api/v1/auth/me'))).toMatchObject({ isDemoRestricted: true });
+        const refused = await showcase.post('/api/v1/personal-data/erasure', { password: PASSWORD });
+        expect(refused.status).toBe(403);
+        expect(refused.body).toMatchObject({ error: 'DEMO_RESTRICTED' });
+        expect((await showcase.get('/api/v1/auth/me')).status).toBe(200);
+        expect((await showcase.get('/api/v1/personal-data')).status).toBe(200);
     });
 });

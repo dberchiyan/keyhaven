@@ -1,10 +1,13 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import i18n from 'i18next';
+
 import { env } from '@/shared/config/env';
 import type { ErrorCode, ErrorResponse } from '@/shared/types';
-import { ApiError } from './apiError';
+
 import { markApiActivity } from './activity';
-import { checkResponseContract } from './responseContract';
+import { ApiError } from './api-error';
+import { HTTP_STATUS } from './http-status';
+import { checkResponseContract } from './response-contract';
 
 const TIMEOUT_MS = 15_000;
 const CSRF_COOKIE = 'XSRF-TOKEN';
@@ -29,11 +32,15 @@ const isErrorResponse = (data: unknown): data is ErrorResponse =>
     typeof data.message === 'string';
 
 type SessionLostHandler = (code: ErrorCode, config: InternalAxiosRequestConfig | undefined) => void;
-let onSessionLost: SessionLostHandler | undefined;
 
-/** Registered once by the app shell: 401 mid-session → clear cache, go to sign-in. */
+const sessionLost: { handler: SessionLostHandler | undefined } = { handler: undefined };
+
+/**
+ * Registered once by the app shell, because the shared client cannot import the app: a 401
+ * mid-session clears the cache and goes to sign-in (NAV-3).
+ */
 export const setSessionLostHandler = (handler: SessionLostHandler): void => {
-    onSessionLost = handler;
+    sessionLost.handler = handler;
 };
 
 export const apiClient = axios.create({
@@ -54,7 +61,6 @@ apiClient.interceptors.request.use((config) => {
     return config;
 });
 
-// Every JSON answer is checked against the contract the types come from (runtime safety net).
 apiClient.interceptors.response.use(
     (response) => {
         markApiActivity();
@@ -71,8 +77,8 @@ apiClient.interceptors.response.use(
             return Promise.reject(new ApiError(status, code, i18n.t(`errors:${code}`), [], undefined));
         }
         const apiError = ApiError.fromResponse(data);
-        if (apiError.status === 401 && SESSION_ERRORS.has(apiError.code)) {
-            onSessionLost?.(apiError.code, error.config);
+        if (apiError.status === HTTP_STATUS.UNAUTHORIZED && SESSION_ERRORS.has(apiError.code)) {
+            sessionLost.handler?.(apiError.code, error.config);
         }
         return Promise.reject(apiError);
     },

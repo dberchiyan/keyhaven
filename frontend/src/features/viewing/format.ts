@@ -1,10 +1,22 @@
+import { DAY_MS, DAYS_PER_WEEK, ISO_DAY_LENGTH, MINUTE_MS, MINUTES_PER_HOUR } from '@/shared/lib/units';
+
 import type { Viewing, ViewingStatus } from './types';
 
-/** "5:30 PM" in the home's zone. */
+const TIME_DIGITS = 2;
+const REFERENCE_SUNDAY_MS = new Date('2023-01-01T00:00:00Z').getTime();
+
+export const SUNDAY = 0;
+export const SATURDAY = DAYS_PER_WEEK - 1;
+export const WEEK_DAYS: readonly number[] = Array.from({ length: DAYS_PER_WEEK }, (_, weekday) => weekday);
+export const WEEKDAY_ORDER: readonly number[] = [...WEEK_DAYS.slice(1), SUNDAY];
+
+export type DisplayStatus = ViewingStatus | 'HELD';
+
+/** "5:30 PM" in the home's zone: a viewing happens where the home is, never in the reader's zone. */
 export const formatSlotTime = (iso: string, timeZone: string, locale: string): string =>
     new Intl.DateTimeFormat(locale, { timeZone, hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
 
-/** "Tue, Nov 18" in the home's zone. */
+/** "Tue, Nov 18" in the home's zone, so the date matches the time beside it. */
 export const formatSlotDate = (iso: string, timeZone: string, locale: string): string =>
     new Intl.DateTimeFormat(locale, {
         timeZone,
@@ -13,7 +25,7 @@ export const formatSlotDate = (iso: string, timeZone: string, locale: string): s
         day: 'numeric',
     }).format(new Date(iso));
 
-/** "Tue, Nov 18, 5:30 PM" in the home's zone. */
+/** "Tue, Nov 18, 5:30 PM" in the home's zone, so the date matches the time beside it. */
 export const formatSlot = (iso: string, timeZone: string, locale: string): string =>
     new Intl.DateTimeFormat(locale, {
         timeZone,
@@ -24,83 +36,82 @@ export const formatSlot = (iso: string, timeZone: string, locale: string): strin
         minute: '2-digit',
     }).format(new Date(iso));
 
-/** "Tuesday, November 18" of a `YYYY-MM-DD` local day (a calendar day, no zone shift). */
+/** A `YYYY-MM-DD` local day read at noon UTC, so no zone can move it to a neighbouring day. */
+const middayOf = (day: string): Date => new Date(`${day}T12:00:00Z`);
+
+/** "Tuesday, November 18" of a local calendar day — formatted in UTC so no zone shifts it. */
 export const formatDayHeading = (day: string, locale: string): string =>
     new Intl.DateTimeFormat(locale, {
         timeZone: 'UTC',
         weekday: 'long',
         month: 'long',
         day: 'numeric',
-    }).format(new Date(`${day}T12:00:00Z`));
+    }).format(middayOf(day));
 
-/** "Tue 18" for the day strip. */
+/** "Tue" and "18" apart, because the day strip shows the weekday as a column heading. */
 export const formatDayChip = (day: string, locale: string): { weekday: string; day: string } => {
-    const instant = new Date(`${day}T12:00:00Z`);
+    const instant = middayOf(day);
     return {
         weekday: new Intl.DateTimeFormat(locale, { timeZone: 'UTC', weekday: 'short' }).format(instant),
         day: new Intl.DateTimeFormat(locale, { timeZone: 'UTC', day: 'numeric' }).format(instant),
     };
 };
 
-/** "CST" / "Central Standard Time": what the zone is called right now. */
+/** "CST" / "Central Standard Time" as the zone is called today — daylight saving changes the name. */
 export const zoneName = (timeZone: string, locale: string, style: 'short' | 'long' = 'short'): string =>
     new Intl.DateTimeFormat(locale, { timeZone, timeZoneName: style })
         .formatToParts(new Date())
         .find((part) => part.type === 'timeZoneName')?.value ?? timeZone;
 
-/** Minutes of a local day as "5:30 PM" (formatted as a UTC time, so no zone shifts it). */
+/** Minutes of a local day as "5:30 PM" — formatted as a UTC time, so no zone shifts the hours. */
 export const formatMinutes = (minutes: number, locale: string): string =>
     new Intl.DateTimeFormat(locale, { timeZone: 'UTC', hour: 'numeric', minute: '2-digit' }).format(
-        new Date(minutes * 60_000),
+        new Date(minutes * MINUTE_MS),
     );
 
-/** Minutes ↔ the value of an `<input type="time">`. */
+/** Minutes of a local day as an `<input type="time">` value, the API keeping hours as minutes. */
 export const minutesToTime = (minutes: number): string =>
-    `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+    `${String(Math.floor(minutes / MINUTES_PER_HOUR)).padStart(TIME_DIGITS, '0')}:${String(
+        minutes % MINUTES_PER_HOUR,
+    ).padStart(TIME_DIGITS, '0')}`;
+
+/** An `<input type="time">` value back into minutes of the day, as the API keeps hours. */
 export const timeToMinutes = (time: string): number => {
     const [hours = 0, minutes = 0] = time.split(':').map(Number);
-    return hours * 60 + minutes;
+    return hours * MINUTES_PER_HOUR + minutes;
 };
 
-/** Monday first (a US calendar still reads better for hours), Sunday = 0 as the API has it. */
-export const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
-
-/** "Mon" / "Monday": 2023-01-01 was a Sunday, so day + weekday lands on the right name. */
+/** "Mon" / "Monday" for the API's weekday (Sunday = 0), counted from a known Sunday so Intl names it. */
 export const weekdayName = (weekday: number, locale: string, style: 'short' | 'long'): string =>
     new Intl.DateTimeFormat(locale, { timeZone: 'UTC', weekday: style }).format(
-        new Date(Date.UTC(2023, 0, 1 + weekday)),
+        new Date(REFERENCE_SUNDAY_MS + weekday * DAY_MS),
     );
 
-/** What the viewing is now: a confirmed one whose time passed "took place". */
-export type DisplayStatus = ViewingStatus | 'HELD';
+/** A confirmed viewing whose time passed "took place": the API keeps it CONFIRMED, people read it as held. */
 export const displayStatus = (viewing: Pick<Viewing, 'status' | 'endsAt'>, now: number): DisplayStatus =>
     viewing.status === 'CONFIRMED' && new Date(viewing.endsAt).getTime() < now ? 'HELD' : viewing.status;
 
-/** Ahead and still live: the viewings a tenant or an owner can still act on. */
+/** Ahead and still live: only these can still be answered or called off. */
 export const isUpcoming = (viewing: Pick<Viewing, 'status' | 'startsAt'>, now: number): boolean =>
     (viewing.status === 'REQUESTED' || viewing.status === 'CONFIRMED') && new Date(viewing.startsAt).getTime() > now;
 
-/** The home's local calendar day of an instant, `YYYY-MM-DD` (the agenda groups by it). */
-export const zonedDayOf = (iso: string, timeZone: string): string => {
-    const parts = new Intl.DateTimeFormat('en-CA', {
+/** The home's local calendar day of an instant, `YYYY-MM-DD` — the agenda groups by the home's day. */
+export const zonedDayOf = (iso: string, timeZone: string): string =>
+    new Intl.DateTimeFormat('en-CA', {
         timeZone,
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
-    }).formatToParts(new Date(iso));
-    const part = (type: string): string => parts.find((item) => item.type === type)?.value ?? '';
-    return `${part('year')}-${part('month')}-${part('day')}`;
-};
+    })
+        .format(new Date(iso))
+        .slice(0, ISO_DAY_LENGTH);
 
-/** "Today", "Tomorrow", "Yesterday" for a local day near now (in the home's zone), else null. */
-export const relativeDayName = (day: string, timeZone: string, now: number, locale: string): string | null => {
-    const today = zonedDayOf(new Date(now).toISOString(), timeZone);
-    const offsets = [-1, 0, 1] as const;
-    for (const offset of offsets) {
-        const candidate = zonedDayOf(new Date(now + offset * 86_400_000).toISOString(), timeZone);
-        if (candidate === day) {
-            return new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(offset, 'day');
-        }
-    }
-    return today === day ? new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(0, 'day') : null;
+/** "Today", "Tomorrow", "Yesterday" in the home's zone; undefined further away, where the date says it. */
+export const relativeDayName = (day: string, timeZone: string, now: number, locale: string): string | undefined => {
+    const offset = [-1, 0, 1].find(
+        (candidate) => zonedDayOf(new Date(now + candidate * DAY_MS).toISOString(), timeZone) === day,
+    );
+    return offset === undefined
+        ? undefined
+        : new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(offset, 'day');
 };

@@ -1,0 +1,41 @@
+---
+import { Picture } from 'astro:assets';
+
+/**
+ * A catalogue photo (an Unsplash URL from the snapshot) through astro:assets: resized at build
+ * into AVIF with a WebP `<img>` (every browser the site supports reads one of the two), served
+ * from /_landing/. The `<picture>` is `display: contents`, so the image sizes against its frame.
+ */
+interface Props {
+    src: string;
+    width: number;
+    height: number;
+    /** Rendered widths to encode, in px (the srcset). */
+    widths: number[];
+    /** The `sizes` attribute: how wide the image is drawn at each breakpoint. */
+    sizes: string;
+    class?: string;
+    /** Below the fold by default; `eager` for what the first view shows. */
+    loading?: 'lazy' | 'eager';
+    fetchpriority?: 'high' | 'auto';
+}
+
+const { src, width, height, widths, sizes, class: className, loading = 'lazy', fetchpriority = 'auto' } = Astro.props;
+---
+
+<Picture
+    src={src}
+    alt=""
+    width={width}
+    height={height}
+    widths={widths}
+    sizes={sizes}
+    formats={['avif']}
+    fallbackFormat="webp"
+    quality={60}
+    loading={loading}
+    fetchpriority={fetchpriority}
+    decoding="async"
+    class={className}
+    pictureAttributes={{ class: 'contents' }}
+/>

@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-/**
- * One value in a change summary. Typed, so a client formats it and never parses free text.
- * Personal data is logged as "changed" (`redacted`) without its value.
- */
+export const AUDIT_TEXT_MAX_LENGTH = 255;
+const AUDIT_STATUS_MAX_LENGTH = 32;
+const MAX_AUDIT_CHANGES = 32;
+
 export const AuditValueSchema = z.discriminatedUnion('kind', [
-    z.object({ kind: z.literal('text'), text: z.string().max(255) }),
-    z.object({ kind: z.literal('status'), status: z.string().max(32) }),
+    z.object({ kind: z.literal('text'), text: z.string().max(AUDIT_TEXT_MAX_LENGTH) }),
+    z.object({ kind: z.literal('status'), status: z.string().max(AUDIT_STATUS_MAX_LENGTH) }),
     z.object({ kind: z.literal('redacted') }),
 ]);
 export type AuditValue = z.infer<typeof AuditValueSchema>;
@@ -22,17 +22,15 @@ export const AUDIT_FIELDS = Object.values(AuditField) as [AuditField, ...AuditFi
 
 export const AuditChangeSchema = z.object({
     field: z.enum(AUDIT_FIELDS),
-    /** null = the field had no value (created), or has none now (deleted / cleared). */
     from: AuditValueSchema.nullable(),
     to: AuditValueSchema.nullable(),
 });
 export type AuditChange = z.infer<typeof AuditChangeSchema>;
 
-export const AuditChangesSchema = z.array(AuditChangeSchema).max(32);
+export const AuditChangesSchema = z.array(AuditChangeSchema).max(MAX_AUDIT_CHANGES);
 
-/** Value builders, so callers never hand-write the tagged shapes. */
 export const auditValue = {
-    text: (text: string): AuditValue => ({ kind: 'text', text: text.slice(0, 255) }),
+    text: (text: string): AuditValue => ({ kind: 'text', text: text.slice(0, AUDIT_TEXT_MAX_LENGTH) }),
     status: (status: string): AuditValue => ({ kind: 'status', status }),
     redacted: (): AuditValue => ({ kind: 'redacted' }),
 };
@@ -54,15 +52,12 @@ export const isSameJson = (left: unknown, right: unknown): boolean => {
         );
     }
     const leftKeys = Object.keys(left);
-    const rightRecord = right as Record<string, unknown>;
     return (
         leftKeys.length === Object.keys(right).length &&
-        leftKeys.every(
-            (key) => key in rightRecord && isSameJson((left as Record<string, unknown>)[key], rightRecord[key]),
-        )
+        leftKeys.every((key) => key in right && isSameJson(Reflect.get(left, key), Reflect.get(right, key)))
     );
 };
 
-/** A change entry, or nothing when before and after are the same. */
+/** DATA-33: no event without a real change — equal values give no entry. Typed values: personal data is `redacted`. */
 export const changeOf = (field: AuditField, from: AuditValue | null, to: AuditValue | null): AuditChange[] =>
     isSameJson(from, to) ? [] : [{ field, from, to }];

@@ -1,20 +1,10 @@
-/**
- * The one source of colours, radii and breakpoints for MUI and Tailwind. Colours are OKLCH
- * (perceptually even steps; MUI reads them natively — `nativeColor` in theme/index.ts).
- */
 export const TOKENS = {
     breakpoints: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1536 },
-    /** Controls (inputs, chips) · menus and popovers · cards and dialogs. Buttons are pills. */
     radius: { sm: 10, md: 14, lg: 18 },
-    layout: { sidebarWidth: 240, railWidth: 80, topBarHeight: 64 },
-    /** Max content widths (Tailwind `max-w-*`). `page` = every signed-in page (set once in AppLayout). */
+    layout: { sidebarWidth: 240, railWidth: 80, topBarHeight: 64, tabBarHeight: 56 },
     containers: { page: 1536 },
+    elevation: { bar: '0 1px 2px var(--mui-palette-shadow-soft)' },
     colors: {
-        /**
-         * "Hearth" (project decision, 2026-11-13): a warm cream ground, a forest-green primary, amber
-         * as the second accent, warm hairlines — a home, not an office. Dark mode is the same
-         * family on a deep green-black ground.
-         */
         light: {
             primary: {
                 main: 'oklch(43.8% 0.074 167.8)',
@@ -47,7 +37,6 @@ export const TOKENS = {
                 disabled: 'oklch(63.0% 0.018 150.0)',
             },
             divider: 'oklch(90.1% 0.020 77.3)',
-            /** Warm shadows (a touch of umber), so cards sit on the cream like paper, not like glass. */
             shadow: { soft: 'oklch(35% 0.04 70 / 0.07)', strong: 'oklch(35% 0.05 70 / 0.22)' },
             badge: {
                 activeBackground: 'oklch(94.0% 0.013 159.9)',
@@ -55,11 +44,6 @@ export const TOKENS = {
                 neutralBackground: 'oklch(93.3% 0.017 79.3)',
                 neutralText: 'oklch(47.0% 0.023 163.9)',
             },
-            /**
-             * Status badges (`StatusBadge`): a soft fill, a dot and the word — the text ≥ 6:1 on its
-             * fill. Success = done / active, warning = waiting, info = planned, danger = refused,
-             * neutral = ended.
-             */
             status: {
                 successBackground: 'oklch(94.0% 0.030 160)',
                 successText: 'oklch(40.0% 0.085 162)',
@@ -77,7 +61,6 @@ export const TOKENS = {
                 neutralText: 'oklch(45.0% 0.020 120)',
                 neutralDot: 'oklch(70.0% 0.020 95)',
             },
-            /** Forest, amber, clay, olive, teal, plum, slate, moss — cream initials ≥ 5:1 on each. */
             avatar: {
                 c1: 'oklch(43.8% 0.074 167.8)',
                 c2: 'oklch(52.0% 0.120 65.0)',
@@ -89,10 +72,6 @@ export const TOKENS = {
                 c8: 'oklch(42.0% 0.070 150.0)',
                 text: 'oklch(99.4% 0.006 84.6)',
             },
-            /**
-             * Chart series in fixed order — validated categorical palette (CVD ΔE ≥ 8 between neighbours);
-             * slots 3–5 sit under 3:1 on white, so charts carry labels, a legend and a table view.
-             */
             chart: {
                 c1: 'oklch(57.5% 0.163 255.5)',
                 c2: 'oklch(67.1% 0.175 40.6)',
@@ -103,7 +82,6 @@ export const TOKENS = {
                 c7: 'oklch(43.3% 0.167 283.6)',
                 c8: 'oklch(62.3% 0.191 24.9)',
             },
-            /** The sidebar sits on the same cream as the page; the active item is a solid forest pill. */
             sidebar: {
                 background: 'oklch(96.0% 0.012 79.8)',
                 text: 'oklch(27.2% 0.020 163.0)',
@@ -114,7 +92,6 @@ export const TOKENS = {
                 border: 'oklch(90.1% 0.020 77.3)',
                 title: 'oklch(27.2% 0.020 163.0)',
             },
-            /** The site footer: a deep forest band, the same in both schemes (it is dark by design). */
             footer: {
                 background: 'oklch(23.0% 0.030 165.0)',
                 text: 'oklch(97.0% 0.010 84.0)',

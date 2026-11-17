@@ -38,7 +38,7 @@ const toShowcase = (home: SnapshotHome & { coverPhotoUrl: string }, city: (typeo
     price: `${dollars(home.price)}/mo`,
     facts: facts(home),
     place: [home.neighborhood, `${city.name}, ${city.state}`].filter(Boolean).join(' · '),
-    pill: home.availableFrom ? `Available ${MONTH.format(new Date(`${home.availableFrom}T12:00:00Z`))}` : 'For sale',
+    pill: home.availableAt ? `Available ${MONTH.format(new Date(`${home.availableAt}T12:00:00Z`))}` : 'For sale',
     photo: home.coverPhotoUrl,
     citySlug: city.slug,
     cityName: city.name,

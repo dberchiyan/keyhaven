@@ -1,4 +1,5 @@
 ---
+import Photo from '@/components/ui/Photo.astro';
 import Container from '@/components/ui/Container.astro';
 import Icon from '@/components/ui/Icon.astro';
 import { type CityKind, dollars, type Kind, TYPE_LABELS } from '@/content/catalogue';
@@ -135,13 +136,12 @@ const date = (day: string): string =>
                     <article class="flex h-full flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass">
                         <a href={`/listings/${home.id}`} class="block aspect-[4/3] bg-surface-2">
                             {home.coverPhotoUrl && (
-                                <img
+                                <Photo
                                     src={home.coverPhotoUrl}
-                                    alt=""
-                                    loading="lazy"
-                                    decoding="async"
-                                    width="1200"
-                                    height="800"
+                                    width={1200}
+                                    height={800}
+                                    widths={[400, 800]}
+                                    sizes="(min-width: 1024px) 18rem, (min-width: 640px) 50vw, 100vw"
                                     class="size-full object-cover"
                                 />
                             )}
@@ -163,9 +163,9 @@ const date = (day: string): string =>
                             <p class="text-[0.8125rem] text-muted">
                                 {[home.neighborhood, `${city.name}, ${city.state}`].filter(Boolean).join(' · ')}
                             </p>
-                            {home.availableFrom && (
+                            {home.availableAt && (
                                 <span class="mt-1.5 inline-flex w-fit items-center rounded-full bg-success-bg px-2 py-0.5 text-[0.6875rem] font-medium text-success-fg">
-                                    {cityPage.available.replace('{date}', date(home.availableFrom))}
+                                    {cityPage.available.replace('{date}', date(home.availableAt))}
                                 </span>
                             )}
                         </div>

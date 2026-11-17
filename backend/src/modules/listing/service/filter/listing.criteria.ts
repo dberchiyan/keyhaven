@@ -1,42 +1,26 @@
-import type { Decimal } from '../../../../common/persistence/money';
+import type { Decimal } from '@/common/persistence/money';
+
 import type { ListingKind } from '../listing-kind';
 import type { ListingStatus } from '../listing-status';
 import type { PropertyType } from '../property-type';
 
-/**
- * Resolved search filters (tenant side): published listings only. Every value is already
- * parsed (money as Decimal, days as UTC instants); the repository turns them into the query.
- */
 export interface ListingCriteria {
-    /** For rent or for sale — every search is one of the two. */
     kind: ListingKind;
-    /** A city slug (`austin`); absent = every city. */
     citySlug?: string;
     propertyType?: PropertyType;
-    /** Monthly rent (RENT) or asking price (SALE). */
     priceMin?: Decimal;
     priceMax?: Decimal;
-    /** At least this many bedrooms (0 = studios included). */
     bedroomsMin?: number;
-    /** At least this many bathrooms ("1.5"). */
     bathroomsMin?: Decimal;
-    petsAllowed?: boolean;
-    furnished?: boolean;
-    parking?: boolean;
-    /** Available on or before this day. */
-    availableBy?: Date;
-    /** Typo-tolerant terms (split, trimmed, ≤ 5), each matched against title, neighborhood, zip or city. */
+    isPetFriendly?: boolean;
+    isFurnished?: boolean;
+    hasParking?: boolean;
+    moveInAt?: Date;
     searchTerms: string[];
-    /** Digests: only listings published after this instant. */
     publishedAfter?: Date;
 }
 
-/**
- * The owner's dashboard filters. The scope (whose listings) is not a filter: the service derives
- * it from the principal and the repository puts it in the query.
- */
 export interface ManagedListingCriteria {
     status?: ListingStatus;
-    /** Search terms (split, trimmed, ≤ 5), each matched against the title and the city name. */
     searchTerms: string[];
 }

@@ -45,7 +45,7 @@
     "amount": {
         "invalid": "Enter an amount like 1800 or 1800.50"
     },
-    "availableBy": {
+    "moveInAt": {
         "invalid": "Enter a date"
     },
     "title": {
@@ -82,7 +82,7 @@
         "required": "Enter the ZIP code",
         "invalid": "Enter a ZIP code like 78701 or 78701-1234"
     },
-    "availableFrom": {
+    "availableAt": {
         "invalid": "Enter the move-in date"
     },
     "photo": {
@@ -150,5 +150,8 @@
             "tooMany": "At most {max} blocked days",
             "invalid": "Enter a date"
         }
+    },
+    "cursor": {
+        "invalid": "This page link is out of date — start from the first page"
     }
 }

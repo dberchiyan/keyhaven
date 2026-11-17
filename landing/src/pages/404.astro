@@ -1,0 +1,33 @@
+---
+import SiteFooter from '@/components/sections/SiteFooter.astro';
+import SiteHeader from '@/components/sections/SiteHeader.astro';
+import Button from '@/components/ui/Button.astro';
+import Container from '@/components/ui/Container.astro';
+import { NOT_FOUND } from '@/content/legal';
+import Base from '@/layouts/base.astro';
+---
+
+<!-- Served by the proxy for unknown landing paths (/rent/<unknown>, /privacy.html …): the app
+     answers its own unknown routes. -->
+<Base title={NOT_FOUND.metaTitle} description={NOT_FOUND.description} path="/404" noindex>
+    <SiteHeader />
+    <main id="main">
+        <section aria-labelledby="not-found-title">
+            <Container class="flex flex-col items-start gap-5 pt-16 pb-24 sm:pt-24">
+                <p class="type-eyebrow text-brand">{NOT_FOUND.eyebrow}</p>
+                <h1 id="not-found-title" class="type-title">
+                    {NOT_FOUND.heading}
+                </h1>
+                <p class="type-lead max-w-xl text-muted">{NOT_FOUND.lead}</p>
+                <div class="mt-3 flex flex-col gap-3 sm:flex-row">
+                    {NOT_FOUND.links.map((link) => (
+                        <Button href={link.href} variant={link.primary ? 'primary' : 'secondary'} size="lg">
+                            {link.label}
+                        </Button>
+                    ))}
+                </div>
+            </Container>
+        </section>
+    </main>
+    <SiteFooter />
+</Base>

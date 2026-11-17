@@ -77,9 +77,6 @@
             "confirm": "Cancel viewing"
         }
     },
-    "list": {
-        "retry": "Try again"
-    },
     "mine": {
         "pageTitle": "My viewings",
         "title": "My viewings",

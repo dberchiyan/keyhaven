@@ -2,9 +2,11 @@ import { createHash } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool } from 'pg';
 import { RateLimiterPostgres, RateLimiterRes } from 'rate-limiter-flexible';
+
 import { RateLimitExceededException } from '../exception/api.exception';
 import { MetricsService } from '../observability/metrics.service';
 import { PG_POOL } from '../persistence/pg-pool';
+import { MS_PER_SECOND, SECONDS_PER_HOUR, SECONDS_PER_MINUTE } from '../time/units';
 import { RateLimitName } from './rate-limit';
 
 const TABLE_NAME = 'rate_limits';
@@ -12,28 +14,37 @@ const SESSION_LIMIT = 'SESSION';
 const VISITOR_LIMIT = 'VISITOR';
 type LimiterName = RateLimitName | typeof SESSION_LIMIT | typeof VISITOR_LIMIT;
 
+const GUESS_WINDOW_MINUTES = 15;
+const PASSWORD_GUESSES = 5;
+const TOKEN_GUESSES = 10;
+const ACCOUNTS_PER_HOUR = 3;
+const RESET_EMAILS_PER_HOUR = 3;
+const VERIFICATION_EMAILS_PER_HOUR = 5;
+const REQUESTS_PER_MINUTE = 300;
+const GUESS_WINDOW_SECONDS = GUESS_WINDOW_MINUTES * SECONDS_PER_MINUTE;
+
 const LIMITS: Readonly<Record<LimiterName, { points: number; durationSeconds: number }>> = {
-    // security.md: login 5 / 15 min keyed by IP and email.
-    [RateLimitName.LOGIN]: { points: 5, durationSeconds: 15 * 60 },
-    // Same budget for guesses at the current password, keyed by user.
-    [RateLimitName.PASSWORD_CHANGE]: { points: 5, durationSeconds: 15 * 60 },
-    // security.md: registration 3 / h per IP.
-    [RateLimitName.REGISTRATION]: { points: 3, durationSeconds: 60 * 60 },
-    // security.md: password reset 3 / h per IP.
-    [RateLimitName.PASSWORD_RESET_REQUEST]: { points: 3, durationSeconds: 60 * 60 },
-    // Resending the verification email: a handful per hour is plenty, per user.
-    [RateLimitName.EMAIL_VERIFICATION_REQUEST]: { points: 5, durationSeconds: 60 * 60 },
-    // Emailed links carry 256-bit tokens; the limit only keeps guessing from costing queries.
-    [RateLimitName.TOKEN_REDEMPTION]: { points: 10, durationSeconds: 15 * 60 },
-    // Per-session ceiling on everything else.
-    [SESSION_LIMIT]: { points: 300, durationSeconds: 60 },
-    // The same ceiling for visitors without a session (the public catalogue), per address.
-    [VISITOR_LIMIT]: { points: 300, durationSeconds: 60 },
+    [RateLimitName.LOGIN]: { points: PASSWORD_GUESSES, durationSeconds: GUESS_WINDOW_SECONDS },
+    [RateLimitName.PASSWORD_CHANGE]: { points: PASSWORD_GUESSES, durationSeconds: GUESS_WINDOW_SECONDS },
+    [RateLimitName.REGISTRATION]: { points: ACCOUNTS_PER_HOUR, durationSeconds: SECONDS_PER_HOUR },
+    [RateLimitName.PASSWORD_RESET_REQUEST]: { points: RESET_EMAILS_PER_HOUR, durationSeconds: SECONDS_PER_HOUR },
+    [RateLimitName.EMAIL_VERIFICATION_REQUEST]: {
+        points: VERIFICATION_EMAILS_PER_HOUR,
+        durationSeconds: SECONDS_PER_HOUR,
+    },
+    [RateLimitName.TOKEN_REDEMPTION]: { points: TOKEN_GUESSES, durationSeconds: GUESS_WINDOW_SECONDS },
+    [SESSION_LIMIT]: { points: REQUESTS_PER_MINUTE, durationSeconds: SECONDS_PER_MINUTE },
+    [VISITOR_LIMIT]: { points: REQUESTS_PER_MINUTE, durationSeconds: SECONDS_PER_MINUTE },
 };
 
 /** Keys are hashed so no IP or email is stored in the limiter table. */
 const toKey = (parts: readonly string[]): string => createHash('sha256').update(parts.join('|')).digest('hex');
 
+/**
+ * AUTH-6: login and password changes allow 5 guesses per 15 minutes (by IP and email, by user); emailed links carry
+ * 256-bit tokens, so their limit only keeps guessing from costing queries; every session and every visitor's address
+ * gets one per-minute ceiling on everything else. The library deletes expired rows itself on a timer.
+ */
 @Injectable()
 export class RateLimitService {
     private readonly limiters: ReadonlyMap<LimiterName, RateLimiterPostgres>;
@@ -50,7 +61,6 @@ export class RateLimitService {
                     storeType: 'pool',
                     tableName: TABLE_NAME,
                     tableCreated: true,
-                    // The library deletes expired rows itself on a timer.
                     clearExpiredByTimeout: true,
                     keyPrefix: name.toLowerCase(),
                     points: LIMITS[name].points,
@@ -88,7 +98,7 @@ export class RateLimitService {
         } catch (rejection: unknown) {
             if (rejection instanceof RateLimiterRes) {
                 this.metrics.rateLimitHits.inc({ limiter: name.toLowerCase() });
-                throw new RateLimitExceededException(Math.ceil(rejection.msBeforeNext / 1000));
+                throw new RateLimitExceededException(Math.ceil(rejection.msBeforeNext / MS_PER_SECOND));
             }
             throw rejection;
         }

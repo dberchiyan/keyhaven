@@ -1,9 +1,10 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { SECURITY_CATEGORIES } from '../../modules/audit/service/security-category';
-import { pageResponseSchema } from './page.response';
 
-/** Security-log actions (auth.*) as the API names them. */
+import { SECURITY_CATEGORIES } from '@/modules/audit/service/security-category';
+
+import { type CursorPage, cursorPageSchema, cursorQueryShape, encodeCursor } from './cursor';
+
 export const SECURITY_ACTIONS = [
     'auth.signed_in',
     'auth.sign_in_failed',
@@ -26,29 +27,25 @@ export const SecurityEventSchema = z
         action: z.enum(SECURITY_ACTIONS),
         occurredAt: z.iso.datetime(),
         ip: z.string().nullable(),
-        /** As the browser sent it; the client turns it into "Chrome on macOS". */
         userAgent: z.string().nullable(),
-        /** A sign-in from a device the user had not signed in from before. */
-        newDevice: z.boolean(),
+        isNewDevice: z.boolean(),
     })
     .meta({ id: 'SecurityEvent' });
 
-/** A user's security log, newest first. */
-export const SecurityEventPageSchema = pageResponseSchema(SecurityEventSchema);
+export const SecurityEventPageSchema = cursorPageSchema(SecurityEventSchema);
 export type SecurityEventPageBody = z.infer<typeof SecurityEventPageSchema>;
 
 /** Maps the audit service's page; only auth.* actions belong here. */
-export const toSecurityEventPage = (page: {
-    content: {
+export const toSecurityEventPage = (
+    page: CursorPage<{
         id: string;
         occurredAt: Date;
         action: string;
         ipAddress: string | null;
         userAgent: string | null;
-        newDevice: boolean;
-    }[];
-    totalElements: number;
-}): SecurityEventPageBody => ({
+        isNewDevice: boolean;
+    }>,
+): SecurityEventPageBody => ({
     content: page.content.flatMap((event) =>
         isSecurityAction(event.action)
             ? [
@@ -58,16 +55,16 @@ export const toSecurityEventPage = (page: {
                       occurredAt: event.occurredAt.toISOString(),
                       ip: event.ipAddress,
                       userAgent: event.userAgent,
-                      newDevice: event.newDevice,
+                      isNewDevice: event.isNewDevice,
                   },
               ]
             : [],
     ),
-    totalElements: page.totalElements,
+    nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null,
 });
 
-/** `?category=` of the security log; absent = every event. */
 export const SecurityLogQuerySchema = z.object({
     category: z.enum(SECURITY_CATEGORIES, { error: 'validation.invalid' }).optional(),
+    ...cursorQueryShape,
 });
 export class SecurityLogQuery extends createZodDto(SecurityLogQuerySchema) {}

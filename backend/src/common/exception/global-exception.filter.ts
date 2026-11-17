@@ -4,6 +4,7 @@ import {
     type ExceptionFilter,
     ForbiddenException,
     HttpException,
+    HttpStatus,
     NotFoundException,
     PayloadTooLargeException,
 } from '@nestjs/common';
@@ -13,7 +14,9 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { ZodValidationException } from 'nestjs-zod';
 import { ZodError } from 'zod';
-import type { I18nTranslations } from '../../generated/i18n.generated';
+
+import type { I18nTranslations } from '@/generated/i18n.generated';
+
 import type { RequestContext } from '../context/request-context';
 import type { ErrorResponse } from '../dto/error.response';
 import { FALLBACK_LOCALE } from '../i18n/i18n.module';
@@ -30,6 +33,7 @@ interface ResolvedError {
 }
 
 const VALIDATION_KEY_PREFIX = 'validation.';
+const BAD_REQUEST_STATUS: number = HttpStatus.BAD_REQUEST;
 
 /** Body-parser errors carry a `type` and arrive before any Nest handler runs. */
 const bodyParserErrorType = (error: unknown): string | undefined => {
@@ -68,7 +72,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         }
 
         const body: ErrorResponse = {
-            timestamp: new Date().toISOString(),
+            occurredAt: new Date().toISOString(),
             status,
             error: resolved.code,
             message: this.i18n.t(resolved.messageKey, { lang, args: resolved.args }),
@@ -81,18 +85,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     private resolve(exception: unknown, lang: string): ResolvedError {
         if (exception instanceof ApiException) {
-            const resolved: ResolvedError = {
-                code: exception.code,
-                messageKey: exception.messageKey,
-                args: exception.args,
-            };
-            const field = 'field' in exception && typeof exception.field === 'string' ? exception.field : undefined;
-            return field
-                ? {
-                      ...resolved,
-                      details: [{ field, message: this.i18n.t(exception.messageKey, { lang, args: exception.args }) }],
-                  }
-                : resolved;
+            return this.resolveApiException(exception, lang);
         }
         if (exception instanceof ZodValidationException) {
             return {
@@ -102,32 +95,22 @@ export class GlobalExceptionFilter implements ExceptionFilter {
                 details: this.toDetails(exception.getZodError(), lang),
             };
         }
-        const parserErrorType = bodyParserErrorType(exception);
-        if (parserErrorType === 'entity.parse.failed') {
-            return simple('MALFORMED_REQUEST');
-        }
-        if (parserErrorType === 'entity.too.large' || exception instanceof PayloadTooLargeException) {
-            return simple('PAYLOAD_TOO_LARGE');
-        }
-        if (exception instanceof NotFoundException) {
-            return simple('RESOURCE_NOT_FOUND');
-        }
-        if (exception instanceof ForbiddenException) {
-            return simple('FORBIDDEN');
-        }
-        switch (classifyPrismaError(exception)) {
-            case PrismaErrorKind.UNIQUE_VIOLATION:
-            case PrismaErrorKind.FOREIGN_KEY_VIOLATION:
-                return simple('CONFLICT');
-            case PrismaErrorKind.NOT_FOUND:
-                return simple('RESOURCE_NOT_FOUND');
-            case undefined:
-                break;
-        }
-        if (exception instanceof HttpException && exception.getStatus() === 400) {
-            return simple('MALFORMED_REQUEST');
-        }
-        return simple('INTERNAL_ERROR');
+        return resolveFrameworkError(exception);
+    }
+
+    private resolveApiException(exception: ApiException, lang: string): ResolvedError {
+        const resolved: ResolvedError = {
+            code: exception.code,
+            messageKey: exception.messageKey,
+            args: exception.args,
+        };
+        const field = 'field' in exception && typeof exception.field === 'string' ? exception.field : undefined;
+        return field
+            ? {
+                  ...resolved,
+                  details: [{ field, message: this.i18n.t(exception.messageKey, { lang, args: exception.args }) }],
+              }
+            : resolved;
     }
 
     private toDetails(error: unknown, lang: string): { field: string; message: string }[] {
@@ -138,7 +121,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             const key: I18nPath = issue.message.startsWith(VALIDATION_KEY_PREFIX)
                 ? (issue.message as I18nPath)
                 : 'validation.invalid';
-            // Limits a message may name: {max} for too long / too many, {min} for too short.
             const args = {
                 ...('maximum' in issue ? { max: Number(issue.maximum) } : {}),
                 ...('minimum' in issue ? { min: Number(issue.minimum) } : {}),
@@ -153,3 +135,33 @@ const simple = (code: ErrorCode): ResolvedError => ({
     messageKey: `errors.${code}`,
     args: {},
 });
+
+/** Body-parser, Nest and Prisma errors mapped to our codes; anything unknown is INTERNAL_ERROR, never its text. */
+const resolveFrameworkError = (exception: unknown): ResolvedError => {
+    const parserErrorType = bodyParserErrorType(exception);
+    if (parserErrorType === 'entity.parse.failed') {
+        return simple('MALFORMED_REQUEST');
+    }
+    if (parserErrorType === 'entity.too.large' || exception instanceof PayloadTooLargeException) {
+        return simple('PAYLOAD_TOO_LARGE');
+    }
+    if (exception instanceof NotFoundException) {
+        return simple('RESOURCE_NOT_FOUND');
+    }
+    if (exception instanceof ForbiddenException) {
+        return simple('FORBIDDEN');
+    }
+    switch (classifyPrismaError(exception)) {
+        case PrismaErrorKind.UNIQUE_VIOLATION:
+        case PrismaErrorKind.FOREIGN_KEY_VIOLATION:
+            return simple('CONFLICT');
+        case PrismaErrorKind.NOT_FOUND:
+            return simple('RESOURCE_NOT_FOUND');
+        case undefined:
+            break;
+    }
+    if (exception instanceof HttpException && exception.getStatus() === BAD_REQUEST_STATUS) {
+        return simple('MALFORMED_REQUEST');
+    }
+    return simple('INTERNAL_ERROR');
+};

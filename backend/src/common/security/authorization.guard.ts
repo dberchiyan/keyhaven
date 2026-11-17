@@ -2,6 +2,7 @@ import { type CanActivate, type ExecutionContext, Injectable } from '@nestjs/com
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { ClsService } from 'nestjs-cls';
+
 import { type RequestContext, SessionState } from '../context/request-context';
 import { isUuid } from '../dto/uuid-param';
 import {
@@ -15,8 +16,9 @@ import type { Policy, PolicyArgs } from './policy';
 import { POLICY_KEY, PUBLIC_KEY } from './security.decorators';
 
 /**
- * Deny by default: a handler runs only if it is public or its policy passes. Routes in the
- * `verified` scope also need a verified email address.
+ * SEC-1: deny by default — a handler runs only if it is public or its policy passes. Routes in the `verified` scope
+ * also need a verified address (actions other people rely on wait for it). SEC-3: policy params are path ids, so
+ * anything but a UUID is 400 before a policy queries with it.
  */
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
@@ -43,12 +45,10 @@ export class AuthorizationGuard implements CanActivate {
                     : new NotAuthenticatedException();
             }
             if (requiredPolicy.scope === 'verified' && !principal.isEmailVerified) {
-                // Actions other people rely on wait for a verified address (policy.ts → PolicyScope).
                 throw new EmailNotVerifiedException();
             }
         }
         const request = context.switchToHttp().getRequest<Request>();
-        // Policy params are path ids: anything but a UUID is 400 before a policy queries with it.
         const args: PolicyArgs = Object.fromEntries(
             requiredPolicy.params.map((name) => {
                 const value: unknown = Reflect.get(request.params, name);

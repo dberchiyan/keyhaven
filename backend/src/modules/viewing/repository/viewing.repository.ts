@@ -1,14 +1,16 @@
+import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Injectable } from '@nestjs/common';
-import type { Pageable } from '../../../common/dto/pageable';
-import { toPrismaPage } from '../../../common/persistence/pageable';
-import type { PrismaService } from '../../../common/persistence/prisma.service';
-import type { Prisma } from '../../../generated/prisma/client';
+
+import type { Pageable } from '@/common/dto/pageable';
+import { toPrismaPage } from '@/common/persistence/pageable';
+import type { PrismaService } from '@/common/persistence/prisma.service';
+import type { Prisma } from '@/generated/prisma/client';
+
+import type { ViewingCriteria, ViewingScope } from '../service/viewing.types';
 import { MAX_LISTING_VIEWINGS, MAX_OWN_VIEWINGS } from '../service/viewing-limits';
 import type { ViewingSortField } from '../service/viewing-sort';
 import { type CancelledBy, ViewingStatus } from '../service/viewing-status';
-import type { ViewingCriteria, ViewingScope } from '../service/viewing.types';
 import {
     type BookableListingRecord,
     bookableListingSelect,
@@ -19,8 +21,10 @@ import {
 } from './record/viewing.record';
 import { activeViewingWhere, managedViewingWhere } from './viewing-where';
 
-/** Rows a scheduler run handles at most (bounded jobs, platform.md). */
+/** DATA-40: rows a scheduler run handles at most; the next hourly run takes the rest. */
 const MAX_JOB_ROWS = 500;
+/** DATA-8: the slots of the listed window are a few hundred at most, never more. */
+const MAX_TAKEN_STARTS = 1000;
 
 const orderBy = (field: ViewingSortField, direction: Prisma.SortOrder): Prisma.ViewingOrderByWithRelationInput[] => [
     { [field]: direction },
@@ -42,8 +46,7 @@ export class ViewingRepository {
         const rows = await this.txHost.tx.viewing.findMany({
             where: { listingId, startsAt: { gte: from, lte: to }, ...activeViewingWhere },
             select: { startsAt: true },
-            // Bounded by the schedule: at most the slots of the window, never more than a few hundred.
-            take: 1000,
+            take: MAX_TAKEN_STARTS,
         });
         return rows.map((row) => row.startsAt);
     }
@@ -120,6 +123,7 @@ export class ViewingRepository {
         });
     }
 
+    /** API-21: count and rows in parallel — a concurrent write may make them differ by a row. */
     async findPage(
         scope: ViewingScope,
         criteria: ViewingCriteria,
@@ -128,7 +132,6 @@ export class ViewingRepository {
     ): Promise<{ content: ViewingRecord[]; totalElements: number }> {
         const where = managedViewingWhere(scope, criteria, now);
         const page = toPrismaPage(pageable, orderBy, (direction) => ({ id: direction }));
-        // In parallel (api.md → Pagination): a concurrent write may make them differ by a row.
         const [totalElements, content] = await Promise.all([
             this.txHost.tx.viewing.count({ where }),
             this.txHost.tx.viewing.findMany({ where, select: viewingSelect, ...page }),
@@ -140,16 +143,16 @@ export class ViewingRepository {
     async countSummary(scope: ViewingScope, now: Date): Promise<{ requested: number; upcoming: number }> {
         const [requested, upcoming] = await Promise.all([
             this.txHost.tx.viewing.count({
-                where: managedViewingWhere(scope, { status: ViewingStatus.REQUESTED, upcoming: true }, now),
+                where: managedViewingWhere(scope, { status: ViewingStatus.REQUESTED, isUpcoming: true }, now),
             }),
             this.txHost.tx.viewing.count({
-                where: managedViewingWhere(scope, { status: ViewingStatus.CONFIRMED, upcoming: true }, now),
+                where: managedViewingWhere(scope, { status: ViewingStatus.CONFIRMED, isUpcoming: true }, now),
             }),
         ]);
         return { requested, upcoming };
     }
 
-    /** Optimistic status change; false when the row changed meanwhile. */
+    /** DATA-16: optimistic status change; false when the row changed meanwhile. */
     async updateStatus(
         id: string,
         version: number,
@@ -192,12 +195,35 @@ export class ViewingRepository {
         });
     }
 
-    /** Marks the reminder as sent; false when another run got there first (idempotent jobs). */
-    async markReminded(id: string, at: Date): Promise<boolean> {
-        const { count } = await this.txHost.tx.viewing.updateMany({
-            where: { id, reminderSentAt: null },
+    /** DATA-40: marks the reminder as sent; false when another run got there first. */
+    /** The ids this run marked; a row another instance marked first is left out (DATA-40). */
+    async markReminded(ids: readonly string[], at: Date): Promise<string[]> {
+        const rows = await this.txHost.tx.viewing.updateManyAndReturn({
+            where: { id: { in: [...ids] }, reminderSentAt: null },
             data: { reminderSentAt: at },
+            select: { id: true },
         });
-        return count > 0;
+        return rows.map((row) => row.id);
+    }
+
+    /** Requests still unanswered among `ids` become EXPIRED in one statement; returns the ids it changed. */
+    async expireRequested(ids: readonly string[], decidedAt: Date): Promise<string[]> {
+        const rows = await this.txHost.tx.viewing.updateManyAndReturn({
+            where: { id: { in: [...ids] }, status: ViewingStatus.REQUESTED },
+            data: {
+                status: ViewingStatus.EXPIRED,
+                note: null,
+                cancelledBy: null,
+                decidedAt,
+                updatedBy: null,
+                version: { increment: 1 },
+            },
+            select: { id: true },
+        });
+        return rows.map((row) => row.id);
+    }
+
+    findByIds(ids: readonly string[]): Promise<ViewingRecord[]> {
+        return this.txHost.tx.viewing.findMany({ where: { id: { in: [...ids] } }, select: viewingSelect });
     }
 }

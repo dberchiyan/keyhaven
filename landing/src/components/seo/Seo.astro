@@ -43,6 +43,8 @@ const jsonLd = {
             operatingSystem: 'Web',
             url: site.href,
             description: SITE.description,
+            // The demo is free to use: no plans, no payments.
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
             publisher: { '@id': `${site.href}#organization` },
         },
     ],

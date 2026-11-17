@@ -1,29 +1,46 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { VIEWING_STATUSES } from '../../../viewing/service/viewing-status';
+
+import {
+    ADDRESS_LINE_MAX_LENGTH,
+    CITY_NAME_MAX_LENGTH,
+    LISTING_TITLE_MAX_LENGTH,
+    NEIGHBORHOOD_MAX_LENGTH,
+    PERSON_NAME_MAX_LENGTH,
+    PHOTO_URL_MAX_LENGTH,
+    TIME_ZONE_MAX_LENGTH,
+} from '@/common/dto/limits';
 import {
     MAX_CONVERSATIONS,
     MAX_MESSAGE_LENGTH,
     MAX_SUBJECT_LENGTH,
     MAX_THREAD_MESSAGES,
-} from '../../service/message-limits';
-import { CONVERSATION_KINDS, COUNTERPART_KINDS, MESSAGE_SIDES } from '../../service/message-side';
+} from '@/modules/message/service/message-limits';
+import { CONVERSATION_KINDS, COUNTERPART_KINDS, MESSAGE_SIDES } from '@/modules/message/service/message-side';
+import { VIEWING_STATUSES } from '@/modules/viewing/service/viewing-status';
+
+const STATE_CODE_LENGTH = 2;
+const COUNTERPART_NAME_MAX_LENGTH = 200;
 
 export const MessageSideSchema = z.enum(MESSAGE_SIDES).meta({ id: 'MessageSide' });
 
 const ConversationListingSchema = z
     .object({
         id: z.uuid(),
-        title: z.string().max(120),
-        coverPhotoUrl: z.string().max(500).nullable(),
-        neighborhood: z.string().max(100).nullable(),
+        title: z.string().max(LISTING_TITLE_MAX_LENGTH),
+        coverPhotoUrl: z.string().max(PHOTO_URL_MAX_LENGTH).nullable(),
+        neighborhood: z.string().max(NEIGHBORHOOD_MAX_LENGTH).nullable(),
         city: z.object({
-            name: z.string().max(100),
-            state: z.string().length(2),
-            timeZone: z.string().max(64),
+            name: z.string().max(CITY_NAME_MAX_LENGTH),
+            state: z.string().length(STATE_CODE_LENGTH),
+            timeZone: z.string().max(TIME_ZONE_MAX_LENGTH),
         }),
-        /** The exact address: the owner's side always, the tenant's while the viewing is confirmed. */
-        address: z.object({ line1: z.string().max(255), line2: z.string().max(255).nullable() }).nullable(),
+        address: z
+            .object({
+                line1: z.string().max(ADDRESS_LINE_MAX_LENGTH),
+                line2: z.string().max(ADDRESS_LINE_MAX_LENGTH).nullable(),
+            })
+            .nullable(),
     })
     .meta({ id: 'ConversationListing' });
 
@@ -34,22 +51,20 @@ export const MessageSchema = z
         side: MessageSideSchema,
         sender: z.object({
             id: z.uuid(),
-            firstName: z.string().max(100),
-            lastName: z.string().max(100),
+            firstName: z.string().max(PERSON_NAME_MAX_LENGTH),
+            lastName: z.string().max(PERSON_NAME_MAX_LENGTH),
         }),
         body: z.string().max(MAX_MESSAGE_LENGTH),
+        isRemoved: z.boolean(),
         createdAt: z.iso.datetime(),
     })
     .meta({ id: 'Message' });
 
-/** One conversation as the caller's side sees it: a viewing's thread, or a request to Keyhaven. */
 export const ConversationSchema = z
     .object({
         id: z.uuid(),
         kind: z.enum(CONVERSATION_KINDS).meta({ id: 'ConversationKind' }),
-        /** Both sides can write: a confirmed viewing (ahead or held), or a request not closed. */
-        open: z.boolean(),
-        /** The caller's side: the client tells its own messages apart by it. */
+        isOpen: z.boolean(),
         side: MessageSideSchema,
         viewing: z
             .object({
@@ -68,11 +83,12 @@ export const ConversationSchema = z
             .nullable(),
         listing: ConversationListingSchema.nullable(),
         counterpart: z
-            .object({ name: z.string().max(200), kind: z.enum(COUNTERPART_KINDS) })
+            .object({ name: z.string().max(COUNTERPART_NAME_MAX_LENGTH), kind: z.enum(COUNTERPART_KINDS) })
             .meta({ id: 'Counterpart' }),
         lastMessage: z
             .object({
                 body: z.string().max(MAX_MESSAGE_LENGTH),
+                isRemoved: z.boolean(),
                 side: MessageSideSchema,
                 createdAt: z.iso.datetime(),
             })
@@ -80,7 +96,6 @@ export const ConversationSchema = z
         messageCount: z.number().int().min(0),
         unread: z.number().int().min(0),
         readAt: z.iso.datetime().nullable(),
-        /** When the other side last read the thread (the caller's earlier messages were seen). */
         seenAt: z.iso.datetime().nullable(),
     })
     .meta({ id: 'Conversation' });
@@ -98,7 +113,5 @@ export class ConversationDetailResponse extends createZodDto(z.object(Conversati
 export class ConversationListResponse extends createZodDto(
     z.object({ content: z.array(ConversationSchema).max(MAX_CONVERSATIONS) }),
 ) {}
-/** Unread messages over the caller's whole inbox (the badge). */
 export class ConversationSummaryResponse extends createZodDto(z.object({ unread: z.number().int().min(0) })) {}
-/** When the caller's side last read the thread; null while it has no messages. */
 export class ReadReceiptResponse extends createZodDto(z.object({ readAt: z.iso.datetime().nullable() })) {}

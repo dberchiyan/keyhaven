@@ -1,9 +1,3 @@
-/** Development seed data — fictional people, agency and homes only. */
-
-/**
- * Password of every seeded account. Public on purpose: the accounts are fictional and the seed
- * runs only with APP_ENV=dev (the public demo is a dev-seeded database by design, README).
- */
 export const SEED_PASSWORD = 'Keyhaven-Demo-2026!';
 
 export interface SeedPerson {
@@ -13,7 +7,6 @@ export interface SeedPerson {
     phone?: string;
 }
 
-/** The one seeded agency; its agents manage its listings together. */
 export const AGENCY = {
     id: '019a0000-0000-7000-8000-00000000a001',
     name: 'Harborline Realty',
@@ -24,7 +17,6 @@ export const AGENCY = {
         'A boutique rental agency with homes in six cities. Viewings seven days a week; every home is visited by an agent before it is listed.',
 } as const;
 
-/** The showcase accounts (README → Demo accounts), one per role. */
 export const DEMO_TENANT: SeedPerson = {
     firstName: 'Maya',
     lastName: 'Lopez',
@@ -48,7 +40,6 @@ export const DEMO_ADMIN: SeedPerson = {
     email: 'alex.morgan@keyhaven.example',
 };
 
-/** More agents of the agency and landlords, so the catalogue has many owners. */
 export const OTHER_AGENTS: SeedPerson[] = [
     {
         firstName: 'Jordan',
@@ -186,10 +177,8 @@ export interface SeedCity {
     state: string;
     slug: string;
     timeZone: string;
-    /** Typical monthly rent of a one-bedroom, USD — the generator scales from it. */
-    baseRent: number;
-    /** Typical asking price of a two-bedroom home, USD — the generator scales from it. */
-    baseSalePrice: number;
+    oneBedroomRent: number;
+    twoBedroomSalePrice: number;
     zipPrefix: string;
     neighborhoods: readonly string[];
     streets: readonly string[];
@@ -202,8 +191,8 @@ export const CITIES: readonly SeedCity[] = [
         state: 'TX',
         slug: 'austin',
         timeZone: 'America/Chicago',
-        baseRent: 1650,
-        baseSalePrice: 430_000,
+        oneBedroomRent: 1650,
+        twoBedroomSalePrice: 430_000,
         zipPrefix: '787',
         neighborhoods: [
             'South Congress',
@@ -222,8 +211,8 @@ export const CITIES: readonly SeedCity[] = [
         state: 'CO',
         slug: 'denver',
         timeZone: 'America/Denver',
-        baseRent: 1700,
-        baseSalePrice: 540_000,
+        oneBedroomRent: 1700,
+        twoBedroomSalePrice: 540_000,
         zipPrefix: '802',
         neighborhoods: ['Capitol Hill', 'LoHi', 'RiNo', 'Washington Park', 'Cherry Creek', 'Baker', 'Highland'],
         streets: ['E Colfax Ave', 'Tejon St', 'Larimer St', 'S Downing St', 'E 1st Ave', 'Broadway', 'W 32nd Ave'],
@@ -234,8 +223,8 @@ export const CITIES: readonly SeedCity[] = [
         state: 'WA',
         slug: 'seattle',
         timeZone: 'America/Los_Angeles',
-        baseRent: 2050,
-        baseSalePrice: 790_000,
+        oneBedroomRent: 2050,
+        twoBedroomSalePrice: 790_000,
         zipPrefix: '981',
         neighborhoods: ['Capitol Hill', 'Ballard', 'Fremont', 'Queen Anne', 'Columbia City', 'Wallingford', 'Belltown'],
         streets: [
@@ -254,8 +243,8 @@ export const CITIES: readonly SeedCity[] = [
         state: 'IL',
         slug: 'chicago',
         timeZone: 'America/Chicago',
-        baseRent: 1800,
-        baseSalePrice: 360_000,
+        oneBedroomRent: 1800,
+        twoBedroomSalePrice: 360_000,
         zipPrefix: '606',
         neighborhoods: ['Logan Square', 'Wicker Park', 'Lakeview', 'Lincoln Park', 'Pilsen', 'Hyde Park', 'West Loop'],
         streets: [
@@ -274,8 +263,8 @@ export const CITIES: readonly SeedCity[] = [
         state: 'GA',
         slug: 'atlanta',
         timeZone: 'America/New_York',
-        baseRent: 1550,
-        baseSalePrice: 390_000,
+        oneBedroomRent: 1550,
+        twoBedroomSalePrice: 390_000,
         zipPrefix: '303',
         neighborhoods: [
             'Midtown',
@@ -302,8 +291,8 @@ export const CITIES: readonly SeedCity[] = [
         state: 'AZ',
         slug: 'phoenix',
         timeZone: 'America/Phoenix',
-        baseRent: 1400,
-        baseSalePrice: 440_000,
+        oneBedroomRent: 1400,
+        twoBedroomSalePrice: 440_000,
         zipPrefix: '850',
         neighborhoods: ['Arcadia', 'Roosevelt Row', 'Biltmore', 'Coronado', 'Willo', 'Encanto', 'Ahwatukee'],
         streets: [

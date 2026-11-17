@@ -1,6 +1,6 @@
-import type { EmailMessage } from '../../email/service/email-sender';
+import type { EmailMessage } from '@/modules/email/service/email-sender';
 
-/** Every interpolated value is escaped (security.md → Injection: templates escape everything). */
+/** Names are user text: every value interpolated into HTML is escaped. */
 const escapeHtml = (value: string): string =>
     value
         .replaceAll('&', '&amp;')
@@ -17,7 +17,6 @@ ${paragraphs.map((text) => `<p>${escapeHtml(text)}</p>`).join('\n')}
 <p style="font-size:13px;color:#52606d">If the button does not work, open this link:<br>${escapeHtml(link.href)}</p>
 </body></html>`;
 
-/** The emails the auth module sends; plain text and HTML say the same thing. */
 export const accountEmails = {
     verification: (to: string, firstName: string, link: string): EmailMessage => ({
         to,

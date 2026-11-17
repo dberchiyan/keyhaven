@@ -1,20 +1,16 @@
-import type { ListingKind } from '../../listing/service/listing-kind';
-import type { ViewingScheduleDocument, ViewingWindow } from './viewing-schedule';
-import type { CancelledBy, ViewingStatus } from './viewing-status';
+import type { ListingKind } from '@/modules/listing/service/listing-kind';
 
-export type { ViewingWindow };
+import type { ViewingScheduleDocument } from './viewing-schedule';
+import type { CancelledBy, ViewingStatus, ViewingTransition } from './viewing-status';
 
-/** The owner's hours of one listing, with the zone they are written in. */
 export interface ViewingSchedule extends ViewingScheduleDocument {
     listingId: string;
-    /** The city's IANA zone: the windows are local minutes of its days. */
     timeZone: string;
     updatedAt: Date;
     version: number;
 }
 
 export interface SaveScheduleCommand extends ViewingScheduleDocument {
-    /** The version the owner edited; null when the listing has no hours yet. */
     version: number | null;
 }
 
@@ -24,20 +20,16 @@ export interface ViewingSlot {
 }
 
 export interface ViewingSlotDay {
-    /** A local day of the city, `YYYY-MM-DD`. */
     day: string;
     slots: ViewingSlot[];
 }
 
-/** What a tenant can book: the open slots of the coming days, or nothing when there are no hours. */
 export interface ViewingSlots {
-    /** False when the listing has no viewing hours (then `days` is empty). */
-    open: boolean;
+    isOpen: boolean;
     timeZone: string;
     slotMinutes: number | null;
     noticeHours: number;
-    /** The last local day slots are offered for. */
-    horizonEnd: string;
+    horizonEndsAt: string;
     from: string;
     days: ViewingSlotDay[];
 }
@@ -49,12 +41,10 @@ export interface ViewingListing {
     coverPhotoUrl: string | null;
     neighborhood: string | null;
     city: { name: string; state: string; slug: string; timeZone: string };
-    /** The private address: the owner's side always, the tenant's once the viewing is confirmed. */
     address: { line1: string; line2: string | null } | null;
-    demo: boolean;
+    isDemo: boolean;
 }
 
-/** Who asked — shown to the owner and admins, never to another tenant. */
 export interface ViewingTenant {
     id: string;
     firstName: string;
@@ -75,7 +65,6 @@ export interface Viewing {
     createdAt: Date;
     version: number;
     listing: ViewingListing;
-    /** Null on the tenant's own view (they know who they are). */
     tenant: ViewingTenant | null;
 }
 
@@ -84,7 +73,6 @@ export interface ViewingPage {
     totalElements: number;
 }
 
-/** The dashboard's badge figures: requests waiting, confirmed viewings ahead. */
 export interface ViewingSummary {
     requested: number;
     upcoming: number;
@@ -96,16 +84,42 @@ export interface RequestViewingCommand {
     message: string | null;
 }
 
-/** Whose viewings the dashboard lists — the caller's scope, never a filter afterwards. */
 export type ViewingScope =
     { kind: 'LANDLORD'; landlordId: string } | { kind: 'AGENCY'; agencyId: string } | { kind: 'ALL' };
 
 export interface ViewingCriteria {
     status?: ViewingStatus;
     listingId?: string;
-    /** Only viewings that start after now (requests and confirmed ones ahead). */
-    upcoming?: boolean;
+    isUpcoming?: boolean;
 }
 
-/** Who reads the viewing: the tenant's side hides the tenant block and the address until confirmed. */
 export type ViewingAudience = 'TENANT' | 'OWNER';
+
+export interface ViewingRecipient {
+    email: string;
+    firstName: string;
+}
+
+export interface MappedViewing {
+    viewing: Viewing;
+    owner: ViewingRecipient | undefined;
+}
+
+export interface ViewingDecision {
+    transition: ViewingTransition;
+    note: string | null;
+}
+
+export interface ViewingParties {
+    id: string;
+    tenantId: string;
+    listing: { landlordId: string | null; agencyId: string | null };
+}
+
+export interface TenantViewingExport {
+    listingTitle: string;
+    startsAt: Date;
+    endsAt: Date;
+    status: ViewingStatus;
+    message: string | null;
+}

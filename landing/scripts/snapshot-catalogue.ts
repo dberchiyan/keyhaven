@@ -25,7 +25,7 @@ interface Card {
     bathrooms: string;
     sizeSqft: number;
     neighborhood: string | null;
-    availableFrom: string | null;
+    availableAt: string | null;
     publishedAt: string | null;
     coverPhotoUrl: string | null;
     city: { name: string; state: string; slug: string };
@@ -92,7 +92,7 @@ for (const city of CITIES) {
                 bathrooms: card.bathrooms,
                 sizeSqft: card.sizeSqft,
                 neighborhood: card.neighborhood,
-                availableFrom: card.availableFrom,
+                availableAt: card.availableAt,
                 coverPhotoUrl: card.coverPhotoUrl,
             })),
         };

@@ -1,7 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
-/** Tokens are 32 random bytes, base64url (43 characters); anything longer is not ours. */
 export const TOKEN_MAX_LENGTH = 128;
 
 export const TokenSchema = z

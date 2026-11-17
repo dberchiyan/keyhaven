@@ -1,11 +1,13 @@
+import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
-import type { PrismaService } from '../../../common/persistence/prisma.service';
+
+import type { PrismaService } from '@/common/persistence/prisma.service';
+
+import type { InboxScope } from '../service/message.types';
 import { MAX_CONVERSATIONS, MAX_THREAD_MESSAGES } from '../service/message-limits';
 import { ConversationKind, MessageSide, otherSide } from '../service/message-side';
-import type { InboxScope } from '../service/message.types';
 import { readAtSql, supportScopeSql, viewingScopeSql } from './conversation-where';
 import {
     type MessageRecord,
@@ -104,7 +106,7 @@ export class MessageRepository {
         return unreadRowsSchema.parse(rows)[0]?.unread ?? 0;
     }
 
-    /** The viewings' conversations of the given ids (any order; the caller ranks them). */
+    /** The viewings' conversations of the given ids (any order; the caller ranks them), bounded like the inbox's LIMIT. */
     findViewingConversations(ids: readonly string[]): Promise<ViewingConversationRecord[]> {
         if (ids.length === 0) {
             return Promise.resolve([]);
@@ -112,7 +114,6 @@ export class MessageRepository {
         return this.txHost.tx.viewing.findMany({
             where: { id: { in: [...ids] } },
             select: viewingConversationSelect,
-            // Bounded by the inbox statement's LIMIT.
             take: MAX_CONVERSATIONS,
         });
     }

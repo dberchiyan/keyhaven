@@ -1,13 +1,16 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import { UuidParam } from '../../../common/dto/uuid-param';
-import { ApiErrors } from '../../../common/exception/api-errors.decorator';
-import { Idempotent, IdempotencyExempt } from '../../../common/idempotency/idempotent.decorator';
-import { CurrentPrincipal } from '../../../common/security/current-principal.decorator';
-import { can } from '../../../common/security/policies';
-import type { Principal } from '../../../common/security/principal';
-import { Authorize } from '../../../common/security/security.decorators';
+
+import { UuidParam } from '@/common/dto/uuid-param';
+import { ApiErrors } from '@/common/exception/api-errors.decorator';
+import { IdempotencyExempt, Idempotent } from '@/common/idempotency/idempotent.decorator';
+import { CurrentPrincipal } from '@/common/security/current-principal.decorator';
+import { can } from '@/common/security/policies';
+import type { Principal } from '@/common/security/principal';
+import { Authorize } from '@/common/security/security.decorators';
+
+import { ConversationQueryService } from '../service/conversation-query.service';
 import { MessageService } from '../service/message.service';
 import { SendMessageRequest, StartConversationRequest } from './dto/message.request';
 import {
@@ -23,7 +26,10 @@ import { toConversationDetailResponse, toConversationResponse, toMessageResponse
 @ApiTags('Messages')
 @Controller('api/v1')
 export class MessageController {
-    constructor(private readonly messageService: MessageService) {}
+    constructor(
+        private readonly messageService: MessageService,
+        private readonly conversationQueryService: ConversationQueryService,
+    ) {}
 
     @Get('conversations')
     @Authorize(can.viewConversations)
@@ -34,7 +40,7 @@ export class MessageController {
     @ZodResponse({ status: HttpStatus.OK, type: ConversationListResponse })
     @ApiErrors('UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN')
     async list(@CurrentPrincipal() principal: Principal): Promise<ConversationListResponse> {
-        return { content: (await this.messageService.list(principal)).map(toConversationResponse) };
+        return { content: (await this.conversationQueryService.list(principal)).map(toConversationResponse) };
     }
 
     @Get('conversations/summary')
@@ -43,7 +49,7 @@ export class MessageController {
     @ZodResponse({ status: HttpStatus.OK, type: ConversationSummaryResponse })
     @ApiErrors('UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN')
     summary(@CurrentPrincipal() principal: Principal): Promise<ConversationSummaryResponse> {
-        return this.messageService.summary(principal);
+        return this.conversationQueryService.summary(principal);
     }
 
     @Post('conversations')
@@ -89,7 +95,7 @@ export class MessageController {
         @CurrentPrincipal() principal: Principal,
         @UuidParam('conversationId') conversationId: string,
     ): Promise<ConversationDetailResponse> {
-        return toConversationDetailResponse(await this.messageService.find(principal, conversationId));
+        return toConversationDetailResponse(await this.conversationQueryService.find(principal, conversationId));
     }
 
     @Post('conversations/:conversationId/messages')

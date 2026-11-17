@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import { ClsMiddleware } from 'nestjs-cls';
+
 import { AppConfigService } from './common/config/app-config.service';
 import { CLS_MIDDLEWARE_OPTIONS } from './common/context/context.module';
 import { TRACE_ID_HEADER } from './common/context/trace-id';
@@ -11,11 +12,14 @@ import { buildOpenApiDocument } from './openapi';
 
 const BODY_LIMIT = '1mb';
 const DOCS_PATH = 'docs';
+const API_PATH_PREFIX = '/api/';
 const PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), payment=(), usb=()';
 
 /**
  * Everything between creating the Nest app and listening — shared by main.ts and the tests, so
- * a test exercises the same middleware, headers and parsers as production.
+ * a test exercises the same middleware, headers and parsers as production. API-8: every API answer is
+ * `no-store` — even the public catalogue carries the caller's own state (`isSaved`, the exact address) once
+ * signed in; a handler that streams sets its own header after this default.
  */
 export const setupApp = (app: NestExpressApplication): void => {
     const config = app.get(AppConfigService);
@@ -38,6 +42,9 @@ export const setupApp = (app: NestExpressApplication): void => {
     const docsHelmet = helmet({ contentSecurityPolicy: false });
     app.use((request: Request, response: Response, next: NextFunction) => {
         response.setHeader('Permissions-Policy', PERMISSIONS_POLICY);
+        if (request.path.startsWith(API_PATH_PREFIX)) {
+            response.setHeader('Cache-Control', 'no-store');
+        }
         const isDocs = config.isDev && request.path.startsWith(`/${DOCS_PATH}`);
         (isDocs ? docsHelmet : strictHelmet)(request, response, next);
     });

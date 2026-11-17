@@ -1,6 +1,32 @@
 @import 'tailwindcss';
 
 /*
+ * One font file: Inter's variable cut (weight and optical size), Latin subset, preloaded by
+ * base.astro under the same hashed /_landing/ URL. Until it arrives the text is set in a local
+ * Arial scaled to Inter's metrics (units per em 2048, ascender 1984, descender 494; Inter is
+ * 7.12 % wider), so the swap moves nothing.
+ */
+@font-face {
+    font-family: 'Inter Variable';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url('@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2') format('woff2');
+    unicode-range:
+        U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F,
+        U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Inter Fallback';
+    src: local('Arial'), local('ArialMT'), local('Helvetica Neue'), local('Helvetica');
+    size-adjust: 107.12%;
+    ascent-override: 90.44%;
+    descent-override: 22.52%;
+    line-gap-override: 0%;
+}
+
+/*
  * Colours are the app's own "Hearth" palette (frontend/src/theme/tokens.ts, OKLCH), copied — the
  * two packages never import each other. A warm cream ground, paper cards, a forest-green brand,
  * amber as the second accent, warm hairlines and a soft umber shadow. Light and dark follow the
@@ -122,7 +148,7 @@
 }
 
 @theme inline {
-    --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
     --color-canvas: var(--c-canvas);
     --color-surface: var(--c-surface);
@@ -374,7 +400,7 @@
  * 1. Hero entrance: `.enter` + `--d` (step) — pieces rise in one after another on load.
  * 2. Hero window: `.tilt` leans back and settles flat over the first 28rem of scrolling.
  * 3. Drawings come alive once in view: `MockFrame` carries `data-animate`; a small observer
- *    (Base.astro) sets `data-visible`. Parts use `.anim-rise | -fade | -pop | -grow-x | -grow-y |
+ *    (base.astro) sets `data-visible`. Parts use `.anim-rise | -fade | -pop | -grow-x | -grow-y |
  *    -draw` with `--i` for the stagger and `--base` (on the frame) for an extra delay.
  * 4. Header: a solid layer (`.site-header::before`) fades in as the page scrolls.
  */
@@ -581,21 +607,23 @@
         }
     }
 
-    /* Before the drawing is seen: hidden only when the observer runs (`.js` on <html>). */
-    .js [data-animate]:not([data-visible]) :is(.anim-rise, .anim-fade, .anim-pop) {
-        opacity: 0;
-    }
+    /* Before the drawing is seen: hidden only where scripts run (the observer then shows it). */
+    @media (scripting: enabled) {
+        [data-animate]:not([data-visible]) :is(.anim-rise, .anim-fade, .anim-pop) {
+            opacity: 0;
+        }
 
-    .js [data-animate]:not([data-visible]) .anim-grow-x {
-        transform: scaleX(0);
-    }
+        [data-animate]:not([data-visible]) .anim-grow-x {
+            transform: scaleX(0);
+        }
 
-    .js [data-animate]:not([data-visible]) .anim-grow-y {
-        transform: scaleY(0);
-    }
+        [data-animate]:not([data-visible]) .anim-grow-y {
+            transform: scaleY(0);
+        }
 
-    .js [data-animate]:not([data-visible]) .anim-draw {
-        stroke-dashoffset: 1;
+        [data-animate]:not([data-visible]) .anim-draw {
+            stroke-dashoffset: 1;
+        }
     }
 
     [data-visible] :is(.anim-rise, .anim-fade, .anim-pop, .anim-grow-x, .anim-grow-y, .anim-draw) {
@@ -702,17 +730,19 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    .js .steps:not([data-visible]) .steps-fill {
-        transform: scaleX(0);
-    }
+    @media (scripting: enabled) {
+        .steps:not([data-visible]) .steps-fill {
+            transform: scaleX(0);
+        }
 
-    .js .steps:not([data-visible]) .step-dot {
-        color: var(--c-brand-strong);
-    }
+        .steps:not([data-visible]) .step-dot {
+            color: var(--c-brand-strong);
+        }
 
-    .js .steps:not([data-visible]) .step-dot::before {
-        opacity: 0;
-        transform: scale(0.6);
+        .steps:not([data-visible]) .step-dot::before {
+            opacity: 0;
+            transform: scale(0.6);
+        }
     }
 
     .steps[data-visible] .steps-fill {

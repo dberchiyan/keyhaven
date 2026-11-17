@@ -8,23 +8,26 @@ import {
     S3ServiceException,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { AppConfigService } from '../../../../common/config/app-config.service';
-import { UpstreamUnavailableException } from '../../../../common/exception/api.exception';
-import { ObjectStorage, type PresignedUpload, type StoredObject } from '../../service/object-storage';
 
-/** platform.md: pre-signed PUT URLs live 15 minutes. */
-const UPLOAD_URL_TTL_SECONDS = 15 * 60;
-/** Every outbound call has a timeout (architecture.md → async). */
+import { AppConfigService } from '@/common/config/app-config.service';
+import { UpstreamUnavailableException } from '@/common/exception/api.exception';
+import { MS_PER_SECOND, SECONDS_PER_MINUTE } from '@/common/time/units';
+import { ObjectStorage, type PresignedUpload, type StoredObject } from '@/modules/storage/service/object-storage';
+
+const UPLOAD_URL_TTL_MINUTES = 15;
+const UPLOAD_URL_TTL_SECONDS = UPLOAD_URL_TTL_MINUTES * SECONDS_PER_MINUTE;
 const REQUEST_TIMEOUT_MS = 10_000;
 
-/** Any S3-compatible store: Cloudflare R2 in production, MinIO locally (R2_* variables). */
+/**
+ * Any S3-compatible store: Cloudflare R2 in production, RustFS locally (R2_* variables). Upload URLs are signed with
+ * the address browsers reach, reads and deletes go to the one the backend reaches (the same, unless configured).
+ * RustFS and R2 address the bucket in the path, not as a sub-domain. CORE-35: every call has a timeout.
+ */
 @Injectable()
 export class S3ObjectStorage extends ObjectStorage {
-    /** Signs the browser's upload URLs: the address browsers reach. */
     private readonly client: S3Client;
-    /** Reads, heads and deletes: the address the backend reaches (the same, unless configured). */
     private readonly internalClient: S3Client;
     private readonly bucket: string;
     private readonly publicBase: string;
@@ -42,7 +45,6 @@ export class S3ObjectStorage extends ObjectStorage {
                     accessKeyId: config.get('R2_ACCESS_KEY'),
                     secretAccessKey: config.get('R2_SECRET_KEY'),
                 },
-                // RustFS and R2 address the bucket in the path, not as a sub-domain.
                 forcePathStyle: true,
                 requestHandler: { requestTimeout: REQUEST_TIMEOUT_MS },
             });
@@ -53,6 +55,7 @@ export class S3ObjectStorage extends ObjectStorage {
         this.publicBase = config.get('R2_PUBLIC_URL');
     }
 
+    /** FILE-1: type and length are signed in, so the store refuses a PUT that differs from the intent; 15 minutes. */
     async presignUpload(key: string, contentType: string, sizeBytes: number): Promise<PresignedUpload> {
         const command = new PutObjectCommand({
             Bucket: this.bucket,
@@ -61,14 +64,13 @@ export class S3ObjectStorage extends ObjectStorage {
             ContentLength: sizeBytes,
         });
         try {
-            // Type and length are signed in: the store refuses a PUT that differs from the intent.
             const url = await getSignedUrl(this.client, command, {
                 expiresIn: UPLOAD_URL_TTL_SECONDS,
                 signableHeaders: new Set(['content-type', 'content-length']),
             });
             return {
                 url,
-                expiresAt: new Date(Date.now() + UPLOAD_URL_TTL_SECONDS * 1000),
+                expiresAt: new Date(Date.now() + UPLOAD_URL_TTL_SECONDS * MS_PER_SECOND),
                 headers: { 'Content-Type': contentType, 'Content-Length': String(sizeBytes) },
             };
         } catch (error: unknown) {
@@ -76,13 +78,13 @@ export class S3ObjectStorage extends ObjectStorage {
         }
     }
 
-    async head(key: string): Promise<StoredObject | null> {
+    async head(key: string): Promise<StoredObject | undefined> {
         try {
             const result = await this.internalClient.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }));
-            return { sizeBytes: result.ContentLength ?? 0, contentType: result.ContentType ?? null };
+            return { sizeBytes: result.ContentLength ?? 0, contentType: result.ContentType };
         } catch (error: unknown) {
-            if (error instanceof NotFound || isStatus(error, 404)) {
-                return null;
+            if (error instanceof NotFound || isStatus(error, HttpStatus.NOT_FOUND)) {
+                return undefined;
             }
             throw this.unavailable('head', key, error);
         }
@@ -111,7 +113,7 @@ export class S3ObjectStorage extends ObjectStorage {
         return `${this.publicBase}/${key.split('/').map(encodeURIComponent).join('/')}`;
     }
 
-    /** Provider error text stays in the log; the caller gets our exception (integrations.md). */
+    /** INT-1: provider error text stays in the log; the caller gets our exception. */
     private unavailable(operation: string, key: string, error: unknown): UpstreamUnavailableException {
         this.logger.warn({ err: error, operation, key }, 'Object storage call failed');
         return new UpstreamUnavailableException();

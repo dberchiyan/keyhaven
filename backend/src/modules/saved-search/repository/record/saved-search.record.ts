@@ -1,11 +1,11 @@
-import type { Prisma } from '../../../../generated/prisma/client';
+import type { Prisma } from '@/generated/prisma/client';
 
 export const savedSearchSelect = {
     id: true,
     userId: true,
     name: true,
     criteria: true,
-    emailAlerts: true,
+    hasEmailAlerts: true,
     lastNotifiedAt: true,
     createdAt: true,
     version: true,

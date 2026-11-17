@@ -1,15 +1,9 @@
 import { DeleteObjectsCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { z } from 'zod';
-import { PrismaClient } from '../src/generated/prisma/client';
 
-/**
- * Empties the public demo (DEMO_MODE=true only): drops the `public` schema with every table, row
- * and trigger, creates it empty, and removes every object from the photo bucket — the seed's
- * photos are external URLs, so whatever is in the bucket was uploaded by visitors. `npm run
- * db:demo-reset` follows with the migrations and the seed. A schema drop, not TRUNCATE:
- * `audit_events` refuses TRUNCATE by design.
- */
+import { PrismaClient } from '@/generated/prisma/client';
+
 const resetEnv = z.object({
     DEMO_MODE: z.literal('true'),
     DATABASE_URL: z.url(),
@@ -48,12 +42,17 @@ const emptyBucket = async (env: z.infer<typeof resetEnv>): Promise<number> => {
     return removed;
 };
 
+/**
+ * Empties the public demo (DEMO_MODE=true only): drops the `public` schema with every table, row
+ * and trigger, creates it empty, and removes every object from the photo bucket — the seed's
+ * photos are external URLs, so whatever is in the bucket was uploaded by visitors. `npm run
+ * db:demo-reset` follows with the migrations and the seed. A schema drop, not TRUNCATE:
+ * `audit_events` refuses TRUNCATE by design.
+ */
 const reset = async (): Promise<void> => {
     try {
         process.loadEnvFile('.env');
-    } catch {
-        // Variables come from the environment.
-    }
+    } catch {}
     const env = resetEnv.parse(process.env);
     const prisma = new PrismaClient({
         adapter: new PrismaPg({ connectionString: env.DATABASE_URL }),

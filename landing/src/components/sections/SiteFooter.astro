@@ -22,7 +22,7 @@ const COLUMNS = [
         id: 'footer-company',
         title: footer.company,
         links: [
-            { href: '#how-it-works', label: footer.about },
+            { href: '/#how-it-works', label: footer.about },
             { href: SITE.links.signUp, label: LANDING.header.listHome },
             { href: SITE.links.github, label: footer.github },
         ],
@@ -51,7 +51,9 @@ const CIRCLES = [
                                 href={circle.href}
                                 aria-label={circle.label}
                                 class="footer-circle flex size-11 items-center justify-center rounded-full transition-colors"
-                                {...(circle.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
+                                {...(circle.href.startsWith('http')
+                                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                                    : {})}
                             >
                                 <Icon name={circle.icon} class="size-5" />
                             </a>
@@ -75,7 +77,9 @@ const CIRCLES = [
                                 <a
                                     href={item.href}
                                     class="footer-link inline-flex min-h-9 items-center text-[0.9375rem] font-medium transition-colors"
-                                    {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
+                                    {...(item.href.startsWith('http')
+                                        ? { target: '_blank', rel: 'noopener noreferrer' }
+                                        : {})}
                                 >
                                     {item.label}
                                 </a>
@@ -89,9 +93,26 @@ const CIRCLES = [
             <p>
                 © {year} {SITE.name}. {footer.rights}
             </p>
-            <a href={SITE.links.signIn} class="footer-link font-medium underline-offset-4 hover:underline">
-                {footer.signIn}
-            </a>
+            <nav aria-label={footer.legal} class="flex flex-wrap items-center gap-x-5">
+                <a
+                    href="/privacy"
+                    class="footer-link inline-flex min-h-9 items-center underline-offset-4 hover:underline"
+                >
+                    {footer.privacy}
+                </a>
+                <a
+                    href="/terms"
+                    class="footer-link inline-flex min-h-9 items-center underline-offset-4 hover:underline"
+                >
+                    {footer.terms}
+                </a>
+                <a
+                    href={SITE.links.signIn}
+                    class="footer-link inline-flex min-h-9 items-center font-medium underline-offset-4 hover:underline"
+                >
+                    {footer.signIn}
+                </a>
+            </nav>
         </div>
     </Container>
 </footer>

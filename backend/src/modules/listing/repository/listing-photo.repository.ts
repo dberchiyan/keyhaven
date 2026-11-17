@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Injectable } from '@nestjs/common';
-import type { PrismaService } from '../../../common/persistence/prisma.service';
+
+import type { PrismaService } from '@/common/persistence/prisma.service';
+
 import { MAX_PENDING_PHOTOS, MAX_PHOTOS, PhotoStatus } from '../service/photo-status';
 import {
     type ManagedPhotoRecord,
@@ -10,14 +12,13 @@ import {
     photoUploadSelect,
 } from './record/listing.record';
 
-/** Abandoned intents removed per hourly run (platform.md → bounded jobs). */
+/** DATA-40: the hourly cleanup is bounded; what is left waits for the next run. */
 const MAX_EXPIRED_PER_RUN = 200;
 
 @Injectable()
 export class ListingPhotoRepository {
     constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma<PrismaService>>) {}
 
-    /** Every photo of the listing: ready ones in order, then pending intents (bounded). */
     findByListing(listingId: string): Promise<ManagedPhotoRecord[]> {
         return this.txHost.tx.listingPhoto.findMany({
             where: { listingId },
@@ -46,7 +47,6 @@ export class ListingPhotoRepository {
         });
     }
 
-    /** The next free slot: one past the highest position. */
     async nextPosition(listingId: string): Promise<number> {
         const last = await this.txHost.tx.listingPhoto.aggregate({
             where: { listingId, status: PhotoStatus.READY },
@@ -55,7 +55,6 @@ export class ListingPhotoRepository {
         return (last._max.position ?? -1) + 1;
     }
 
-    /** An upload intent: a PENDING row with its storage key; returns the photo id. */
     async createIntent(
         listingId: string,
         storageKey: string,
@@ -78,7 +77,7 @@ export class ListingPhotoRepository {
         return id;
     }
 
-    /** PENDING → READY at the given position; false when the row is no longer pending. */
+    /** False when the row is no longer pending (confirmed meanwhile). */
     async markReady(photoId: string, position: number, sizeBytes: number): Promise<boolean> {
         const { count } = await this.txHost.tx.listingPhoto.updateMany({
             where: { id: photoId, status: PhotoStatus.PENDING },
@@ -88,8 +87,8 @@ export class ListingPhotoRepository {
     }
 
     /**
-     * The new order of the listing's ready photos in one statement; the unique (listing, position)
-     * constraint is deferred to commit, so swaps are fine (migration listing_photo_order_deferrable).
+     * One statement for the whole order: the unique (listing, position) constraint is deferred to commit, so swaps
+     * do not collide midway (migration listing_photo_order_deferrable).
      */
     async reorder(listingId: string, orderedIds: readonly string[]): Promise<void> {
         await this.txHost.tx.$executeRaw`
@@ -98,7 +97,7 @@ export class ListingPhotoRepository {
       WHERE p.id = o.id AND p.listing_id = ${listingId}::uuid AND p.status = ${PhotoStatus.READY}`;
     }
 
-    /** Removes one photo; the remaining ready ones close the gap (one statement). */
+    /** The remaining ready photos close the gap in one statement, so positions stay dense. */
     async remove(listingId: string, photoId: string): Promise<void> {
         await this.txHost.tx.listingPhoto.deleteMany({ where: { id: photoId, listingId } });
         await this.txHost.tx.$executeRaw`
@@ -109,7 +108,7 @@ export class ListingPhotoRepository {
       FROM ordered WHERE p.id = ordered.id`;
     }
 
-    /** Intents never confirmed within a day: their rows (the objects are removed by the caller). */
+    /** The objects are removed by the caller, outside the transaction (DATA-12). */
     findExpiredIntents(before: Date): Promise<PhotoUploadRecord[]> {
         return this.txHost.tx.listingPhoto.findMany({
             where: { status: PhotoStatus.PENDING, createdAt: { lt: before } },
@@ -119,7 +118,7 @@ export class ListingPhotoRepository {
         });
     }
 
-    /** Only intents go: a row confirmed in the meantime keeps its READY photo. */
+    /** Only intents go: a row confirmed in the meantime keeps its ready photo. */
     async deletePendingByIds(ids: string[]): Promise<void> {
         if (ids.length > 0) {
             await this.txHost.tx.listingPhoto.deleteMany({

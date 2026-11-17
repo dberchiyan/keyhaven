@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { newPasswordSchema, PASSWORD_LIMITS } from '@/shared/lib/passwordRules';
+
+import { newPasswordSchema, PASSWORD_LIMITS } from '@/shared/lib/password-rules';
 
 /** Mirrors backend LoginRequestSchema (auth/controller/dto/login.request.ts). */
 export const EMAIL_MAX_LENGTH = 254;
@@ -16,13 +17,6 @@ const MESSAGES = {
     passwordRequired: 'validation:password.required',
     passwordTooLong: 'validation:password.tooLong',
 } as const;
-
-export type LoginValidationMessage = (typeof MESSAGES)[keyof typeof MESSAGES];
-
-const MESSAGE_SET: ReadonlySet<string> = new Set(Object.values(MESSAGES));
-
-export const isLoginValidationMessage = (message: string): message is LoginValidationMessage =>
-    MESSAGE_SET.has(message);
 
 const emailSchema = z
     .string()

@@ -1,12 +1,12 @@
+import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { Injectable } from '@nestjs/common';
 import { z } from 'zod';
-import type { Pageable } from '../../../common/dto/pageable';
-import { toPrismaPage } from '../../../common/persistence/pageable';
-import type { PrismaService } from '../../../common/persistence/prisma.service';
-import { Prisma } from '../../../generated/prisma/client';
-import type { AuditEventSortField } from '../service/audit-sort';
+
+import type { Cursor } from '@/common/dto/cursor';
+import type { PrismaService } from '@/common/persistence/prisma.service';
+import { Prisma } from '@/generated/prisma/client';
+
 import { AuditAction, AuditTargetType } from '../service/audit-action';
 import { type SecurityEventRecord, securityEventSelect } from './record/audit-event.record';
 
@@ -21,11 +21,6 @@ export interface NewAuditEventRow {
     userAgent: string | null;
     traceId: string | null;
 }
-
-const orderByFor = (
-    _field: AuditEventSortField,
-    direction: Prisma.SortOrder,
-): Prisma.AuditEventOrderByWithRelationInput[] => [{ occurredAt: direction }];
 
 const idRowsSchema = z.array(z.object({ id: z.string() }));
 
@@ -45,24 +40,45 @@ export class AuditEventRepository {
         }
     }
 
-    /** A user's security log, newest first: events about the account with one of `actions`. */
-    async findSecurityPage(
+    /**
+     * A user's security log, newest first: events about the account with one of `actions`. API-21: count and rows
+     * in parallel — a concurrent write may make them differ by a row.
+     */
+    /** Newest first by `(occurred_at, id)`, strictly after the cursor; one extra row tells whether more exist. */
+    findSecurityEvents(
         userId: string,
         actions: readonly string[],
-        pageable: Pageable<AuditEventSortField>,
-    ): Promise<{ content: SecurityEventRecord[]; totalElements: number }> {
-        const where = {
-            targetType: AuditTargetType.USER,
-            targetId: userId,
-            action: { in: [...actions] },
-        } satisfies Prisma.AuditEventWhereInput;
-        const page = toPrismaPage(pageable, orderByFor, (direction) => ({ id: direction }));
-        // In parallel (api.md → Pagination): a concurrent write may make them differ by a row.
-        const [totalElements, content] = await Promise.all([
-            this.txHost.tx.auditEvent.count({ where }),
-            this.txHost.tx.auditEvent.findMany({ where, select: securityEventSelect, ...page }),
-        ]);
-        return { content, totalElements };
+        after: Cursor | undefined,
+        size: number,
+    ): Promise<SecurityEventRecord[]> {
+        return this.txHost.tx.auditEvent.findMany({
+            where: {
+                targetType: AuditTargetType.USER,
+                targetId: userId,
+                action: { in: [...actions] },
+                ...(after
+                    ? {
+                          OR: [
+                              { occurredAt: { lt: after.occurredAt } },
+                              { occurredAt: after.occurredAt, id: { lt: after.id } },
+                          ],
+                      }
+                    : {}),
+            },
+            select: securityEventSelect,
+            orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
+            take: size + 1,
+        });
+    }
+
+    /** DATA-23: the newest `take` events about the account with one of `actions`, for the person's own export. */
+    findLatestSecurityEvents(userId: string, actions: readonly string[], take: number): Promise<SecurityEventRecord[]> {
+        return this.txHost.tx.auditEvent.findMany({
+            where: { targetType: AuditTargetType.USER, targetId: userId, action: { in: [...actions] } },
+            select: securityEventSelect,
+            orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
+            take,
+        });
     }
 
     /**
