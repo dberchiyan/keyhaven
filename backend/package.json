@@ -7,6 +7,7 @@
         "node": ">=26.13.1 <27"
     },
     "scripts": {
+        "prebuild": "npm run i18n:generate",
         "build": "nest build",
         "start": "nest start",
         "start:dev": "nest start --watch",
