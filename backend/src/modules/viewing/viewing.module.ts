@@ -6,6 +6,7 @@ import { EventModule } from '../event/event.module';
 import { StorageModule } from '../storage/storage.module';
 import { ManagedViewingController } from './controller/managed-viewing.controller';
 import { ViewingController } from './controller/viewing.controller';
+import { ViewingJobController } from './controller/viewing-job.controller';
 import { ViewingRepository } from './repository/viewing.repository';
 import { ViewingPrivacyRepository } from './repository/viewing-privacy.repository';
 import { ViewingScheduleRepository } from './repository/viewing-schedule.repository';
@@ -23,7 +24,7 @@ import { ViewingSlotService } from './service/viewing-slot.service';
  */
 @Module({
     imports: [AuditModule, EmailModule, EventModule, StorageModule],
-    controllers: [ViewingController, ManagedViewingController],
+    controllers: [ViewingController, ManagedViewingController, ViewingJobController],
     providers: [
         ViewingService,
         ViewingQueryService,

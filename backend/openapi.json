@@ -4143,6 +4143,100 @@
         ]
       }
     },
+    "/api/v1/viewing-expiry-runs": {
+      "post": {
+        "operationId": "ViewingJobController_expire",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRun_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Expire the requests whose slot started unanswered, now (admins); the scheduler does it hourly",
+        "tags": [
+          "Viewings"
+        ]
+      }
+    },
+    "/api/v1/viewing-reminder-runs": {
+      "post": {
+        "operationId": "ViewingJobController_remind",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRun_Output"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHORIZED | SESSION_EXPIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FORBIDDEN",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "Send the day-before viewing reminders now (admins); the scheduler does it hourly",
+        "tags": [
+          "Viewings"
+        ]
+      }
+    },
     "/api/v1/conversations": {
       "get": {
         "operationId": "MessageController_list",
@@ -7840,6 +7934,24 @@
           "blockedDays",
           "updatedAt",
           "version"
+        ],
+        "additionalProperties": false
+      },
+      "JobRun_Output": {
+        "type": "object",
+        "properties": {
+          "isSkipped": {
+            "type": "boolean"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "isSkipped",
+          "count"
         ],
         "additionalProperties": false
       },

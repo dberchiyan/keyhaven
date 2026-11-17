@@ -15,7 +15,6 @@
         "dev": "vite",
         "build": "tsc -b && vite build && node scripts/check-bundle-size.ts",
         "preview": "vite preview",
-        "test:smoke": "playwright test",
         "typecheck": "tsc -b",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
@@ -48,7 +47,6 @@
     },
     "devDependencies": {
         "@eslint/js": "9.39.5",
-        "@playwright/test": "1.65.1",
         "@tailwindcss/vite": "4.3.4",
         "@types/node": "26.6.6",
         "@types/react": "19.3.0",

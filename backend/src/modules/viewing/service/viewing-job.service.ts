@@ -33,9 +33,15 @@ export class ViewingJobService {
     /** Requests nobody answered before the slot: expired, every hour. Idempotent by construction (DATA-40). */
     @Cron('5 * * * *', { timeZone: 'UTC' })
     async expireUnanswered(): Promise<void> {
-        await this.jobLock.runExclusive(JobName.EXPIRE_UNANSWERED_VIEWINGS, async () => {
-            const expired = await this.expireUnansweredNow(new Date());
+        await this.runExpiry(new Date());
+    }
+
+    /** One expiry run under the job's lock (DATA-43) — the cron's and the admins' "run now"; undefined when skipped. */
+    async runExpiry(now: Date): Promise<number | undefined> {
+        return this.jobLock.runExclusive(JobName.EXPIRE_UNANSWERED_VIEWINGS, async () => {
+            const expired = await this.expireUnansweredNow(now);
             this.logger.info({ expired }, 'Unanswered viewing requests expired');
+            return expired;
         });
     }
 
@@ -64,9 +70,15 @@ export class ViewingJobService {
     /** The day-before reminder to both sides (DATA-40): marked before sending, so a crash never sends twice. */
     @Cron('10 * * * *', { timeZone: 'UTC' })
     async remindTomorrow(): Promise<void> {
-        await this.jobLock.runExclusive(JobName.REMIND_UPCOMING_VIEWINGS, async () => {
-            const sent = await this.sendReminders(new Date());
+        await this.runReminders(new Date());
+    }
+
+    /** One reminder run under the job's lock (DATA-43) — the cron's and the admins' "run now"; undefined when skipped. */
+    async runReminders(now: Date): Promise<number | undefined> {
+        return this.jobLock.runExclusive(JobName.REMIND_UPCOMING_VIEWINGS, async () => {
+            const sent = await this.sendReminders(now);
             this.logger.info({ sent }, 'Viewing reminders sent');
+            return sent;
         });
     }
 

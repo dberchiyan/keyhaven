@@ -1,18 +1,22 @@
 import { randomUUID } from 'node:crypto';
+import { expect, test } from '@playwright/test';
 
-import { MAX_PENDING_PHOTOS } from '@/modules/listing/service/photo-status';
+import { type ApiResponse, type Client, ClientPool } from '../../support/client';
+import { createFixtures, type Fixtures, PASSWORD } from '../../support/db';
+import { allEmails, emailAfter, emailCount, quietPeriod, tokenOf } from '../../support/mailbox';
+import { deletedKeys, PNG_HEAD, upload } from '../../support/storage';
 
-import { bodyOf, Client, createTestApp, type TestApp } from './app';
-import { FakeEmailSender } from './fake-email.sender';
-import { PNG_HEAD } from './fake-object.storage';
-import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
+/** The backend's MAX_PENDING_PHOTOS: open upload intents a listing may hold. */
+const MAX_PENDING_PHOTOS = 20;
 
-const rows = (response: { body: unknown }): Record<string, unknown>[] =>
-    (bodyOf(response as never).content as Record<string, unknown>[] | undefined) ?? [];
-const titles = (response: { body: unknown }): string[] => rows(response).map((row) => String(row.title));
+const rows = (response: ApiResponse): Record<string, unknown>[] =>
+    (response.body.content as Record<string, unknown>[] | undefined) ?? [];
+const titles = (response: ApiResponse): string[] => rows(response).map((row) => String(row.title));
 
-describe('Listings and search (M1)', () => {
-    let testApp: TestApp;
+test.describe.configure({ mode: 'serial' });
+
+test.describe('Listings and search (M1)', () => {
+    const clients = new ClientPool();
     let f: Fixtures;
     let tenant: Client;
     let landlord: Client;
@@ -20,7 +24,7 @@ describe('Listings and search (M1)', () => {
     let admin: Client;
     let cityId: string;
 
-    const draft = (overrides: Record<string, unknown> = {}) => ({
+    const draft = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
         title: 'Sunlit 2-bedroom loft in Testville Heights',
         description: 'A bright loft with a long balcony and a quiet street.',
         propertyType: 'APARTMENT',
@@ -41,30 +45,21 @@ describe('Listings and search (M1)', () => {
         ...overrides,
     });
 
-    beforeAll(async () => {
-        testApp = await createTestApp();
+    test.beforeAll(async () => {
         f = await createFixtures(`m1-${randomUUID().slice(0, 8)}`);
         cityId = f.cityId;
-        tenant = new Client(testApp.app);
-        landlord = new Client(testApp.app);
-        agent = new Client(testApp.app);
-        admin = new Client(testApp.app);
-        for (const [client, user] of [
-            [tenant, f.tenant],
-            [landlord, f.landlord],
-            [agent, f.agent],
-            [admin, f.admin],
-        ] as const) {
-            expect((await client.login(user.email, PASSWORD)).status).toBe(200);
-        }
+        tenant = await clients.signedIn(f.tenant.email, PASSWORD);
+        landlord = await clients.signedIn(f.landlord.email, PASSWORD);
+        agent = await clients.signedIn(f.agent.email, PASSWORD);
+        admin = await clients.signedIn(f.admin.email, PASSWORD);
     });
 
-    afterAll(async () => {
-        await testApp.close();
+    test.afterAll(async () => {
+        await clients.disposeAll();
     });
 
-    describe('search', () => {
-        it('filters by city, rent, beds, baths, amenities and availability — published only', async () => {
+    test.describe('search', () => {
+        test('filters by city, rent, beds, baths, amenities and availability — published only', async () => {
             const all = await tenant.get('/api/v1/listings?city=testville&size=50');
             expect(all.status).toBe(200);
             const ids = rows(all).map((row) => row.id);
@@ -79,7 +74,7 @@ describe('Listings and search (M1)', () => {
             const twoBeds = await tenant.get(
                 '/api/v1/listings?city=testville&beds=2&baths=1&isPetFriendly=true&hasParking=true&isFurnished=false&priceMin=1000&priceMax=2000&moveInAt=2026-12-01&size=50',
             );
-            expect(bodyOf(twoBeds).totalElements).toBeGreaterThanOrEqual(2);
+            expect(twoBeds.body.totalElements).toBeGreaterThanOrEqual(2);
             const late = await tenant.get('/api/v1/listings?city=testville&moveInAt=2026-11-01');
             expect(late.body).toMatchObject({ totalElements: 0 });
             const forSale = await tenant.get('/api/v1/listings?city=testville&kind=SALE');
@@ -88,8 +83,8 @@ describe('Listings and search (M1)', () => {
             expect(houses.body).toMatchObject({ totalElements: 0 });
         });
 
-        it('is open to visitors without an account; "saved" is false for them', async () => {
-            const visitor = new Client(testApp.app);
+        test('is open to visitors without an account; "saved" is false for them', async () => {
+            const visitor = await clients.open();
             expect((await visitor.get('/api/v1/cities')).status).toBe(200);
             const open = await visitor.get('/api/v1/listings?city=testville&size=50');
             expect(open.status).toBe(200);
@@ -100,9 +95,9 @@ describe('Listings and search (M1)', () => {
             expect((await visitor.put(`/api/v1/saved-listings/${f.landlordPublished}`)).status).toBe(401);
         });
 
-        it('tolerates typos in the text search and sorts by price', async () => {
+        test('tolerates typos in the text search and sorts by price', async () => {
             const typo = await tenant.get(`/api/v1/listings?q=${encodeURIComponent('Testvile')}&size=50`);
-            expect(bodyOf(typo).totalElements).toBeGreaterThanOrEqual(2);
+            expect(typo.body.totalElements).toBeGreaterThanOrEqual(2);
             const nonsense = await tenant.get('/api/v1/listings?q=zzqqxxyy&size=5');
             expect(nonsense.body).toMatchObject({ totalElements: 0 });
             const byPrice = await tenant.get('/api/v1/listings?city=testville&sort=price,asc&size=50');
@@ -110,7 +105,7 @@ describe('Listings and search (M1)', () => {
             expect(prices).toEqual([...prices].sort((a, b) => a - b));
         });
 
-        it('refuses a price range upside down and an unknown sort', async () => {
+        test('refuses a price range upside down and an unknown sort', async () => {
             const upsideDown = await tenant.get('/api/v1/listings?priceMin=3000&priceMax=1000');
             expect(upsideDown.status).toBe(400);
             expect(upsideDown.body).toMatchObject({
@@ -122,8 +117,8 @@ describe('Listings and search (M1)', () => {
         });
     });
 
-    describe('saved homes', () => {
-        it('a tenant saves and unsaves; the card shows it; only published homes can be saved', async () => {
+    test.describe('saved homes', () => {
+        test('a tenant saves and unsaves; the card shows it; only published homes can be saved', async () => {
             const saved = await tenant.put(`/api/v1/saved-listings/${f.landlordPublished}`);
             expect(saved.status).toBe(200);
             expect(saved.body).toMatchObject({ listingId: f.landlordPublished, isSaved: true });
@@ -146,10 +141,10 @@ describe('Listings and search (M1)', () => {
         });
     });
 
-    describe("the owner's writing", () => {
+    test.describe("the owner's writing", () => {
         let listingId = '';
 
-        it('a landlord creates a draft; a tenant and an unverified landlord cannot', async () => {
+        test('a landlord creates a draft; a tenant and an unverified landlord cannot', async () => {
             const created = await landlord.postIdempotent('/api/v1/managed-listings', draft());
             expect(created.status).toBe(200);
             expect(created.body).toMatchObject({
@@ -160,10 +155,10 @@ describe('Listings and search (M1)', () => {
                 saveCount: 0,
                 managedPhotos: [],
             });
-            listingId = String(bodyOf(created).id);
+            listingId = String(created.body.id);
 
             expect((await tenant.postIdempotent('/api/v1/managed-listings', draft())).status).toBe(403);
-            const unverified = new Client(testApp.app);
+            const unverified = await clients.open();
             const email = `fresh-${randomUUID().slice(0, 8)}@test.example`;
             await unverified.post('/api/v1/registrations', {
                 firstName: 'Fresh',
@@ -195,13 +190,13 @@ describe('Listings and search (M1)', () => {
             });
         });
 
-        it('a retried create with the same Idempotency-Key does not create twice', async () => {
+        test('a retried create with the same Idempotency-Key does not create twice', async () => {
             const key = randomUUID();
             const first = await landlord.postIdempotent('/api/v1/managed-listings', draft(), key);
             const second = await landlord.postIdempotent('/api/v1/managed-listings', draft(), key);
             expect(first.status).toBe(200);
             expect(second.status).toBe(200);
-            expect(bodyOf(second).id).toBe(bodyOf(first).id);
+            expect(second.body.id).toBe(first.body.id);
             const reused = await landlord.postIdempotent(
                 '/api/v1/managed-listings',
                 draft({ title: 'Something else' }),
@@ -210,8 +205,8 @@ describe('Listings and search (M1)', () => {
             expect(reused.status).toBe(409);
         });
 
-        it('edits with an optimistic lock; the agent of another owner is refused', async () => {
-            const before = bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`));
+        test('edits with an optimistic lock; the agent of another owner is refused', async () => {
+            const before = (await landlord.get(`/api/v1/managed-listings/${listingId}`)).body;
             const edited = await landlord.put(`/api/v1/managed-listings/${listingId}`, {
                 ...draft({ title: 'Renamed loft', price: '2200.50' }),
                 version: before.version,
@@ -229,12 +224,16 @@ describe('Listings and search (M1)', () => {
             );
         });
 
-        it('cannot publish without a photo; uploads one through an intent, confirms, reorders, deletes', async () => {
+        test('cannot publish without a photo; uploads one through an intent, confirms, reorders, deletes', async () => {
             const noPhoto = await landlord.post(`/api/v1/managed-listings/${listingId}/publication`);
             expect(noPhoto.status).toBe(422);
             expect(noPhoto.body).toMatchObject({ error: 'BUSINESS_RULE_VIOLATION' });
 
-            const intent = async (): Promise<{ photoId: string; uploadUrl: string }> => {
+            const intent = async (): Promise<{
+                photoId: string;
+                uploadUrl: string;
+                headers: Record<string, string>;
+            }> => {
                 const response = await landlord.postIdempotent(`/api/v1/managed-listings/${listingId}/photo-intents`, {
                     filename: 'front.png',
                     contentType: 'image/png',
@@ -245,8 +244,9 @@ describe('Listings and search (M1)', () => {
                     headers: { 'Content-Type': 'image/png', 'Content-Length': String(PNG_HEAD.length) },
                 });
                 return {
-                    photoId: String(bodyOf(response).photoId),
-                    uploadUrl: String(bodyOf(response).uploadUrl),
+                    photoId: String(response.body.photoId),
+                    uploadUrl: String(response.body.uploadUrl),
+                    headers: response.body.headers as Record<string, string>,
                 };
             };
 
@@ -257,13 +257,13 @@ describe('Listings and search (M1)', () => {
             expect(notUploaded.status).toBe(422);
 
             const first = await intent();
-            testApp.storage.upload(first.uploadUrl, PNG_HEAD, 'image/png');
+            expect(await upload(first.uploadUrl, PNG_HEAD, first.headers)).toBe(200);
             const confirmed = await landlord.post(
                 `/api/v1/managed-listings/${listingId}/photos/${first.photoId}/confirmation`,
             );
             expect(confirmed.status).toBe(200);
             const readyAfterFirst = (
-                bodyOf(confirmed).managedPhotos as { id: string; status: string; position: number | null }[]
+                confirmed.body.managedPhotos as { id: string; status: string; position: number | null }[]
             ).find((photo) => photo.id === first.photoId);
             expect(readyAfterFirst).toMatchObject({ status: 'READY', position: 0 });
             expect(
@@ -272,15 +272,15 @@ describe('Listings and search (M1)', () => {
             ).toBe(200);
 
             const lie = await intent();
-            testApp.storage.upload(lie.uploadUrl, new Uint8Array(PNG_HEAD.length).fill(0x41), 'image/png');
+            expect(await upload(lie.uploadUrl, new Uint8Array(PNG_HEAD.length).fill(0x41), lie.headers)).toBe(200);
             const rejected = await landlord.post(
                 `/api/v1/managed-listings/${listingId}/photos/${lie.photoId}/confirmation`,
             );
             expect(rejected.status).toBe(422);
-            expect(testApp.storage.deleted.some((key) => key.includes(listingId))).toBe(true);
+            expect((await deletedKeys()).some((key) => key.includes(listingId))).toBe(true);
 
             const second = await intent();
-            testApp.storage.upload(second.uploadUrl, PNG_HEAD, 'image/png');
+            expect(await upload(second.uploadUrl, PNG_HEAD, second.headers)).toBe(200);
             expect(
                 (await landlord.post(`/api/v1/managed-listings/${listingId}/photos/${second.photoId}/confirmation`))
                     .status,
@@ -289,7 +289,7 @@ describe('Listings and search (M1)', () => {
                 photoIds: [second.photoId, first.photoId],
             });
             expect(reordered.status).toBe(200);
-            const ready = (bodyOf(reordered).managedPhotos as { id: string; position: number | null; status: string }[])
+            const ready = (reordered.body.managedPhotos as { id: string; position: number | null; status: string }[])
                 .filter((photo) => photo.status === 'READY')
                 .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
                 .map((photo) => photo.id);
@@ -305,7 +305,7 @@ describe('Listings and search (M1)', () => {
             expect(
                 (await landlord.delete(`/api/v1/managed-listings/${listingId}/photos/${second.photoId}`)).status,
             ).toBe(204);
-            const after = bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`));
+            const after = (await landlord.get(`/api/v1/managed-listings/${listingId}`)).body;
             const gallery = after.managedPhotos as {
                 id: string;
                 status: string;
@@ -317,11 +317,10 @@ describe('Listings and search (M1)', () => {
             expect(gallery.filter((p) => p.status === 'PENDING').map((p) => p.id)).toEqual([abandoned.photoId]);
         });
 
-        it('bounds the upload intents a listing can hold open', async () => {
-            const own = bodyOf(
-                await landlord.postIdempotent('/api/v1/managed-listings', draft({ title: 'Intent bound' })),
-            );
-            const open = (): Promise<{ status: number; body: unknown }> =>
+        test('bounds the upload intents a listing can hold open', async () => {
+            const own = (await landlord.postIdempotent('/api/v1/managed-listings', draft({ title: 'Intent bound' })))
+                .body;
+            const open = (): Promise<ApiResponse> =>
                 landlord.postIdempotent(`/api/v1/managed-listings/${String(own.id)}/photo-intents`, {
                     filename: 'x.png',
                     contentType: 'image/png',
@@ -335,7 +334,7 @@ describe('Listings and search (M1)', () => {
             expect(refused.body).toMatchObject({ error: 'BUSINESS_RULE_VIOLATION' });
         });
 
-        it('publishes, appears in search, counts a view, and the saved search mails the match', async () => {
+        test('publishes, appears in search, counts a view, and the saved search mails the match', async () => {
             const search = await tenant.postIdempotent('/api/v1/saved-searches', {
                 name: 'Lofts in Testville',
                 hasEmailAlerts: true,
@@ -343,7 +342,7 @@ describe('Listings and search (M1)', () => {
             });
             expect(search.status).toBe(200);
             expect(search.body).toMatchObject({ lastNotifiedAt: null, criteria: { city: 'testville' } });
-            const savedSearchId = String(bodyOf(search).id);
+            const savedSearchId = String(search.body.id);
 
             const published = await landlord.post(`/api/v1/managed-listings/${listingId}/publication`);
             expect(published.status).toBe(200);
@@ -358,33 +357,35 @@ describe('Listings and search (M1)', () => {
                 address: null,
                 priceContext: { scope: 'CITY', median: { amount: '1500.0000' }, differencePercent: 47 },
             });
-            const context = bodyOf(page).priceContext as { sample: number };
+            const context = page.body.priceContext as { sample: number };
             expect(context.sample).toBeGreaterThanOrEqual(5);
             expect(context.sample % 5).toBe(0);
             await tenant.get(`/api/v1/listings/${listingId}`);
-            expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`))).toMatchObject({
+            expect((await landlord.get(`/api/v1/managed-listings/${listingId}`)).body).toMatchObject({
                 viewCount: 1,
             });
-            const visitor = new Client(testApp.app);
+            const visitor = await clients.open();
             await visitor.get(`/api/v1/listings/${listingId}`);
             await visitor.get(`/api/v1/listings/${listingId}`);
-            expect(bodyOf(await landlord.get(`/api/v1/managed-listings/${listingId}`))).toMatchObject({
+            expect((await landlord.get(`/api/v1/managed-listings/${listingId}`)).body).toMatchObject({
                 viewCount: 2,
             });
-            expect(bodyOf(await tenant.get(`/api/v1/listings/${listingId}`))).toMatchObject({
+            expect((await tenant.get(`/api/v1/listings/${listingId}`)).body).toMatchObject({
                 viewCount: 2,
             });
 
             expect((await tenant.post('/api/v1/saved-search-digests')).status).toBe(403);
+            const before = await emailCount();
             const sent = await admin.post('/api/v1/saved-search-digests');
             expect(sent.status).toBe(200);
-            expect(bodyOf(sent).emails).toBeGreaterThanOrEqual(1);
-            const mail = testApp.emails.lastTo(f.tenant.email);
-            expect(mail?.subject).toContain('Lofts in Testville');
-            expect(mail?.text).toContain('Renamed loft');
-            expect(mail?.text).toContain(`/listings/${listingId}`);
+            expect(sent.body.emails).toBeGreaterThanOrEqual(1);
+            const mail = await emailAfter(f.tenant.email, before);
+            expect(mail.subject).toContain('Lofts in Testville');
+            expect(mail.text).toContain('Renamed loft');
+            expect(mail.text).toContain(`/listings/${listingId}`);
             const again = await admin.post('/api/v1/saved-search-digests');
-            expect(testApp.emails.sent.filter((m) => m.to === f.tenant.email)).toHaveLength(1);
+            await quietPeriod();
+            expect((await allEmails()).filter((m) => m.to.includes(f.tenant.email))).toHaveLength(1);
             expect(again.status).toBe(200);
 
             const list = await tenant.get('/api/v1/saved-searches');
@@ -393,19 +394,19 @@ describe('Listings and search (M1)', () => {
             const renamed = await tenant.put(`/api/v1/saved-searches/${savedSearchId}`, {
                 name: 'Quiet lofts',
                 hasEmailAlerts: false,
-                version: bodyOf(search).version,
+                version: search.body.version,
             });
             expect(renamed.status).toBe(200);
             expect(renamed.body).toMatchObject({ name: 'Quiet lofts', hasEmailAlerts: false });
-            const other = new Client(testApp.app);
+            const other = await clients.open();
             await other.login(f.otherLandlord.email, PASSWORD);
             expect((await other.delete(`/api/v1/saved-searches/${savedSearchId}`)).status).toBe(403);
             expect((await tenant.delete(`/api/v1/saved-searches/${savedSearchId}`)).status).toBe(204);
         });
     });
 
-    it('similar homes, recently viewed, and cards by id', async () => {
-        const visitor = new Client(testApp.app);
+    test('similar homes, recently viewed, and cards by id', async () => {
+        const visitor = await clients.open();
         const similar = await visitor.get(`/api/v1/listings/${f.landlordPublished}/similar`);
         expect(similar.status).toBe(200);
         const similarIds = rows(similar).map((row) => row.id);
@@ -432,14 +433,14 @@ describe('Listings and search (M1)', () => {
         expect(recentIds.indexOf(f.landlordPublished)).toBeGreaterThanOrEqual(0);
     });
 
-    it('a signed-out visitor browses but has no saved homes or dashboard', async () => {
-        const anonymous = new Client(testApp.app);
+    test('a signed-out visitor browses but has no saved homes or dashboard', async () => {
+        const anonymous = await clients.open();
         expect((await anonymous.get('/api/v1/listings')).status).toBe(200);
         expect((await anonymous.get('/api/v1/saved-listings')).status).toBe(401);
         expect((await anonymous.get('/api/v1/managed-listings')).status).toBe(401);
     });
 
-    it('the fake mail transport keeps every link', () => {
-        expect(() => FakeEmailSender.tokenOf({ to: '', subject: '', text: 'no link', html: '' })).toThrow();
+    test('the fake mail transport keeps every link', () => {
+        expect(() => tokenOf({ to: [], subject: '', text: 'no link', html: '' })).toThrow();
     });
 });

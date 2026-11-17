@@ -4,7 +4,7 @@
         "moduleResolution": "nodenext",
         "target": "es2024",
         "lib": ["es2024"],
-        "types": ["node", "jest"],
+        "types": ["node"],
         "declaration": false,
         "removeComments": true,
         "emitDecoratorMetadata": true,
@@ -26,5 +26,5 @@
         "verbatimModuleSyntax": false,
         "paths": { "@/*": ["./src/*"] }
     },
-    "include": ["src/**/*.ts", "prisma/**/*.ts", "scripts/**/*.ts", "test/**/*.ts", "prisma.config.ts"]
+    "include": ["src/**/*.ts", "prisma/**/*.ts", "scripts/**/*.ts", "prisma.config.ts"]
 }

@@ -1,1 +1,1 @@
-cd backend && npx --no-install lint-staged && cd ../frontend && npx --no-install lint-staged
+cd backend && npx --no-install lint-staged && cd ../frontend && npx --no-install lint-staged && cd ../e2e && npx --no-install lint-staged

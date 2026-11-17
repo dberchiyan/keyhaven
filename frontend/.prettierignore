@@ -3,5 +3,3 @@ node_modules
 src/shared/types/api.ts
 src/shared/api/schemas.generated.ts
 package-lock.json
-playwright-report
-test-results

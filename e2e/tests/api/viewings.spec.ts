@@ -1,18 +1,14 @@
 import { randomUUID } from 'node:crypto';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { expect, test } from '@playwright/test';
 
-import { PG_SESSION_OPTIONS } from '@/common/persistence/pg-pool';
-import { PrismaClient } from '@/generated/prisma/client';
-import { ViewingJobService } from '@/modules/viewing/service/viewing-job.service';
-
-import { bodyOf, Client, createTestApp, type TestApp } from './app';
-import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
-import { testDatabaseUrl } from './test-database';
+import { type ApiResponse, type Client, ClientPool } from '../../support/client';
+import { createFixtures, type Fixtures, PASSWORD, scalar, withDb } from '../../support/db';
+import { emailAfter, emailCount, lastEmailTo } from '../../support/mailbox';
 
 const HOUR_MS = 3_600_000;
 
 /** Every day 08:00–20:00 local, half-hour slots, no notice, two weeks ahead. */
-const hours = (version: number | null = null) => ({
+const hours = (version: number | null = null): Record<string, unknown> => ({
     slotMinutes: 30,
     noticeHours: 0,
     horizonDays: 14,
@@ -30,11 +26,12 @@ interface SlotDay {
     slots: Slot[];
 }
 
-const daysOf = (response: { body: unknown }): SlotDay[] =>
-    (bodyOf(response as never).days as SlotDay[] | undefined) ?? [];
+const daysOf = (response: ApiResponse): SlotDay[] => (response.body.days as SlotDay[] | undefined) ?? [];
 
-describe('Viewings (M2)', () => {
-    let testApp: TestApp;
+test.describe.configure({ mode: 'serial' });
+
+test.describe('Viewings (M2)', () => {
+    const clients = new ClientPool();
     let f: Fixtures;
     let tenant: Client;
     let otherTenant: Client;
@@ -44,30 +41,19 @@ describe('Viewings (M2)', () => {
     let admin: Client;
     let visitor: Client;
 
-    beforeAll(async () => {
-        testApp = await createTestApp();
+    test.beforeAll(async () => {
         f = await createFixtures(`m2-${randomUUID().slice(0, 8)}`);
-        tenant = new Client(testApp.app);
-        otherTenant = new Client(testApp.app);
-        landlord = new Client(testApp.app);
-        otherLandlord = new Client(testApp.app);
-        agent = new Client(testApp.app);
-        admin = new Client(testApp.app);
-        visitor = new Client(testApp.app);
-        for (const [client, user] of [
-            [tenant, f.tenant],
-            [otherTenant, f.otherTenant],
-            [landlord, f.landlord],
-            [otherLandlord, f.otherLandlord],
-            [agent, f.agent],
-            [admin, f.admin],
-        ] as const) {
-            expect((await client.login(user.email, PASSWORD)).status).toBe(200);
-        }
+        tenant = await clients.signedIn(f.tenant.email, PASSWORD);
+        otherTenant = await clients.signedIn(f.otherTenant.email, PASSWORD);
+        landlord = await clients.signedIn(f.landlord.email, PASSWORD);
+        otherLandlord = await clients.signedIn(f.otherLandlord.email, PASSWORD);
+        agent = await clients.signedIn(f.agent.email, PASSWORD);
+        admin = await clients.signedIn(f.admin.email, PASSWORD);
+        visitor = await clients.open();
     });
 
-    afterAll(async () => {
-        await testApp.close();
+    test.afterAll(async () => {
+        await clients.disposeAll();
     });
 
     const slotsOf = async (client: Client, listingId: string, query = ''): Promise<SlotDay[]> => {
@@ -86,8 +72,8 @@ describe('Viewings (M2)', () => {
         return slot;
     };
 
-    describe('hours and slots', () => {
-        it('without hours the home is closed for booking; the owner opens them; everyone sees the slots', async () => {
+    test.describe('hours and slots', () => {
+        test('without hours the home is closed for booking; the owner opens them; everyone sees the slots', async () => {
             const closed = await tenant.get(`/api/v1/listings/${f.landlordPublished}/viewing-slots`);
             expect(closed.status).toBe(200);
             expect(closed.body).toMatchObject({ isOpen: false, days: [] });
@@ -128,7 +114,7 @@ describe('Viewings (M2)', () => {
             );
         });
 
-        it('refuses overlapping windows, a stale version and a blocked day drops its slots', async () => {
+        test('refuses overlapping windows, a stale version and a blocked day drops its slots', async () => {
             const overlapping = await landlord.put(`/api/v1/managed-listings/${f.landlordPublished}/viewing-schedule`, {
                 ...hours(0),
                 windows: [
@@ -160,11 +146,11 @@ describe('Viewings (M2)', () => {
         });
     });
 
-    describe('a request and the owner’s answer', () => {
+    test.describe('a request and the owner’s answer', () => {
         let viewingId = '';
         let slot: Slot;
 
-        it('a tenant asks for a slot; it is held; the owner is told; both sides see what they may', async () => {
+        test('a tenant asks for a slot; it is held; the owner is told; both sides see what they may', async () => {
             slot = await pickSlot(f.landlordPublished);
             expect(
                 (
@@ -174,6 +160,7 @@ describe('Viewings (M2)', () => {
                     })
                 ).status,
             ).toBe(403);
+            const mailBefore = await emailCount();
             const requested = await tenant.postIdempotent('/api/v1/viewings', {
                 listingId: f.landlordPublished,
                 startsAt: slot.startsAt,
@@ -187,11 +174,11 @@ describe('Viewings (M2)', () => {
                 tenant: null,
                 listing: { id: f.landlordPublished, address: null },
             });
-            viewingId = String(bodyOf(requested).id);
+            viewingId = String(requested.body.id);
 
-            const mail = testApp.emails.lastTo(f.landlord.email);
-            expect(mail?.subject).toContain('Viewing request');
-            expect(mail?.text).toContain('moving in January');
+            const mail = await emailAfter(f.landlord.email, mailBefore);
+            expect(mail.subject).toContain('Viewing request');
+            expect(mail.text).toContain('moving in January');
 
             const days = await slotsOf(otherTenant, f.landlordPublished, '?days=5');
             expect(days[2]?.slots.some((candidate) => candidate.startsAt === slot.startsAt)).toBe(false);
@@ -200,7 +187,7 @@ describe('Viewings (M2)', () => {
                 startsAt: days[2]?.slots[0]?.startsAt,
             });
             expect(again.status).toBe(422);
-            expect(String(bodyOf(again).message)).toContain('already have a viewing');
+            expect(String(again.body.message)).toContain('already have a viewing');
 
             const owners = await landlord.get('/api/v1/managed-viewings?status=REQUESTED');
             expect(owners.status).toBe(200);
@@ -214,7 +201,7 @@ describe('Viewings (M2)', () => {
                     },
                 ],
             });
-            expect(bodyOf(await landlord.get('/api/v1/managed-viewings/summary'))).toMatchObject({
+            expect((await landlord.get('/api/v1/managed-viewings/summary')).body).toMatchObject({
                 requested: 1,
                 upcoming: 0,
             });
@@ -225,13 +212,13 @@ describe('Viewings (M2)', () => {
             expect((await otherTenant.get(`/api/v1/viewings/${viewingId}`)).status).toBe(403);
             expect((await admin.get(`/api/v1/viewings/${viewingId}`)).status).toBe(200);
             expect((await admin.get(`/api/v1/viewings/${randomUUID()}`)).status).toBe(404);
-            expect(bodyOf(await agent.get('/api/v1/managed-viewings'))).toMatchObject({
+            expect((await agent.get('/api/v1/managed-viewings')).body).toMatchObject({
                 totalElements: 0,
             });
-            expect(bodyOf(await admin.get('/api/v1/managed-viewings')).totalElements).toBeGreaterThanOrEqual(1);
+            expect((await admin.get('/api/v1/managed-viewings')).body.totalElements).toBeGreaterThanOrEqual(1);
         });
 
-        it('refuses a time the hours do not offer, and a past one', async () => {
+        test('refuses a time the hours do not offer, and a past one', async () => {
             const odd = new Date(new Date(slot.startsAt).getTime() + 7 * 60_000).toISOString();
             const refused = await otherTenant.postIdempotent('/api/v1/viewings', {
                 listingId: f.landlordPublished,
@@ -249,23 +236,24 @@ describe('Viewings (M2)', () => {
                 startsAt: slot.startsAt,
             });
             expect(closed.status).toBe(422);
-            expect(String(bodyOf(closed).message)).toContain('no viewing hours');
+            expect(String(closed.body.message)).toContain('no viewing hours');
         });
 
-        it('only the owner confirms; the tenant then sees the address on the viewing and on the home', async () => {
+        test('only the owner confirms; the tenant then sees the address on the viewing and on the home', async () => {
             expect((await tenant.post(`/api/v1/viewings/${viewingId}/confirmation`)).status).toBe(403);
             expect((await otherLandlord.post(`/api/v1/viewings/${viewingId}/confirmation`)).status).toBe(403);
             expect((await admin.post(`/api/v1/viewings/${viewingId}/confirmation`)).status).toBe(403);
             const before = await tenant.get(`/api/v1/listings/${f.landlordPublished}`);
             expect(before.body).toMatchObject({ address: null });
 
+            const mailBefore = await emailCount();
             const confirmed = await landlord.post(`/api/v1/viewings/${viewingId}/confirmation`);
             expect(confirmed.status).toBe(200);
             expect(confirmed.body).toMatchObject({ status: 'CONFIRMED' });
-            expect(typeof bodyOf(confirmed).decidedAt).toBe('string');
-            const mail = testApp.emails.lastTo(f.tenant.email);
-            expect(mail?.subject).toContain('Confirmed');
-            expect(mail?.text).toContain('1 Secret St');
+            expect(typeof confirmed.body.decidedAt).toBe('string');
+            const mail = await emailAfter(f.tenant.email, mailBefore);
+            expect(mail.subject).toContain('Confirmed');
+            expect(mail.text).toContain('1 Secret St');
             expect((await landlord.post(`/api/v1/viewings/${viewingId}/confirmation`)).status).toBe(200);
             expect(
                 (
@@ -275,28 +263,29 @@ describe('Viewings (M2)', () => {
                 ).status,
             ).toBe(422);
 
-            expect(bodyOf(await tenant.get(`/api/v1/viewings/${viewingId}`))).toMatchObject({
+            expect((await tenant.get(`/api/v1/viewings/${viewingId}`)).body).toMatchObject({
                 status: 'CONFIRMED',
                 listing: { address: { line1: '1 Secret St' } },
             });
-            expect(bodyOf(await tenant.get(`/api/v1/listings/${f.landlordPublished}`))).toMatchObject({
+            expect((await tenant.get(`/api/v1/listings/${f.landlordPublished}`)).body).toMatchObject({
                 address: { line1: '1 Secret St' },
             });
-            expect(bodyOf(await otherTenant.get(`/api/v1/listings/${f.landlordPublished}`))).toMatchObject({
+            expect((await otherTenant.get(`/api/v1/listings/${f.landlordPublished}`)).body).toMatchObject({
                 address: null,
             });
-            expect(bodyOf(await landlord.get('/api/v1/managed-viewings/summary'))).toMatchObject({
+            expect((await landlord.get('/api/v1/managed-viewings/summary')).body).toMatchObject({
                 requested: 0,
                 upcoming: 1,
             });
-            expect(
-                bodyOf(await landlord.get(`/api/v1/managed-listings/${f.landlordPublished}/viewings`)),
-            ).toMatchObject({
-                content: [{ id: viewingId, status: 'CONFIRMED' }],
-            });
+            expect((await landlord.get(`/api/v1/managed-listings/${f.landlordPublished}/viewings`)).body).toMatchObject(
+                {
+                    content: [{ id: viewingId, status: 'CONFIRMED' }],
+                },
+            );
         });
 
-        it('the owner cancels a confirmed viewing with a note; the slot opens again; the tenant is told', async () => {
+        test('the owner cancels a confirmed viewing with a note; the slot opens again; the tenant is told', async () => {
+            const mailBefore = await emailCount();
             const cancelled = await landlord.post(`/api/v1/viewings/${viewingId}/cancellation`, {
                 note: 'Pipes burst, sorry.',
             });
@@ -306,27 +295,28 @@ describe('Viewings (M2)', () => {
                 cancelledBy: 'OWNER',
                 note: 'Pipes burst, sorry.',
             });
-            expect(testApp.emails.lastTo(f.tenant.email)?.subject).toContain('Cancelled');
+            expect((await emailAfter(f.tenant.email, mailBefore)).subject).toContain('Cancelled');
             expect((await tenant.post(`/api/v1/viewings/${viewingId}/cancellation`)).status).toBe(200);
             expect((await landlord.post(`/api/v1/viewings/${viewingId}/confirmation`)).status).toBe(422);
             const days = await slotsOf(otherTenant, f.landlordPublished, '?days=5');
             expect(days[2]?.slots.some((candidate) => candidate.startsAt === slot.startsAt)).toBe(true);
         });
 
-        it('a declined request leaves the tenant free to ask for another time; a tenant cancels their own', async () => {
+        test('a declined request leaves the tenant free to ask for another time; a tenant cancels their own', async () => {
             const first = await pickSlot(f.landlordPublished);
             const requested = await tenant.postIdempotent('/api/v1/viewings', {
                 listingId: f.landlordPublished,
                 startsAt: first.startsAt,
             });
             expect(requested.status).toBe(200);
-            const id = String(bodyOf(requested).id);
+            const id = String(requested.body.id);
+            const declineBefore = await emailCount();
             const declined = await landlord.post(`/api/v1/viewings/${id}/declination`, {
                 note: 'Already let.',
             });
             expect(declined.status).toBe(200);
             expect(declined.body).toMatchObject({ status: 'DECLINED', note: 'Already let.' });
-            expect(testApp.emails.lastTo(f.tenant.email)?.text).toContain('Already let.');
+            expect((await emailAfter(f.tenant.email, declineBefore)).text).toContain('Already let.');
             expect((await tenant.post(`/api/v1/viewings/${id}/cancellation`)).status).toBe(422);
 
             const second = await pickSlot(f.landlordPublished, 1);
@@ -335,17 +325,18 @@ describe('Viewings (M2)', () => {
                 startsAt: second.startsAt,
             });
             expect(again.status).toBe(200);
-            const cancelled = await tenant.post(`/api/v1/viewings/${String(bodyOf(again).id)}/cancellation`, {
+            const cancelBefore = await emailCount();
+            const cancelled = await tenant.post(`/api/v1/viewings/${String(again.body.id)}/cancellation`, {
                 note: 'Found a place.',
             });
             expect(cancelled.status).toBe(200);
             expect(cancelled.body).toMatchObject({ status: 'CANCELLED', cancelledBy: 'TENANT' });
-            expect(testApp.emails.lastTo(f.landlord.email)?.subject).toContain('Cancelled');
+            expect((await emailAfter(f.landlord.email, cancelBefore)).subject).toContain('Cancelled');
         });
     });
 
-    describe('no double booking', () => {
-        it('two tenants race for one slot: one gets it, the other answers 409 VIEWING_SLOT_TAKEN', async () => {
+    test.describe('no double booking', () => {
+        test('two tenants race for one slot: one gets it, the other answers 409 VIEWING_SLOT_TAKEN', async () => {
             const slot = await pickSlot(f.landlordPublished, 5);
             const body = { listingId: f.landlordPublished, startsAt: slot.startsAt };
             const [first, second] = await Promise.all([
@@ -357,74 +348,75 @@ describe('Viewings (M2)', () => {
             const loser = first.status === 409 ? first : second;
             expect(loser.body).toMatchObject({ error: 'VIEWING_SLOT_TAKEN' });
             const winner = first.status === 200 ? first : second;
-            expect((await landlord.post(`/api/v1/viewings/${String(bodyOf(winner).id)}/declination`)).status).toBe(200);
+            expect((await landlord.post(`/api/v1/viewings/${String(winner.body.id)}/declination`)).status).toBe(200);
         });
     });
 
-    describe('the scheduler', () => {
-        const prisma = () =>
-            new PrismaClient({
-                adapter: new PrismaPg({ connectionString: testDatabaseUrl(), options: PG_SESSION_OPTIONS }),
+    test.describe('the scheduler', () => {
+        /** A viewing row placed in time directly: the API only books slots ahead. */
+        const insertViewing = (
+            tenantId: string,
+            startsAt: Date,
+            endsAt: Date,
+            status: string,
+            decidedAt: Date | null,
+        ): Promise<string> =>
+            withDb((db) =>
+                scalar<string>(
+                    db,
+                    `INSERT INTO viewings (listing_id, tenant_id, starts_at, ends_at, status, decided_at, updated_at)
+                     VALUES ($1, $2, $3, $4, $5, $6, now()) RETURNING id`,
+                    [f.landlordPublished, tenantId, startsAt, endsAt, status, decidedAt],
+                ),
+            );
+
+        test('expires a request whose slot started unanswered, and reminds both sides a day before', async () => {
+            const staleId = await insertViewing(
+                f.otherTenant.id,
+                new Date(Date.now() - 2 * HOUR_MS),
+                new Date(Date.now() - 1.5 * HOUR_MS),
+                'REQUESTED',
+                null,
+            );
+            const soonId = await insertViewing(
+                f.tenant.id,
+                new Date(Date.now() + 20 * HOUR_MS),
+                new Date(Date.now() + 20.5 * HOUR_MS),
+                'CONFIRMED',
+                new Date(),
+            );
+            const expiry = await admin.post('/api/v1/viewing-expiry-runs');
+            expect(expiry.status).toBe(200);
+            expect(expiry.body.count).toBeGreaterThanOrEqual(1);
+            expect((await otherTenant.get(`/api/v1/viewings/${staleId}`)).body).toMatchObject({
+                status: 'EXPIRED',
             });
 
-        it('expires a request whose slot started unanswered, and reminds both sides a day before', async () => {
-            const db = prisma();
-            try {
-                const stale = await db.viewing.create({
-                    data: {
-                        listingId: f.landlordPublished,
-                        tenantId: f.otherTenant.id,
-                        startsAt: new Date(Date.now() - 2 * HOUR_MS),
-                        endsAt: new Date(Date.now() - 1.5 * HOUR_MS),
-                        status: 'REQUESTED',
-                    },
-                    select: { id: true },
-                });
-                const soon = await db.viewing.create({
-                    data: {
-                        listingId: f.landlordPublished,
-                        tenantId: f.tenant.id,
-                        startsAt: new Date(Date.now() + 20 * HOUR_MS),
-                        endsAt: new Date(Date.now() + 20.5 * HOUR_MS),
-                        status: 'CONFIRMED',
-                        decidedAt: new Date(),
-                    },
-                    select: { id: true },
-                });
-                const service = testApp.app.get(ViewingJobService);
-                expect(await service.expireUnansweredNow(new Date())).toBeGreaterThanOrEqual(1);
-                expect(bodyOf(await otherTenant.get(`/api/v1/viewings/${stale.id}`))).toMatchObject({
-                    status: 'EXPIRED',
-                });
-
-                const before = testApp.emails.sent.length;
-                expect(await service.sendReminders(new Date())).toBe(1);
-                expect(testApp.emails.sent.length).toBe(before + 2);
-                expect(testApp.emails.lastTo(f.tenant.email)?.subject).toContain('Tomorrow');
-                expect(testApp.emails.lastTo(f.landlord.email)?.subject).toContain('Tomorrow');
-                expect(await service.sendReminders(new Date())).toBe(0);
-                expect((await tenant.post(`/api/v1/viewings/${soon.id}/cancellation`)).status).toBe(200);
-            } finally {
-                await db.$disconnect();
-            }
+            const before = await emailCount();
+            expect((await admin.post('/api/v1/viewing-reminder-runs')).body).toMatchObject({ count: 1 });
+            await expect.poll(() => emailCount()).toBe(before + 2);
+            expect((await lastEmailTo(f.tenant.email))?.subject).toContain('Tomorrow');
+            expect((await lastEmailTo(f.landlord.email))?.subject).toContain('Tomorrow');
+            expect((await admin.post('/api/v1/viewing-reminder-runs')).body).toMatchObject({ count: 0 });
+            expect((await tenant.post(`/api/v1/viewings/${soonId}/cancellation`)).status).toBe(200);
         });
     });
 
-    describe('closing the hours', () => {
-        it('the owner removes the hours: nothing more to book, past viewings untouched', async () => {
+    test.describe('closing the hours', () => {
+        test('the owner removes the hours: nothing more to book, past viewings untouched', async () => {
             expect(
                 (await tenant.delete(`/api/v1/managed-listings/${f.landlordPublished}/viewing-schedule`)).status,
             ).toBe(403);
             expect(
                 (await landlord.delete(`/api/v1/managed-listings/${f.landlordPublished}/viewing-schedule`)).status,
             ).toBe(204);
-            expect(bodyOf(await tenant.get(`/api/v1/listings/${f.landlordPublished}/viewing-slots`))).toMatchObject({
+            expect((await tenant.get(`/api/v1/listings/${f.landlordPublished}/viewing-slots`)).body).toMatchObject({
                 isOpen: false,
             });
             expect(
-                bodyOf(await landlord.get(`/api/v1/managed-listings/${f.landlordPublished}/viewing-schedule`)),
+                (await landlord.get(`/api/v1/managed-listings/${f.landlordPublished}/viewing-schedule`)).body,
             ).toMatchObject({ schedule: null });
-            expect(bodyOf(await admin.get('/api/v1/managed-viewings')).totalElements).toBeGreaterThanOrEqual(4);
+            expect((await admin.get('/api/v1/managed-viewings')).body.totalElements).toBeGreaterThanOrEqual(4);
         });
     });
 });

@@ -14,7 +14,9 @@ landlords and agents list and manage; admins keep the site clean.
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![MUI](https://img.shields.io/badge/MUI-9-007FFF?logo=mui&logoColor=white)
 
-**Live demo: [keyhaven.osdb.io](https://keyhaven.osdb.io)** · fictional people and homes only
+[![Live demo](https://img.shields.io/badge/%E2%96%B6%20live%20demo-keyhaven.osdb.io-1F6B57?style=for-the-badge)](https://keyhaven.osdb.io)
+
+Sign in with any [demo account](#demo-accounts) · password `Keyhaven-Demo-2026!` · fictional people and homes only
 
 [Quick start](#quick-start) · [Demo accounts](#demo-accounts) · [What it does](#what-it-does) ·
 [Architecture](#architecture) · [Development](#development)
@@ -103,13 +105,15 @@ landing/   Astro static site: the page at a signed-out / and prerendered city pa
            /buy/seattle …) for search engines, built from a committed catalogue snapshot
            (npm run snapshot)
 frontend/  React 19 · Vite · MUI 9 + Tailwind 4 · TanStack Query · React Router · RHF + Zod · i18next
-backend/   NestJS 11 · Prisma 7 · PostgreSQL 18 · Zod 4 · pino · argon2id · Jest + supertest
+backend/   NestJS 11 · Prisma 7 · PostgreSQL 18 · Zod 4 · pino · argon2id
+e2e/       Playwright end-to-end tests — the only tests: API and UI against a stack they build and
+           start themselves (a test database, fake SMTP and S3, the backend in normal and demo mode)
 ```
 
 - Modular monolith: `user`, `audit`, `email`, `event` (live updates over Server-Sent Events), `auth`, `storage`, `listing`, `saved-search`, `viewing`, `message`, `privacy` (a copy of one's data, account erasure);
   controller → service → repository, explicit `select` everywhere.
 - Every handler is `@Public()` or `@Authorize(policy)`; the catalogue's policies are public-scoped
-  (a session only adds "saved"); foreign ids answer 403 or 404 — see `backend/test/access.spec.ts`.
+  (a session only adds "saved"); foreign ids answer 403 or 404 — see `e2e/tests/api/access.spec.ts`.
 - `backend/openapi.json` is generated from the Zod DTOs; the frontend generates its types and
   runtime response schemas from it.
 - Ports with one adapter each: `EmailSender` (log / SMTP), `ObjectStorage` (any S3 store: RustFS locally and on the
@@ -119,16 +123,16 @@ backend/   NestJS 11 · Prisma 7 · PostgreSQL 18 · Zod 4 · pino · argon2id �
 
 ```bash
 make check                         # every pipeline step of all three packages, tests included
-cd backend  && npm run start:dev   # :3000, Swagger at /docs · npm test · npm run openapi:generate
+cd backend  && npm run start:dev   # :3000, Swagger at /docs · npm run openapi:generate
 cd frontend && npm run dev         # :5180 · npm run generate:api · npm run build (bundle budget)
 cd landing  && npm run dev         # :4321 · npm run build (astro check)
-cd frontend && npm run test:smoke  # Playwright smoke against :5180 (E2E_WRITES=1 also creates a draft)
+cd e2e      && npm test            # every test: API + UI, end to end (test:api / test:ui for one half)
 ```
 
-CI (`.github/workflows/ci.yml`) runs on every push to `main`: each package's full pipeline (format, lint,
-typecheck, build, `db:check`, i18n, OpenAPI, tests, audit), then the smoke tests against a freshly migrated and
-seeded database. A pre-commit hook runs Prettier and ESLint on the staged files of both apps. Code style: 4 spaces,
+GitHub Actions runs the end-to-end suite on every push to `main` and on pull requests (`.github/workflows/e2e.yml`).
+
+A pre-commit hook runs Prettier and ESLint on the staged files of both apps. Code style: 4 spaces,
 120 columns (`.editorconfig`); the one reformat commit is listed in `.git-blame-ignore-revs`.
 
-Backend env (`backend/.env.example`): `DATABASE_URL`, `SHADOW_DATABASE_URL`, `TEST_DATABASE_URL`,
+Backend env (`backend/.env.example`): `DATABASE_URL`, `SHADOW_DATABASE_URL`,
 `APP_URL`, `EMAIL_*`, `R2_*` (the photo store), `SESSION_*` / `COOKIE_*`, `DEMO_*`, `LOG_LEVEL`.

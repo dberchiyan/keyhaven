@@ -26,6 +26,7 @@ export const ListingStatus_Output = /* @__PURE__ */ z.enum(["DRAFT", "PUBLISHED"
 export const ManagedListingCard_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "propertyType": PropertyType_Output, "kind": ListingKind_Output, "price": Money_Output, "bedrooms": z.number().int(), "bathrooms": z.string(), "sizeSqft": z.number().int(), "city": City_Output, "neighborhood": z.string().nullable(), "availableAt": z.string().nullable(), "publishedAt": z.string().nullable(), "coverPhotoUrl": z.string().nullable(), "viewCount": z.number().int(), "isSaved": z.boolean(), "status": ListingStatus_Output, "isDemo": z.boolean(), "saveCount": z.number().int() });
 export const InsightTopListing_Output = /* @__PURE__ */ z.object({ "listing": ManagedListingCard_Output, "views": z.number().int(), "saves": z.number().int() });
 export const InsightTotals_Output = /* @__PURE__ */ z.object({ "views": z.number().int(), "saves": z.number().int() });
+export const JobRun_Output = /* @__PURE__ */ z.object({ "isSkipped": z.boolean(), "count": z.number().int() });
 export const ListedBy_Output = /* @__PURE__ */ z.union([z.object({ "kind": z.enum(["LANDLORD"]), "name": z.string(), "phone": z.string().nullable(), "email": z.string() }), z.object({ "kind": z.enum(["AGENCY"]), "name": z.string(), "phone": z.string(), "email": z.string(), "website": z.string().nullable() })]);
 export const ListingAddress_Output = /* @__PURE__ */ z.object({ "line1": z.string(), "line2": z.string().nullable() });
 export const ListingCard_Output = /* @__PURE__ */ z.object({ "id": z.string(), "title": z.string(), "propertyType": PropertyType_Output, "kind": ListingKind_Output, "price": Money_Output, "bedrooms": z.number().int(), "bathrooms": z.string(), "sizeSqft": z.number().int(), "city": City_Output, "neighborhood": z.string().nullable(), "availableAt": z.string().nullable(), "publishedAt": z.string().nullable(), "coverPhotoUrl": z.string().nullable(), "viewCount": z.number().int(), "isSaved": z.boolean() });
@@ -124,6 +125,8 @@ export const RESPONSE_SCHEMAS: readonly { method: string; pattern: RegExp; schem
   { method: 'post', pattern: /^\/api\/v1\/saved-search-digests$/, schema: DigestSummaryResponse_Output },
   { method: 'get', pattern: /^\/api\/v1\/saved-searches$/, schema: SavedSearchListResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/saved-searches$/, schema: SavedSearchResponse_Output },
+  { method: 'post', pattern: /^\/api\/v1\/viewing-expiry-runs$/, schema: JobRun_Output },
+  { method: 'post', pattern: /^\/api\/v1\/viewing-reminder-runs$/, schema: JobRun_Output },
   { method: 'get', pattern: /^\/api\/v1\/viewings$/, schema: ViewingListResponse_Output },
   { method: 'post', pattern: /^\/api\/v1\/viewings$/, schema: ViewingResponse_Output },
   { method: 'get', pattern: /^\/health\/live$/, schema: HealthResponse_Output },

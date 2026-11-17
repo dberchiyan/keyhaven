@@ -1,12 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { expect, test } from '@playwright/test';
 
-import { PG_SESSION_OPTIONS } from '@/common/persistence/pg-pool';
-import { PrismaClient } from '@/generated/prisma/client';
-
-import { bodyOf, Client, createTestApp, type TestApp } from './app';
-import { createFixtures, type Fixtures, PASSWORD } from './fixtures';
-import { testDatabaseUrl } from './test-database';
+import { type Client, ClientPool } from '../../support/client';
+import { createFixtures, type Fixtures, PASSWORD, scalar, withDb } from '../../support/db';
 
 const hours = {
     slotMinutes: 30,
@@ -27,10 +23,15 @@ interface ExportedMessage {
     body: string;
 }
 
-describe('Personal data: export and erasure (DATA-23)', () => {
-    let testApp: TestApp;
+/** A `count(*)` read back as a number: node-postgres answers bigint as a string. */
+const countOf = (text: string, values: unknown[]): Promise<number> =>
+    withDb(async (db) => Number(await scalar<string>(db, text, values)));
+
+test.describe.configure({ mode: 'serial' });
+
+test.describe('Personal data: export and erasure (DATA-23)', () => {
+    const clients = new ClientPool();
     let f: Fixtures;
-    let prisma: PrismaClient;
     let tenant: Client;
     let otherTenant: Client;
     let landlord: Client;
@@ -41,33 +42,20 @@ describe('Personal data: export and erasure (DATA-23)', () => {
 
     const firstSlot = async (client: Client, listingId: string, dayIndex: number): Promise<string> => {
         const slots = await client.get(`/api/v1/listings/${listingId}/viewing-slots?days=5`);
-        const slot = (bodyOf(slots).days as SlotDay[])[dayIndex]?.slots[0];
+        const slot = (slots.body.days as SlotDay[])[dayIndex]?.slots[0];
         if (!slot) {
             throw new Error('No slot to pick');
         }
         return slot.startsAt;
     };
 
-    beforeAll(async () => {
-        testApp = await createTestApp();
+    test.beforeAll(async () => {
         f = await createFixtures(`privacy-${randomUUID().slice(0, 8)}`);
-        prisma = new PrismaClient({
-            adapter: new PrismaPg({ connectionString: testDatabaseUrl(), options: PG_SESSION_OPTIONS }),
-        });
-        tenant = new Client(testApp.app);
-        otherTenant = new Client(testApp.app);
-        landlord = new Client(testApp.app);
-        agent = new Client(testApp.app);
-        admin = new Client(testApp.app);
-        for (const [client, user] of [
-            [tenant, f.tenant],
-            [otherTenant, f.otherTenant],
-            [landlord, f.landlord],
-            [agent, f.agent],
-            [admin, f.admin],
-        ] as const) {
-            expect((await client.login(user.email, PASSWORD)).status).toBe(200);
-        }
+        tenant = await clients.signedIn(f.tenant.email, PASSWORD);
+        otherTenant = await clients.signedIn(f.otherTenant.email, PASSWORD);
+        landlord = await clients.signedIn(f.landlord.email, PASSWORD);
+        agent = await clients.signedIn(f.agent.email, PASSWORD);
+        admin = await clients.signedIn(f.admin.email, PASSWORD);
 
         expect(
             (await landlord.put(`/api/v1/managed-listings/${f.landlordPublished}/viewing-schedule`, hours)).status,
@@ -81,7 +69,7 @@ describe('Personal data: export and erasure (DATA-23)', () => {
             message: 'Could I bring my dog?',
         });
         expect(requested.status).toBe(200);
-        tenantViewingId = String(bodyOf(requested).id);
+        tenantViewingId = String(requested.body.id);
         expect((await landlord.post(`/api/v1/viewings/${tenantViewingId}/confirmation`)).status).toBe(200);
         expect(
             (
@@ -120,18 +108,17 @@ describe('Personal data: export and erasure (DATA-23)', () => {
             startsAt: await firstSlot(otherTenant, f.landlordPublished, 4),
         });
         expect(otherLandlords.status).toBe(200);
-        otherTenantViewingId = String(bodyOf(otherLandlords).id);
+        otherTenantViewingId = String(otherLandlords.body.id);
     });
 
-    afterAll(async () => {
-        await prisma.$disconnect();
-        await testApp.close();
+    test.afterAll(async () => {
+        await clients.disposeAll();
     });
 
-    it('exports only the caller’s own data', async () => {
+    test('exports only the caller’s own data', async () => {
         const response = await tenant.get('/api/v1/personal-data');
         expect(response.status).toBe(200);
-        const data = bodyOf(response);
+        const data = response.body;
         expect(data).toMatchObject({
             account: { email: f.tenant.email, role: 'TENANT', agencyName: null },
             savedHomes: [{ listingId: f.landlordPublished }],
@@ -148,19 +135,19 @@ describe('Personal data: export and erasure (DATA-23)', () => {
         expect(JSON.stringify(data)).not.toContain('Someone else');
         expect(data.viewings).toHaveLength(1);
 
-        const landlordData = bodyOf(await landlord.get('/api/v1/personal-data'));
+        const landlordData = (await landlord.get('/api/v1/personal-data')).body;
         expect((landlordData.listings as { id: string }[]).map((listing) => listing.id)).toContain(f.landlordPublished);
         expect(landlordData.viewings).toEqual([]);
     });
 
-    it('needs a session', async () => {
-        expect((await new Client(testApp.app).get('/api/v1/personal-data')).status).toBe(401);
+    test('needs a session', async () => {
+        expect((await (await clients.open()).get('/api/v1/personal-data')).status).toBe(401);
         expect(
-            (await new Client(testApp.app).post('/api/v1/personal-data/erasure', { password: PASSWORD })).status,
+            (await (await clients.open()).post('/api/v1/personal-data/erasure', { password: PASSWORD })).status,
         ).toBe(401);
     });
 
-    it('refuses a wrong password on the field, and staff accounts', async () => {
+    test('refuses a wrong password on the field, and staff accounts', async () => {
         const wrong = await tenant.post('/api/v1/personal-data/erasure', { password: 'Not-The-Password-1!' });
         expect(wrong.status).toBe(422);
         expect(wrong.body).toMatchObject({ error: 'BUSINESS_RULE_VIOLATION', details: [{ field: 'password' }] });
@@ -173,15 +160,20 @@ describe('Personal data: export and erasure (DATA-23)', () => {
         expect((await admin.get('/api/v1/auth/me')).status).toBe(200);
     });
 
-    it('erases a tenant: signed out, anonymised, data gone, viewing cancelled, messages removed', async () => {
+    test('erases a tenant: signed out, anonymised, data gone, viewing cancelled, messages removed', async () => {
         const erased = await tenant.post('/api/v1/personal-data/erasure', { password: PASSWORD });
         expect(erased.status).toBe(200);
         expect((await tenant.get('/api/v1/auth/me')).status).toBe(401);
-        expect((await new Client(testApp.app).login(f.tenant.email, PASSWORD)).status).toBe(401);
+        expect((await (await clients.open()).login(f.tenant.email, PASSWORD)).status).toBe(401);
 
-        const user = await prisma.user.findUniqueOrThrow({
-            where: { id: f.tenant.id },
-            select: { firstName: true, lastName: true, email: true, phone: true, emailVerifiedAt: true },
+        const user = await withDb(async (db) => {
+            const result = await db.query(
+                `SELECT first_name AS "firstName", last_name AS "lastName", email, phone,
+                        email_verified_at AS "emailVerifiedAt"
+                 FROM users WHERE id = $1`,
+                [f.tenant.id],
+            );
+            return result.rows[0] as unknown;
         });
         expect(user).toEqual({
             firstName: 'Deleted',
@@ -190,51 +182,60 @@ describe('Personal data: export and erasure (DATA-23)', () => {
             phone: null,
             emailVerifiedAt: null,
         });
-        expect(await prisma.session.count({ where: { userId: f.tenant.id } })).toBe(0);
-        expect(await prisma.savedSearch.count({ where: { userId: f.tenant.id } })).toBe(0);
-        expect(await prisma.savedListing.count({ where: { userId: f.tenant.id } })).toBe(0);
-        expect(await prisma.savedSearch.count({ where: { userId: f.otherTenant.id } })).toBe(1);
+        expect(await countOf('SELECT count(*) FROM sessions WHERE user_id = $1', [f.tenant.id])).toBe(0);
+        expect(await countOf('SELECT count(*) FROM saved_searches WHERE user_id = $1', [f.tenant.id])).toBe(0);
+        expect(await countOf('SELECT count(*) FROM saved_listings WHERE user_id = $1', [f.tenant.id])).toBe(0);
+        expect(await countOf('SELECT count(*) FROM saved_searches WHERE user_id = $1', [f.otherTenant.id])).toBe(1);
 
-        const viewing = bodyOf(await landlord.get(`/api/v1/viewings/${tenantViewingId}`));
+        const viewing = (await landlord.get(`/api/v1/viewings/${tenantViewingId}`)).body;
         expect(viewing).toMatchObject({ status: 'CANCELLED', cancelledBy: 'TENANT', message: null });
 
-        const thread = bodyOf(await landlord.get(`/api/v1/conversations/${tenantViewingId}/messages`));
+        const thread = (await landlord.get(`/api/v1/conversations/${tenantViewingId}/messages`)).body;
         expect(thread.messages).toEqual([expect.objectContaining({ isRemoved: true, body: '' })]);
         expect(thread.lastMessage).toMatchObject({ isRemoved: true, body: '' });
-        const written = await prisma.message.findMany({
-            where: { senderId: f.tenant.id },
-            select: { conversationId: true, body: true },
-        });
+        const written = await withDb(
+            async (db) =>
+                (
+                    await db.query(
+                        'SELECT conversation_id AS "conversationId", body FROM messages WHERE sender_id = $1',
+                        [f.tenant.id],
+                    )
+                ).rows as ExportedMessage[],
+        );
         expect(written.every((message: ExportedMessage) => message.body === '')).toBe(true);
 
         expect(
-            await prisma.auditEvent.count({
-                where: { action: 'user.erased', targetId: f.tenant.id, actorUserId: f.tenant.id },
-            }),
+            await countOf(
+                `SELECT count(*) FROM audit_events WHERE action = 'user.erased' AND target_id = $1 AND actor_user_id = $1`,
+                [f.tenant.id],
+            ),
         ).toBe(1);
         expect(
-            await prisma.auditEvent.count({ where: { action: 'viewing.cancelled', targetId: tenantViewingId } }),
+            await countOf(`SELECT count(*) FROM audit_events WHERE action = 'viewing.cancelled' AND target_id = $1`, [
+                tenantViewingId,
+            ]),
         ).toBe(1);
     });
 
-    it('erases a landlord: published homes unpublished, live viewings on them cancelled by the owner', async () => {
+    test('erases a landlord: published homes unpublished, live viewings on them cancelled by the owner', async () => {
         const erased = await landlord.post('/api/v1/personal-data/erasure', { password: PASSWORD });
         expect(erased.status).toBe(200);
         expect((await landlord.get('/api/v1/auth/me')).status).toBe(401);
 
-        const listing = await prisma.listing.findUniqueOrThrow({
-            where: { id: f.landlordPublished },
-            select: { status: true },
-        });
-        expect(listing.status).toBe('UNPUBLISHED');
+        const status = await withDb((db) =>
+            scalar<string>(db, 'SELECT status FROM listings WHERE id = $1', [f.landlordPublished]),
+        );
+        expect(status).toBe('UNPUBLISHED');
         expect(
-            await prisma.auditEvent.count({ where: { action: 'listing.unpublished', targetId: f.landlordPublished } }),
+            await countOf(`SELECT count(*) FROM audit_events WHERE action = 'listing.unpublished' AND target_id = $1`, [
+                f.landlordPublished,
+            ]),
         ).toBe(1);
-        expect(bodyOf(await otherTenant.get(`/api/v1/viewings/${otherTenantViewingId}`))).toMatchObject({
+        expect((await otherTenant.get(`/api/v1/viewings/${otherTenantViewingId}`)).body).toMatchObject({
             status: 'CANCELLED',
             cancelledBy: 'OWNER',
         });
-        const agencyViewings = bodyOf(await otherTenant.get('/api/v1/viewings')).content as { status: string }[];
+        const agencyViewings = (await otherTenant.get('/api/v1/viewings')).body.content as { status: string }[];
         expect(agencyViewings.some((viewing) => viewing.status === 'REQUESTED')).toBe(true);
     });
 });

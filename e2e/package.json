@@ -1,0 +1,44 @@
+{
+    "name": "keyhaven-e2e",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=26.13.1 <27"
+    },
+    "scripts": {
+        "test": "playwright test",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "test:api": "playwright test --project=api",
+        "test:ui": "playwright test --project=ui"
+    },
+    "lint-staged": {
+        "*.ts": [
+            "prettier --write",
+            "eslint --fix"
+        ],
+        "*.{json,md}": [
+            "prettier --write"
+        ]
+    },
+    "devDependencies": {
+        "@eslint/js": "9.39.5",
+        "@playwright/test": "1.65.1",
+        "@types/node": "26.6.6",
+        "@types/pg": "8.23.1",
+        "eslint": "9.39.5",
+        "eslint-plugin-simple-import-sort": "14.0.0",
+        "globals": "17.14.0",
+        "lint-staged": "17.6.0",
+        "prettier": "3.9.10",
+        "typescript": "5.9.3",
+        "typescript-eslint": "8.72.1"
+    },
+    "dependencies": {
+        "pg": "8.23.1"
+    }
+}

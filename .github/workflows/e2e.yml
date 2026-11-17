@@ -1,0 +1,60 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: keyhaven
+          POSTGRES_PASSWORD: keyhaven
+          POSTGRES_DB: keyhaven_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U keyhaven" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      E2E_DATABASE_URL: postgresql://keyhaven:keyhaven@localhost:5432/keyhaven_test?schema=public
+      DATABASE_URL: postgresql://keyhaven:keyhaven@localhost:5432/keyhaven_test?schema=public
+      VITE_API_BASE_URL: ""
+      VITE_DEFAULT_LOCALE: en
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: e2e/.nvmrc
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+            e2e/package-lock.json
+      - name: Install
+        run: |
+          (cd backend && npm ci)
+          (cd frontend && npm ci)
+          (cd e2e && npm ci && npx playwright install --with-deps chromium)
+      - name: Lint and typecheck the tests
+        working-directory: e2e
+        run: npm run lint && npm run format:check && npm run typecheck
+      - name: End-to-end tests
+        working-directory: e2e
+        run: npx playwright test
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7

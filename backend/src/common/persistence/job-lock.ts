@@ -18,19 +18,19 @@ export class JobLock {
     /**
      * DATA-43: a cron runs on one instance at a time — `pg_try_advisory_lock` on one pooled connection, released in
      * `finally`; another instance holding the lock skips this run instead of repeating its effects. Session-level
-     * advisory locks belong to the connection, so the same client takes and releases it.
+     * advisory locks belong to the connection, so the same client takes and releases it. Answers the job's result, or
+     * undefined when the run was skipped.
      */
-    async runExclusive(name: JobName, job: () => Promise<void>): Promise<boolean> {
+    async runExclusive<T>(name: JobName, job: () => Promise<T>): Promise<T | undefined> {
         const client = await this.pool.connect();
         try {
             const result = await client.query('SELECT pg_try_advisory_lock(hashtext($1)) AS locked', [name]);
             if (!lockRowSchema.parse(result.rows[0]).locked) {
                 this.logger.info({ job: name }, 'Job skipped: another instance holds its lock');
-                return false;
+                return undefined;
             }
             try {
-                await job();
-                return true;
+                return await job();
             } finally {
                 await client.query('SELECT pg_advisory_unlock(hashtext($1))', [name]);
             }

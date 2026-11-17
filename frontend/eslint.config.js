@@ -36,8 +36,6 @@ export default tseslint.config(
             'src/shared/types/api.ts',
             'src/shared/api/schemas.generated.ts',
             'eslint.config.js',
-            'playwright-report/**',
-            'test-results/**',
         ],
     },
     eslint.configs.recommended,

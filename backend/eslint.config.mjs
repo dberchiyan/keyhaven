@@ -14,7 +14,7 @@ const prismaClient = ['**/generated/prisma/**', '@prisma/client', '@prisma/clien
 
 export default tseslint.config(
     {
-        ignores: ['dist/**', 'src/generated/**', 'node_modules/**', 'eslint.config.mjs', 'jest.config.mjs'],
+        ignores: ['dist/**', 'src/generated/**', 'node_modules/**', 'eslint.config.mjs'],
     },
     eslint.configs.recommended,
     ...tseslint.configs.strictTypeChecked,
@@ -86,7 +86,6 @@ export default tseslint.config(
             'src/common/persistence/**/*.ts',
             'src/common/security/permission.service.ts',
             'prisma/**/*.ts',
-            'test/**/*.ts',
         ],
         rules: {
             'no-restricted-imports': [
@@ -129,7 +128,7 @@ export default tseslint.config(
         },
     },
     {
-        files: ['prisma/**/*.ts', 'scripts/**/*.ts', 'test/**/*.ts', 'prisma.config.ts'],
+        files: ['prisma/**/*.ts', 'scripts/**/*.ts', 'prisma.config.ts'],
         rules: { '@typescript-eslint/no-magic-numbers': 'off' },
     },
 );

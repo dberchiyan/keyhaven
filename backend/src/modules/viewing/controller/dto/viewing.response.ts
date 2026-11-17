@@ -136,3 +136,7 @@ export class ViewingScheduleStateResponse extends createZodDto(z.object(ViewingS
 export class ViewingSummaryResponse extends createZodDto(
     z.object({ requested: z.number().int().min(0), upcoming: z.number().int().min(0) }),
 ) {}
+
+export class JobRunResponse extends createZodDto(
+    z.object({ isSkipped: z.boolean(), count: z.number().int().min(0) }).meta({ id: 'JobRun' }),
+) {}

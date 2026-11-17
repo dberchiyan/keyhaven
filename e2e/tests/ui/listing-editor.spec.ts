@@ -1,16 +1,16 @@
 import { expect, test } from '@playwright/test';
 
-import { LANDLORD_EMAIL, signIn, signOut } from './session';
+import { createFixtures } from '../../support/db';
+import { signIn, signOut } from '../../support/session';
 
 const RUN_SUFFIX_LENGTH = 6;
 const BASE36 = 36;
 
-test.skip(!process.env.E2E_WRITES, 'Creates a listing: runs only where writes are allowed (CI sets E2E_WRITES).');
-
 test('a landlord creates a draft listing and edits it', async ({ page }) => {
     const suffix = Date.now().toString(BASE36).slice(-RUN_SUFFIX_LENGTH);
     const title = `Smoke test loft ${suffix}`;
-    await signIn(page, LANDLORD_EMAIL);
+    const f = await createFixtures('ui-editor');
+    await signIn(page, f.landlord.email);
 
     await page.goto('/manage/new');
     await page.getByLabel('Title').fill(title);
