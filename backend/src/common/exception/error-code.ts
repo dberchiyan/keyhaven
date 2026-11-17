@@ -1,29 +1,29 @@
 export const ErrorCode = {
-  VALIDATION_FAILED: 400,
-  MALFORMED_REQUEST: 400,
-  INVALID_PARAMETER: 400,
-  UNAUTHORIZED: 401,
-  INVALID_CREDENTIALS: 401,
-  SESSION_EXPIRED: 401,
-  FORBIDDEN: 403,
-  /** The action needs a verified email address (open the link from the verification email). */
-  EMAIL_NOT_VERIFIED: 403,
-  /** Turned off in the public demo (DEMO_MODE): it would lock other visitors out. */
-  DEMO_RESTRICTED: 403,
-  /** A showcase listing of the public demo: nobody edits it, add your own instead. */
-  DEMO_READ_ONLY: 403,
-  RESOURCE_NOT_FOUND: 404,
-  CONFLICT: 409,
-  CONCURRENT_MODIFICATION: 409,
-  /** Another tenant took this viewing slot a moment ago — pick another one. */
-  VIEWING_SLOT_TAKEN: 409,
-  IDEMPOTENCY_KEY_REUSED: 409,
-  BUSINESS_RULE_VIOLATION: 422,
-  PAYLOAD_TOO_LARGE: 413,
-  UNSUPPORTED_MEDIA_TYPE: 415,
-  RATE_LIMIT_EXCEEDED: 429,
-  UPSTREAM_UNAVAILABLE: 503,
-  INTERNAL_ERROR: 500,
+    VALIDATION_FAILED: 400,
+    MALFORMED_REQUEST: 400,
+    INVALID_PARAMETER: 400,
+    UNAUTHORIZED: 401,
+    INVALID_CREDENTIALS: 401,
+    SESSION_EXPIRED: 401,
+    FORBIDDEN: 403,
+    /** The action needs a verified email address (open the link from the verification email). */
+    EMAIL_NOT_VERIFIED: 403,
+    /** Turned off in the public demo (DEMO_MODE): it would lock other visitors out. */
+    DEMO_RESTRICTED: 403,
+    /** A showcase listing of the public demo: nobody edits it, add your own instead. */
+    DEMO_READ_ONLY: 403,
+    RESOURCE_NOT_FOUND: 404,
+    CONFLICT: 409,
+    CONCURRENT_MODIFICATION: 409,
+    /** Another tenant took this viewing slot a moment ago — pick another one. */
+    VIEWING_SLOT_TAKEN: 409,
+    IDEMPOTENCY_KEY_REUSED: 409,
+    BUSINESS_RULE_VIOLATION: 422,
+    PAYLOAD_TOO_LARGE: 413,
+    UNSUPPORTED_MEDIA_TYPE: 415,
+    RATE_LIMIT_EXCEEDED: 429,
+    UPSTREAM_UNAVAILABLE: 503,
+    INTERNAL_ERROR: 500,
 } as const;
 
 export type ErrorCode = keyof typeof ErrorCode;

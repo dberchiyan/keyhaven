@@ -10,29 +10,29 @@ import { ResetPasswordForm } from '../components/ResetPasswordForm';
 
 /** The link from the reset email: choose a new password. */
 export default function ResetPasswordPage() {
-  const { t } = useTranslation('auth');
-  useDocumentTitle(t('resetPassword.pageTitle'));
-  const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token')?.trim() ?? '';
-  return (
-    <AuthCard
-      headingRef={headingRef}
-      title={t('resetPassword.title')}
-      subtitle={t('resetPassword.subtitle')}
-      footer={
-        <Link component={RouterLink} to={PATHS.forgotPassword}>
-          {t('resetPassword.requestAgain')}
-        </Link>
-      }
-    >
-      {token ? (
-        <ResetPasswordForm token={token} />
-      ) : (
-        <Alert severity="error" role="alert">
-          {t('resetPassword.missing')}
-        </Alert>
-      )}
-    </AuthCard>
-  );
+    const { t } = useTranslation('auth');
+    useDocumentTitle(t('resetPassword.pageTitle'));
+    const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get('token')?.trim() ?? '';
+    return (
+        <AuthCard
+            headingRef={headingRef}
+            title={t('resetPassword.title')}
+            subtitle={t('resetPassword.subtitle')}
+            footer={
+                <Link component={RouterLink} to={PATHS.forgotPassword}>
+                    {t('resetPassword.requestAgain')}
+                </Link>
+            }
+        >
+            {token ? (
+                <ResetPasswordForm token={token} />
+            ) : (
+                <Alert severity="error" role="alert">
+                    {t('resetPassword.missing')}
+                </Alert>
+            )}
+        </AuthCard>
+    );
 }

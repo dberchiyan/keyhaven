@@ -5,10 +5,10 @@ import { z } from 'zod';
 export const TOKEN_MAX_LENGTH = 128;
 
 export const TokenSchema = z
-  .string({ error: 'validation.token.required' })
-  .trim()
-  .min(1, 'validation.token.required')
-  .max(TOKEN_MAX_LENGTH, 'validation.token.invalid');
+    .string({ error: 'validation.token.required' })
+    .trim()
+    .min(1, 'validation.token.required')
+    .max(TOKEN_MAX_LENGTH, 'validation.token.invalid');
 
 export const VerifyEmailRequestSchema = z.object({ token: TokenSchema });
 

@@ -8,55 +8,52 @@ import type { ShowcaseHome } from '@/content/showcase';
  * photos behind a card vary in quality, so the landing does not vouch for one home).
  */
 interface Props {
-  home: ShowcaseHome;
-  saved?: boolean;
-  /** Stagger index for the entrance. */
-  i?: number;
+    home: ShowcaseHome;
+    saved?: boolean;
+    /** Stagger index for the entrance. */
+    i?: number;
 }
 
 const { home, saved = false, i = 0 } = Astro.props;
 ---
 
-<div
-  class="anim-rise flex flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass"
-  style={`--i: ${i}`}
->
-  <div class="relative aspect-[4/3] bg-surface-2">
-    <img
-      src={home.photo}
-      alt=""
-      width="1200"
-      height="800"
-      loading="lazy"
-      decoding="async"
-      class="size-full object-cover"
-    />
-    <span
-      class:list={[
-        'anim-pop absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-surface shadow-card',
-        saved ? 'text-danger-dot' : 'text-ink',
-      ]}
-      style="--i: 4"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        class="size-4.5"
-        fill={saved ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        stroke-width="1.75"
-        stroke-linejoin="round"
-      >
-        <path d="M12 20.5 4.9 13.6A4.6 4.6 0 0 1 11.4 7l.6.6.6-.6a4.6 4.6 0 0 1 6.5 6.6L12 20.5Z"></path>
-      </svg>
-    </span>
-  </div>
-  <div class="flex flex-col gap-1 p-4">
-    <p class="text-lg font-semibold text-ink tabular-nums">{home.price}</p>
-    <p class="truncate text-sm font-medium text-ink-2">{home.title}</p>
-    <p class="text-[0.8125rem] text-muted">{home.facts}</p>
-    <p class="truncate text-[0.8125rem] text-muted">{home.place}</p>
-    <span class="mt-1.5 inline-flex w-fit items-center rounded-full bg-success-bg px-2 py-0.5 text-[0.6875rem] font-medium text-success-fg">
-      {home.pill}
-    </span>
-  </div>
+<div class="anim-rise flex flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass" style={`--i: ${i}`}>
+    <div class="relative aspect-[4/3] bg-surface-2">
+        <img
+            src={home.photo}
+            alt=""
+            width="1200"
+            height="800"
+            loading="lazy"
+            decoding="async"
+            class="size-full object-cover"
+        />
+        <span
+            class:list={[
+                'anim-pop absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-surface shadow-card',
+                saved ? 'text-danger-dot' : 'text-ink',
+            ]}
+            style="--i: 4"
+        >
+            <svg
+                viewBox="0 0 24 24"
+                class="size-4.5"
+                fill={saved ? 'currentColor' : 'none'}
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linejoin="round"
+            >
+                <path d="M12 20.5 4.9 13.6A4.6 4.6 0 0 1 11.4 7l.6.6.6-.6a4.6 4.6 0 0 1 6.5 6.6L12 20.5Z"></path>
+            </svg>
+        </span>
+    </div>
+    <div class="flex flex-col gap-1 p-4">
+        <p class="text-lg font-semibold text-ink tabular-nums">{home.price}</p>
+        <p class="truncate text-sm font-medium text-ink-2">{home.title}</p>
+        <p class="text-[0.8125rem] text-muted">{home.facts}</p>
+        <p class="truncate text-[0.8125rem] text-muted">{home.place}</p>
+        <span class="mt-1.5 inline-flex w-fit items-center rounded-full bg-success-bg px-2 py-0.5 text-[0.6875rem] font-medium text-success-fg">
+            {home.pill}
+        </span>
+    </div>
 </div>

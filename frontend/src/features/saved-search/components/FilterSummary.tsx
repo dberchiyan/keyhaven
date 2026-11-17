@@ -4,60 +4,60 @@ import type { SearchFilters } from '@/shared/lib/listingSearch';
 import { formatMoney } from '@/shared/lib/money';
 
 export interface FilterSummaryProps {
-  filters: SearchFilters;
+    filters: SearchFilters;
 }
 
 /** A city slug as a name ("san-antonio" → "San Antonio"); the cities list is not needed for that. */
 const cityName = (slug: string): string =>
-  slug
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
+    slug
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
 
 /** The filters in words, one chip each; the kind (for rent / for sale) always comes first. */
 export function FilterSummary({ filters }: FilterSummaryProps) {
-  const { t, i18n } = useTranslation('savedSearch');
-  const money = (amount: string): string => formatMoney({ amount, currency: 'USD' }, i18n.language);
-  const day = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeZone: 'UTC' });
-  const rent = (): string[] => {
-    if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
-      return [
-        t('summary.priceBetween', {
-          min: money(filters.priceMin),
-          max: money(filters.priceMax),
-        }),
-      ];
-    }
-    if (filters.priceMin !== undefined) {
-      return [t('summary.priceFrom', { min: money(filters.priceMin) })];
-    }
-    if (filters.priceMax !== undefined) {
-      return [t('summary.priceTo', { max: money(filters.priceMax) })];
-    }
-    return [];
-  };
-  const chips: string[] = [
-    t(filters.kind === 'sale' ? 'summary.forSale' : 'summary.forRent'),
-    ...(filters.q === undefined ? [] : [t('summary.text', { text: filters.q })]),
-    ...(filters.type === undefined ? [] : [t(`summary.type.${filters.type}`)]),
-    ...(filters.city === undefined ? [] : [cityName(filters.city)]),
-    ...rent(),
-    ...(filters.beds === undefined ? [] : [t('summary.beds', { count: filters.beds })]),
-    ...(filters.baths === undefined ? [] : [t('summary.baths', { count: filters.baths })]),
-    ...(filters.pets ? [t('summary.pets')] : []),
-    ...(filters.furnished ? [t('summary.furnished')] : []),
-    ...(filters.parking ? [t('summary.parking')] : []),
-    ...(filters.availableBy === undefined
-      ? []
-      : [t('summary.availableBy', { date: day.format(new Date(filters.availableBy)) })]),
-  ];
-  return (
-    <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
-      {chips.map((chip) => (
-        <li key={chip}>
-          <Chip size="small" label={chip} />
-        </li>
-      ))}
-    </ul>
-  );
+    const { t, i18n } = useTranslation('savedSearch');
+    const money = (amount: string): string => formatMoney({ amount, currency: 'USD' }, i18n.language);
+    const day = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeZone: 'UTC' });
+    const rent = (): string[] => {
+        if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
+            return [
+                t('summary.priceBetween', {
+                    min: money(filters.priceMin),
+                    max: money(filters.priceMax),
+                }),
+            ];
+        }
+        if (filters.priceMin !== undefined) {
+            return [t('summary.priceFrom', { min: money(filters.priceMin) })];
+        }
+        if (filters.priceMax !== undefined) {
+            return [t('summary.priceTo', { max: money(filters.priceMax) })];
+        }
+        return [];
+    };
+    const chips: string[] = [
+        t(filters.kind === 'sale' ? 'summary.forSale' : 'summary.forRent'),
+        ...(filters.q === undefined ? [] : [t('summary.text', { text: filters.q })]),
+        ...(filters.type === undefined ? [] : [t(`summary.type.${filters.type}`)]),
+        ...(filters.city === undefined ? [] : [cityName(filters.city)]),
+        ...rent(),
+        ...(filters.beds === undefined ? [] : [t('summary.beds', { count: filters.beds })]),
+        ...(filters.baths === undefined ? [] : [t('summary.baths', { count: filters.baths })]),
+        ...(filters.pets ? [t('summary.pets')] : []),
+        ...(filters.furnished ? [t('summary.furnished')] : []),
+        ...(filters.parking ? [t('summary.parking')] : []),
+        ...(filters.availableBy === undefined
+            ? []
+            : [t('summary.availableBy', { date: day.format(new Date(filters.availableBy)) })]),
+    ];
+    return (
+        <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+            {chips.map((chip) => (
+                <li key={chip}>
+                    <Chip size="small" label={chip} />
+                </li>
+            ))}
+        </ul>
+    );
 }

@@ -7,23 +7,16 @@ import type { ErrorCode } from '@/shared/types';
 export const RESERVED_LINE = ' ';
 
 export interface FormErrorLineProps {
-  errorRef: Ref<HTMLDivElement>;
-  errorCode: ErrorCode | null;
+    errorRef: Ref<HTMLDivElement>;
+    errorCode: ErrorCode | null;
 }
 
 /** The form-level error line: reserved, `role="alert"`, focused by the form when it appears. */
 export function FormErrorLine({ errorRef, errorCode }: FormErrorLineProps) {
-  const { t } = useTranslation('errors');
-  return (
-    <FormHelperText
-      component="div"
-      role="alert"
-      ref={errorRef}
-      tabIndex={-1}
-      error
-      className="m-0 outline-none"
-    >
-      {errorCode ? t(errorCode) : RESERVED_LINE}
-    </FormHelperText>
-  );
+    const { t } = useTranslation('errors');
+    return (
+        <FormHelperText component="div" role="alert" ref={errorRef} tabIndex={-1} error className="m-0 outline-none">
+            {errorCode ? t(errorCode) : RESERVED_LINE}
+        </FormHelperText>
+    );
 }

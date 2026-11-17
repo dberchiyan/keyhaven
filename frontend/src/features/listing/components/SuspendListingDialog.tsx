@@ -10,58 +10,50 @@ import { useEffect, useId, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export interface SuspendListingDialogProps {
-  open: boolean;
-  title: string;
-  isPending: boolean;
-  onCancel: () => void;
-  onConfirm: () => void;
+    open: boolean;
+    title: string;
+    isPending: boolean;
+    onCancel: () => void;
+    onConfirm: () => void;
 }
 
 /** Names the consequence; Cancel is focused first (data.md → irreversible confirmations). */
-export function SuspendListingDialog({
-  open,
-  title,
-  isPending,
-  onCancel,
-  onConfirm,
-}: SuspendListingDialogProps) {
-  const { t } = useTranslation('listing');
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const titleId = useId();
-  const textId = useId();
-  const cancelRef = useRef<HTMLButtonElement>(null);
+export function SuspendListingDialog({ open, title, isPending, onCancel, onConfirm }: SuspendListingDialogProps) {
+    const { t } = useTranslation('listing');
+    const theme = useTheme();
+    const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+    const titleId = useId();
+    const textId = useId();
+    const cancelRef = useRef<HTMLButtonElement>(null);
 
-  // Irreversible action: the safe choice gets the initial focus (after the dialog mounted).
-  useEffect(() => {
-    if (open) {
-      requestAnimationFrame(() => {
-        cancelRef.current?.focus();
-      });
-    }
-  }, [open]);
-  return (
-    <Dialog
-      open={open}
-      onClose={isPending ? undefined : onCancel}
-      fullScreen={fullScreen}
-      aria-labelledby={titleId}
-      aria-describedby={textId}
-    >
-      <DialogTitle id={titleId}>{t('managed.confirmSuspend.title')}</DialogTitle>
-      <DialogContent>
-        <DialogContentText id={textId}>
-          {t('managed.confirmSuspend.text', { title })}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button ref={cancelRef} onClick={onCancel} disabled={isPending}>
-          {t('managed.confirmSuspend.cancel')}
-        </Button>
-        <Button variant="contained" color="error" onClick={onConfirm} loading={isPending}>
-          {t('managed.confirmSuspend.confirm')}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
+    // Irreversible action: the safe choice gets the initial focus (after the dialog mounted).
+    useEffect(() => {
+        if (open) {
+            requestAnimationFrame(() => {
+                cancelRef.current?.focus();
+            });
+        }
+    }, [open]);
+    return (
+        <Dialog
+            open={open}
+            onClose={isPending ? undefined : onCancel}
+            fullScreen={fullScreen}
+            aria-labelledby={titleId}
+            aria-describedby={textId}
+        >
+            <DialogTitle id={titleId}>{t('managed.confirmSuspend.title')}</DialogTitle>
+            <DialogContent>
+                <DialogContentText id={textId}>{t('managed.confirmSuspend.text', { title })}</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button ref={cancelRef} onClick={onCancel} disabled={isPending}>
+                    {t('managed.confirmSuspend.cancel')}
+                </Button>
+                <Button variant="contained" color="error" onClick={onConfirm} loading={isPending}>
+                    {t('managed.confirmSuspend.confirm')}
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
 }

@@ -4,70 +4,67 @@ import MockFrame from './MockFrame.astro';
 import { DASHBOARD_HOMES } from '@/content/showcase';
 
 interface Props {
-  label: string;
-  class?: string | undefined;
+    label: string;
+    class?: string | undefined;
 }
 
 const { label, class: className } = Astro.props;
 
 const TILES = [
-  { label: 'Published', value: '14' },
-  { label: 'Drafts', value: '2' },
-  { label: 'Unpublished', value: '1' },
+    { label: 'Published', value: '14' },
+    { label: 'Drafts', value: '2' },
+    { label: 'Unpublished', value: '1' },
 ] as const;
 
 /** Real homes of the snapshot as the dashboard's rows; the views and saves are illustrative. */
 const STATES = [
-  { status: 'success', word: 'Published', views: '128', saves: '9' },
-  { status: 'warning', word: 'Draft', views: '—', saves: '—' },
-  { status: 'success', word: 'Published', views: '61', saves: '4' },
+    { status: 'success', word: 'Published', views: '128', saves: '9' },
+    { status: 'warning', word: 'Draft', views: '—', saves: '—' },
+    { status: 'success', word: 'Published', views: '61', saves: '4' },
 ] as const;
 const ROWS = DASHBOARD_HOMES.map((home, index) => ({
-  title: home.title,
-  city: home.cityName,
-  price: home.price.replace('/mo', ''),
-  photo: home.photo,
-  ...(STATES[index] ?? STATES[0]),
+    title: home.title,
+    city: home.cityName,
+    price: home.price.replace('/mo', ''),
+    photo: home.photo,
+    ...(STATES[index] ?? STATES[0]),
 }));
 ---
 
 <MockFrame label={label} class={className}>
-  <div class="rounded-panel bg-surface p-4 shadow-window ring-glass sm:p-5">
-    <div class="grid grid-cols-3 gap-2 sm:gap-3">
-      {TILES.map((tile, index) => (
-        <div
-          class="anim-rise rounded-card bg-surface-2 px-3 py-2.5 sm:px-4 sm:py-3"
-          style={`--i: ${index}`}
-        >
-          <p class="text-[0.6875rem] font-medium text-muted uppercase">{tile.label}</p>
-          <p class="text-xl font-semibold text-ink tabular-nums sm:text-2xl">{tile.value}</p>
+    <div class="rounded-panel bg-surface p-4 shadow-window ring-glass sm:p-5">
+        <div class="grid grid-cols-3 gap-2 sm:gap-3">
+            {TILES.map((tile, index) => (
+                <div class="anim-rise rounded-card bg-surface-2 px-3 py-2.5 sm:px-4 sm:py-3" style={`--i: ${index}`}>
+                    <p class="text-[0.6875rem] font-medium text-muted uppercase">{tile.label}</p>
+                    <p class="text-xl font-semibold text-ink tabular-nums sm:text-2xl">{tile.value}</p>
+                </div>
+            ))}
         </div>
-      ))}
-    </div>
-    <div class="mt-4 divide-y divide-line">
-      {ROWS.map((row, index) => (
-        <div class="anim-rise flex items-center gap-3 py-2.5" style={`--i: ${index + 3}`}>
-          <img
-            src={row.photo}
-            alt=""
-            width="72"
-            height="72"
-            loading="lazy"
-            decoding="async"
-            class="size-9 shrink-0 rounded-md object-cover"
-          />
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-medium text-ink">{row.title}</p>
-            <p class="text-xs text-muted">
-              {row.city} · {row.price}/mo
-            </p>
-          </div>
-          <span class="hidden text-xs text-muted tabular-nums sm:block">
-            {row.views} views · {row.saves} saves
-          </span>
-          <StatusBadge tone={row.status} label={row.word} />
+        <div class="mt-4 divide-y divide-line">
+            {ROWS.map((row, index) => (
+                <div class="anim-rise flex items-center gap-3 py-2.5" style={`--i: ${index + 3}`}>
+                    <img
+                        src={row.photo}
+                        alt=""
+                        width="72"
+                        height="72"
+                        loading="lazy"
+                        decoding="async"
+                        class="size-9 shrink-0 rounded-md object-cover"
+                    />
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-medium text-ink">{row.title}</p>
+                        <p class="text-xs text-muted">
+                            {row.city} · {row.price}/mo
+                        </p>
+                    </div>
+                    <span class="hidden text-xs text-muted tabular-nums sm:block">
+                        {row.views} views · {row.saves} saves
+                    </span>
+                    <StatusBadge tone={row.status} label={row.word} />
+                </div>
+            ))}
         </div>
-      ))}
     </div>
-  </div>
 </MockFrame>

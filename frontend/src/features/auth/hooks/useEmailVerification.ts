@@ -8,18 +8,18 @@ import { useVerifyEmail } from './useAccountRecovery';
  * ref guards StrictMode's double effect: the token is spent on first use.
  */
 export const useEmailVerification = () => {
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token')?.trim() ?? '';
-  const verify = useVerifyEmail();
-  const { mutate } = verify;
-  const started = useRef(false);
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get('token')?.trim() ?? '';
+    const verify = useVerifyEmail();
+    const { mutate } = verify;
+    const started = useRef(false);
 
-  useEffect(() => {
-    if (token && !started.current) {
-      started.current = true;
-      mutate({ token });
-    }
-  }, [token, mutate]);
+    useEffect(() => {
+        if (token && !started.current) {
+            started.current = true;
+            mutate({ token });
+        }
+    }, [token, mutate]);
 
-  return { token, verify };
+    return { token, verify };
 };

@@ -3,18 +3,18 @@ import { toJsonLd } from '@/lib/jsonLd';
 import type { Question } from '@/content/landing';
 
 interface Props {
-  questions: readonly Question[];
+    questions: readonly Question[];
 }
 
 const { questions } = Astro.props;
 const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: questions.map((item) => ({
-    '@type': 'Question',
-    name: item.q,
-    acceptedAnswer: { '@type': 'Answer', text: item.a },
-  })),
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: questions.map((item) => ({
+        '@type': 'Question',
+        name: item.q,
+        acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
 };
 ---
 

@@ -12,28 +12,28 @@ import { subscribeLiveEvents } from '@/shared/api/liveEvents';
  * channel serves several features; a subscription is what an effect is for (it is not a fetch).
  */
 export function LiveEvents() {
-  const queryClient = useQueryClient();
-  const { data: user } = useCurrentUser();
-  const userId = user?.id;
-  useEffect(() => {
-    if (userId === undefined) {
-      return undefined;
-    }
-    return subscribeLiveEvents((event) => {
-      switch (event.type) {
-        case 'message.created':
-        case 'message.read':
-        case 'conversation.changed':
-          void queryClient.invalidateQueries({ queryKey: messageKeys.all });
-          return;
-        case 'viewing.changed':
-          void queryClient.invalidateQueries({ queryKey: viewingKeys.all });
-          void queryClient.invalidateQueries({ queryKey: messageKeys.all });
-          return;
-        case 'ping':
-          return;
-      }
-    });
-  }, [userId, queryClient]);
-  return null;
+    const queryClient = useQueryClient();
+    const { data: user } = useCurrentUser();
+    const userId = user?.id;
+    useEffect(() => {
+        if (userId === undefined) {
+            return undefined;
+        }
+        return subscribeLiveEvents((event) => {
+            switch (event.type) {
+                case 'message.created':
+                case 'message.read':
+                case 'conversation.changed':
+                    void queryClient.invalidateQueries({ queryKey: messageKeys.all });
+                    return;
+                case 'viewing.changed':
+                    void queryClient.invalidateQueries({ queryKey: viewingKeys.all });
+                    void queryClient.invalidateQueries({ queryKey: messageKeys.all });
+                    return;
+                case 'ping':
+                    return;
+            }
+        });
+    }, [userId, queryClient]);
+    return null;
 }

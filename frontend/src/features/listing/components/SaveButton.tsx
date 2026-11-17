@@ -10,10 +10,10 @@ import { PATHS } from '@/shared/lib/paths';
 import { useToggleSaved } from '../hooks/useListingQueries';
 
 export interface SaveButtonProps {
-  listingId: string;
-  saved: boolean;
-  title: string;
-  className?: string;
+    listingId: string;
+    saved: boolean;
+    title: string;
+    className?: string;
 }
 
 /**
@@ -21,46 +21,43 @@ export interface SaveButtonProps {
  * here; people who list homes have no heart. The accessible name says what pressing it does.
  */
 export function SaveButton({ listingId, saved, title, className }: SaveButtonProps) {
-  const { t } = useTranslation('listing');
-  const can = useAccess();
-  const { data: user } = useCurrentUser();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const toggle = useToggleSaved();
-  if (user && !can('listing.save')) {
-    return null;
-  }
-  const label = saved ? t('save.remove', { title }) : t('save.add', { title });
-  const signIn = (): void => {
-    const state: LoginLocationState = {
-      from: `${location.pathname}${location.search}${location.hash}`,
+    const { t } = useTranslation('listing');
+    const can = useAccess();
+    const { data: user } = useCurrentUser();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const toggle = useToggleSaved();
+    if (user && !can('listing.save')) {
+        return null;
+    }
+    const label = saved ? t('save.remove', { title }) : t('save.add', { title });
+    const signIn = (): void => {
+        const state: LoginLocationState = {
+            from: `${location.pathname}${location.search}${location.hash}`,
+        };
+        void navigate(PATHS.login, { state });
     };
-    void navigate(PATHS.login, { state });
-  };
-  return (
-    <Tooltip title={user ? (saved ? t('save.saved') : t('save.save')) : t('save.signIn')}>
-      <IconButton
-        aria-label={user ? label : t('save.signInTo', { title })}
-        aria-pressed={saved}
-        disabled={toggle.isPending}
-        onClick={() => {
-          if (!user) {
-            signIn();
-            return;
-          }
-          toggle.mutate({ listingId, saved });
-        }}
-        className={cn(
-          'bg-background-paper/90 text-text-primary hover:bg-background-paper',
-          className,
-        )}
-      >
-        {saved ? (
-          <FavoriteOutlined aria-hidden className="text-error" />
-        ) : (
-          <FavoriteBorderOutlined aria-hidden />
-        )}
-      </IconButton>
-    </Tooltip>
-  );
+    return (
+        <Tooltip title={user ? (saved ? t('save.saved') : t('save.save')) : t('save.signIn')}>
+            <IconButton
+                aria-label={user ? label : t('save.signInTo', { title })}
+                aria-pressed={saved}
+                disabled={toggle.isPending}
+                onClick={() => {
+                    if (!user) {
+                        signIn();
+                        return;
+                    }
+                    toggle.mutate({ listingId, saved });
+                }}
+                className={cn('bg-background-paper/90 text-text-primary hover:bg-background-paper', className)}
+            >
+                {saved ? (
+                    <FavoriteOutlined aria-hidden className="text-error" />
+                ) : (
+                    <FavoriteBorderOutlined aria-hidden />
+                )}
+            </IconButton>
+        </Tooltip>
+    );
 }

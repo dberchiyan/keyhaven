@@ -8,93 +8,90 @@ import { CITIES, SITE } from '@/content/site';
 const { footer, nav } = LANDING;
 const year = new Date().getUTCFullYear();
 const COLUMNS = [
-  { id: 'footer-browse', title: footer.product, links: nav, twoColumns: false },
-  {
-    id: 'footer-cities',
-    title: footer.cities,
-    // Alphabetical, in two columns.
-    links: [...CITIES]
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((city) => ({ href: `/rent/${city.slug}`, label: city.name })),
-    twoColumns: true,
-  },
-  {
-    id: 'footer-company',
-    title: footer.company,
-    links: [
-      { href: '#how-it-works', label: footer.about },
-      { href: SITE.links.signUp, label: LANDING.header.listHome },
-      { href: SITE.links.github, label: footer.github },
-    ],
-    twoColumns: false,
-  },
+    { id: 'footer-browse', title: footer.product, links: nav, twoColumns: false },
+    {
+        id: 'footer-cities',
+        title: footer.cities,
+        // Alphabetical, in two columns.
+        links: [...CITIES]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((city) => ({ href: `/rent/${city.slug}`, label: city.name })),
+        twoColumns: true,
+    },
+    {
+        id: 'footer-company',
+        title: footer.company,
+        links: [
+            { href: '#how-it-works', label: footer.about },
+            { href: SITE.links.signUp, label: LANDING.header.listHome },
+            { href: SITE.links.github, label: footer.github },
+        ],
+        twoColumns: false,
+    },
 ] as const;
 const CIRCLES = [
-  { href: SITE.links.github, label: footer.icons.github, icon: 'github' },
-  { href: SITE.links.readme, label: footer.icons.readme, icon: 'book' },
-  { href: 'mailto:hello@keyhaven.example', label: footer.icons.email, icon: 'mail' },
+    { href: SITE.links.github, label: footer.icons.github, icon: 'github' },
+    { href: SITE.links.readme, label: footer.icons.readme, icon: 'book' },
+    { href: 'mailto:hello@keyhaven.example', label: footer.icons.email, icon: 'mail' },
 ] as const;
 ---
 
 <!-- The same footer as the app's (frontend SiteFooter): the brand block, three titled columns, the
      icon links, then the fine print and a sign-in nudge, all on one deep forest band. -->
 <footer class="footer-band mt-10">
-  <Container class="flex flex-col gap-12 pt-14 pb-8">
-    <div class="grid grid-cols-2 gap-10 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:justify-between md:gap-x-16 md:gap-y-8">
-      <div class="col-span-2 flex max-w-sm flex-col gap-5 md:col-span-1">
-        <Logo tone="light" />
-        <p class="footer-muted text-[0.9375rem] leading-relaxed">{footer.tagline}</p>
-        <ul class="m-0 flex list-none gap-2 p-0">
-          {CIRCLES.map((circle) => (
-            <li>
-              <a
-                href={circle.href}
-                aria-label={circle.label}
-                class="footer-circle flex size-11 items-center justify-center rounded-full transition-colors"
-                {...(circle.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
-              >
-                <Icon name={circle.icon} class="size-5" />
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-      {COLUMNS.map((column) => (
-        <nav aria-labelledby={column.id} class="flex flex-col gap-3">
-          <h2 id={column.id} class="footer-muted type-eyebrow">
-            {column.title}
-          </h2>
-          <ul
-            class:list={[
-              'm-0 list-none p-0',
-              column.twoColumns ? 'grid grid-cols-2 gap-x-6 gap-y-0.5' : 'flex flex-col gap-0.5',
-            ]}
-          >
-            {column.links.map((item) => (
-              <li>
-                <a
-                  href={item.href}
-                  class="footer-link inline-flex min-h-9 items-center text-[0.9375rem] font-medium transition-colors"
-                  {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
-                >
-                  {item.label}
-                </a>
-              </li>
+    <Container class="flex flex-col gap-12 pt-14 pb-8">
+        <div class="grid grid-cols-2 gap-10 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:justify-between md:gap-x-16 md:gap-y-8">
+            <div class="col-span-2 flex max-w-sm flex-col gap-5 md:col-span-1">
+                <Logo tone="light" />
+                <p class="footer-muted text-[0.9375rem] leading-relaxed">{footer.tagline}</p>
+                <ul class="m-0 flex list-none gap-2 p-0">
+                    {CIRCLES.map((circle) => (
+                        <li>
+                            <a
+                                href={circle.href}
+                                aria-label={circle.label}
+                                class="footer-circle flex size-11 items-center justify-center rounded-full transition-colors"
+                                {...(circle.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
+                            >
+                                <Icon name={circle.icon} class="size-5" />
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            {COLUMNS.map((column) => (
+                <nav aria-labelledby={column.id} class="flex flex-col gap-3">
+                    <h2 id={column.id} class="footer-muted type-eyebrow">
+                        {column.title}
+                    </h2>
+                    <ul
+                        class:list={[
+                            'm-0 list-none p-0',
+                            column.twoColumns ? 'grid grid-cols-2 gap-x-6 gap-y-0.5' : 'flex flex-col gap-0.5',
+                        ]}
+                    >
+                        {column.links.map((item) => (
+                            <li>
+                                <a
+                                    href={item.href}
+                                    class="footer-link inline-flex min-h-9 items-center text-[0.9375rem] font-medium transition-colors"
+                                    {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
+                                >
+                                    {item.label}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
             ))}
-          </ul>
-        </nav>
-      ))}
-    </div>
-    <div class="footer-line footer-muted flex flex-col gap-2 border-t pt-6 text-sm sm:flex-row sm:items-center sm:justify-between">
-      <p>
-        © {year} {SITE.name}. {footer.rights}
-      </p>
-      <a
-        href={SITE.links.signIn}
-        class="footer-link font-medium underline-offset-4 hover:underline"
-      >
-        {footer.signIn}
-      </a>
-    </div>
-  </Container>
+        </div>
+        <div class="footer-line footer-muted flex flex-col gap-2 border-t pt-6 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <p>
+                © {year} {SITE.name}. {footer.rights}
+            </p>
+            <a href={SITE.links.signIn} class="footer-link font-medium underline-offset-4 hover:underline">
+                {footer.signIn}
+            </a>
+        </div>
+    </Container>
 </footer>

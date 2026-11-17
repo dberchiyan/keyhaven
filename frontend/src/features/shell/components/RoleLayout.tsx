@@ -8,10 +8,10 @@ import { SiteLayout } from './SiteLayout';
  * admins, the public site's layout for tenants and visitors.
  */
 export function RoleLayout() {
-  const { isPending } = useCurrentUser();
-  const can = useAccess();
-  if (isPending) {
-    return <PageLoader />;
-  }
-  return can('home.manage') ? <AppLayout /> : <SiteLayout />;
+    const { isPending } = useCurrentUser();
+    const can = useAccess();
+    if (isPending) {
+        return <PageLoader />;
+    }
+    return can('home.manage') ? <AppLayout /> : <SiteLayout />;
 }

@@ -13,36 +13,36 @@ import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useLoginRedirect } from '../hooks/useLoginRedirect';
 
 export default function LoginPage() {
-  const { t } = useTranslation('auth');
-  useDocumentTitle(t('login.pageTitle'));
-  const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
-  const { data: user, isPending } = useCurrentUser();
-  const { target } = useLoginRedirect();
+    const { t } = useTranslation('auth');
+    useDocumentTitle(t('login.pageTitle'));
+    const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
+    const { data: user, isPending } = useCurrentUser();
+    const { target } = useLoginRedirect();
 
-  if (isPending) {
-    return <PageLoader />;
-  }
-  if (user) {
-    return <Navigate to={target} replace />;
-  }
+    if (isPending) {
+        return <PageLoader />;
+    }
+    if (user) {
+        return <Navigate to={target} replace />;
+    }
 
-  return (
-    <LazyMotion features={domAnimation} strict>
-      <AuthCard
-        headingRef={headingRef}
-        title={t('login.title')}
-        footer={
-          <>
-            {t('login.noAccount')}{' '}
-            <Link component={RouterLink} to={PATHS.signup}>
-              {t('login.createAccount')}
-            </Link>
-          </>
-        }
-        aside={<AppPreview />}
-      >
-        <LoginForm />
-      </AuthCard>
-    </LazyMotion>
-  );
+    return (
+        <LazyMotion features={domAnimation} strict>
+            <AuthCard
+                headingRef={headingRef}
+                title={t('login.title')}
+                footer={
+                    <>
+                        {t('login.noAccount')}{' '}
+                        <Link component={RouterLink} to={PATHS.signup}>
+                            {t('login.createAccount')}
+                        </Link>
+                    </>
+                }
+                aside={<AppPreview />}
+            >
+                <LoginForm />
+            </AuthCard>
+        </LazyMotion>
+    );
 }

@@ -9,30 +9,26 @@ import { CITIES } from '@/content/site';
 import Base from '@/layouts/Base.astro';
 
 /** One prerendered page per city: homes for sale (SEO entry points into the catalogue). */
-export const getStaticPaths = () =>
-  CITIES.map((city) => ({ params: { city: city.slug }, props: { city } }));
+export const getStaticPaths = () => CITIES.map((city) => ({ params: { city: city.slug }, props: { city } }));
 
 const { city } = Astro.props;
 const data = CATALOGUE.cities[city.slug]?.SALE;
 if (!data) {
-  throw new Error(`No snapshot for ${city.slug}`);
+    throw new Error(`No snapshot for ${city.slug}`);
 }
 const { cityPage } = LANDING;
 const title = cityPage.metaTitleSale.replace('{city}', `${city.name}, ${city.state}`);
 const description = cityPage.metaDescriptionSale
-  .replace('{city}', city.name)
-  .replace('{count}', String(data.total))
-  .replace(
-    '{median}',
-    data.medianPrice ? `$${Number.parseInt(data.medianPrice, 10).toLocaleString('en-US')}` : '',
-  );
+    .replace('{city}', city.name)
+    .replace('{count}', String(data.total))
+    .replace('{median}', data.medianPrice ? `$${Number.parseInt(data.medianPrice, 10).toLocaleString('en-US')}` : '');
 ---
 
 <Base title={title} description={description} path={`/buy/${city.slug}`}>
-  <CityJsonLd slot="head" city={city} kind="SALE" data={data} path={`/buy/${city.slug}`} />
-  <SiteHeader />
-  <main id="main">
-    <CityCatalogue city={city} kind="SALE" data={data} takenAt={CATALOGUE.takenAt} />
-  </main>
-  <SiteFooter />
+    <CityJsonLd slot="head" city={city} kind="SALE" data={data} path={`/buy/${city.slug}`} />
+    <SiteHeader />
+    <main id="main">
+        <CityCatalogue city={city} kind="SALE" data={data} takenAt={CATALOGUE.takenAt} />
+    </main>
+    <SiteFooter />
 </Base>

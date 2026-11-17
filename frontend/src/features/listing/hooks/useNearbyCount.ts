@@ -8,15 +8,15 @@ import { useListingCount } from './useListingQueries';
  * neighborhood's name in the listing text.
  */
 export const useNearbyCount = (listing: ListingDetail) => {
-  const filters = {
-    kind: fromApiKind(listing.kind),
-    city: listing.city.slug,
-    ...(listing.neighborhood === null ? {} : { q: listing.neighborhood }),
-  };
-  const count = useListingCount(filters, true);
-  return {
-    filters,
-    // This home is one of them.
-    others: count.data === undefined ? undefined : Math.max(0, count.data - 1),
-  };
+    const filters = {
+        kind: fromApiKind(listing.kind),
+        city: listing.city.slug,
+        ...(listing.neighborhood === null ? {} : { q: listing.neighborhood }),
+    };
+    const count = useListingCount(filters, true);
+    return {
+        filters,
+        // This home is one of them.
+        others: count.data === undefined ? undefined : Math.max(0, count.data - 1),
+    };
 };

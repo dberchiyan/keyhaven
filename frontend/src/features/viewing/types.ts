@@ -19,17 +19,14 @@ export type SaveViewingScheduleRequest = Schemas['SaveViewingScheduleRequest'];
 export type ViewingDecision = 'confirm' | 'decline' | 'cancel';
 
 /** A live viewing holds its slot. */
-export const ACTIVE_VIEWING_STATUSES = [
-  'REQUESTED',
-  'CONFIRMED',
-] as const satisfies readonly ViewingStatus[];
+export const ACTIVE_VIEWING_STATUSES = ['REQUESTED', 'CONFIRMED'] as const satisfies readonly ViewingStatus[];
 
 /** The dashboard's views: requests to answer, confirmed ahead, everything. */
 export const MANAGED_VIEWS = ['requests', 'upcoming', 'all'] as const;
 export type ManagedView = (typeof MANAGED_VIEWS)[number];
 
 export interface ManagedViewingsParams {
-  view: ManagedView;
-  page: number;
-  size: number;
+    view: ManagedView;
+    page: number;
+    size: number;
 }

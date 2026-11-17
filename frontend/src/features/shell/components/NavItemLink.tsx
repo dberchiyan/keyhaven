@@ -11,73 +11,68 @@ import { cn } from '@/shared/lib/cn';
 import type { NavItem } from '../navigation';
 
 export interface NavItemLinkProps {
-  item: NavItem;
-  /** Rail mode: icon only, label in a tooltip and the accessible name. */
-  isCollapsed: boolean;
-  onNavigate?: () => void;
+    item: NavItem;
+    /** Rail mode: icon only, label in a tooltip and the accessible name. */
+    isCollapsed: boolean;
+    onNavigate?: () => void;
 }
 
 export function NavItemLink({ item, isCollapsed, onNavigate }: NavItemLinkProps) {
-  const { t } = useTranslation('shell');
-  // A section stays active on its sub-pages (/settings/sessions); the home ('/') only on itself
-  // and on the paths the item names (a listing's management page belongs to Listings).
-  const exact = item.path === '/';
-  const { pathname } = useLocation();
-  const isActive =
-    useMatch({ path: item.path, end: exact }) !== null ||
-    (item.alsoActiveOn ?? []).some((path) => matchPath(path, pathname) !== null);
-  const summary = useViewingSummary(item.badge === 'viewingRequests');
-  const unread = useUnreadMessages(item.badge === 'unreadMessages');
-  const count =
-    item.badge === 'viewingRequests'
-      ? (summary.data?.requested ?? 0)
-      : item.badge === 'unreadMessages'
-        ? (unread.data?.unread ?? 0)
-        : 0;
-  const label =
-    count > 0
-      ? t(item.badge === 'unreadMessages' ? 'nav.withUnread' : 'nav.withBadge', {
-          label: t(`nav.${item.section}`),
-          count,
-        })
-      : t(`nav.${item.section}`);
-  const Icon = item.icon;
+    const { t } = useTranslation('shell');
+    // A section stays active on its sub-pages (/settings/sessions); the home ('/') only on itself
+    // and on the paths the item names (a listing's management page belongs to Listings).
+    const exact = item.path === '/';
+    const { pathname } = useLocation();
+    const isActive =
+        useMatch({ path: item.path, end: exact }) !== null ||
+        (item.alsoActiveOn ?? []).some((path) => matchPath(path, pathname) !== null);
+    const summary = useViewingSummary(item.badge === 'viewingRequests');
+    const unread = useUnreadMessages(item.badge === 'unreadMessages');
+    const count =
+        item.badge === 'viewingRequests'
+            ? (summary.data?.requested ?? 0)
+            : item.badge === 'unreadMessages'
+              ? (unread.data?.unread ?? 0)
+              : 0;
+    const label =
+        count > 0
+            ? t(item.badge === 'unreadMessages' ? 'nav.withUnread' : 'nav.withBadge', {
+                  label: t(`nav.${item.section}`),
+                  count,
+              })
+            : t(`nav.${item.section}`);
+    const Icon = item.icon;
 
-  const link = (
-    <ListItemButton
-      component={NavLink}
-      to={item.path}
-      end={exact}
-      onClick={onNavigate}
-      onMouseEnter={() => void item.preload()}
-      onFocus={() => void item.preload()}
-      aria-label={isCollapsed ? label : undefined}
-      className={cn(
-        'relative min-h-12 gap-3 rounded-sm px-3 text-sidebar-text hover:bg-sidebar-hover',
-        isCollapsed && 'justify-center px-0',
-        isActive && 'bg-sidebar-active text-sidebar-active-text hover:bg-sidebar-active',
-      )}
-    >
-      {isActive && (
-        <span
-          aria-hidden
-          className="absolute inset-y-2 left-0 w-1 rounded-sm bg-sidebar-indicator"
-        />
-      )}
-      <ListItemIcon className="min-w-0 text-inherit">
-        <Badge badgeContent={count} color="secondary" max={99} overlap="circular">
-          <Icon aria-hidden />
-        </Badge>
-      </ListItemIcon>
-      {!isCollapsed && <ListItemText primary={t(`nav.${item.section}`)} />}
-    </ListItemButton>
-  );
+    const link = (
+        <ListItemButton
+            component={NavLink}
+            to={item.path}
+            end={exact}
+            onClick={onNavigate}
+            onMouseEnter={() => void item.preload()}
+            onFocus={() => void item.preload()}
+            aria-label={isCollapsed ? label : undefined}
+            className={cn(
+                'relative min-h-12 gap-3 rounded-sm px-3 text-sidebar-text hover:bg-sidebar-hover',
+                isCollapsed && 'justify-center px-0',
+                isActive && 'bg-sidebar-active text-sidebar-active-text hover:bg-sidebar-active',
+            )}
+        >
+            {isActive && <span aria-hidden className="absolute inset-y-2 left-0 w-1 rounded-sm bg-sidebar-indicator" />}
+            <ListItemIcon className="min-w-0 text-inherit">
+                <Badge badgeContent={count} color="secondary" max={99} overlap="circular">
+                    <Icon aria-hidden />
+                </Badge>
+            </ListItemIcon>
+            {!isCollapsed && <ListItemText primary={t(`nav.${item.section}`)} />}
+        </ListItemButton>
+    );
 
-  return isCollapsed ? (
-    <Tooltip title={label} placement="right">
-      {link}
-    </Tooltip>
-  ) : (
-    link
-  );
+    return isCollapsed ? (
+        <Tooltip title={label} placement="right">
+            {link}
+        </Tooltip>
+    ) : (
+        link
+    );
 }

@@ -4,32 +4,32 @@ import { type CityKind, dollars, type Kind } from '@/content/catalogue';
 import { SITE } from '@/content/site';
 
 interface Props {
-  city: { slug: string; name: string; state: string };
-  kind: Kind;
-  data: CityKind;
-  path: string;
+    city: { slug: string; name: string; state: string };
+    kind: Kind;
+    data: CityKind;
+    path: string;
 }
 
 const { city, kind, data, path } = Astro.props;
 const site = Astro.site ?? new URL('https://keyhaven.osdb.io');
 // The newest homes as an ItemList, each pointing at its page in the app.
 const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'CollectionPage',
-  name: `${kind === 'RENT' ? 'Homes for rent' : 'Homes for sale'} in ${city.name}, ${city.state}`,
-  url: new URL(path, site).href,
-  isPartOf: { '@type': 'WebSite', name: SITE.name, url: site.href },
-  mainEntity: {
-    '@type': 'ItemList',
-    numberOfItems: data.total,
-    itemListElement: data.newest.map((home, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      url: new URL(`/listings/${home.id}`, site).href,
-      name: home.title,
-      description: `${dollars(home.price)}${kind === 'RENT' ? ' per month' : ''} · ${home.bedrooms} bedrooms · ${home.sizeSqft} sq ft`,
-    })),
-  },
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${kind === 'RENT' ? 'Homes for rent' : 'Homes for sale'} in ${city.name}, ${city.state}`,
+    url: new URL(path, site).href,
+    isPartOf: { '@type': 'WebSite', name: SITE.name, url: site.href },
+    mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: data.total,
+        itemListElement: data.newest.map((home, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            url: new URL(`/listings/${home.id}`, site).href,
+            name: home.title,
+            description: `${dollars(home.price)}${kind === 'RENT' ? ' per month' : ''} · ${home.bedrooms} bedrooms · ${home.sizeSqft} sq ft`,
+        })),
+    },
 };
 ---
 

@@ -5,14 +5,14 @@
  * @type {import('jest').Config}
  */
 export default {
-  rootDir: '.',
-  testMatch: ['<rootDir>/test/**/*.spec.ts'],
-  transform: { '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }] },
-  // The generated Prisma client imports its own files with a `.js` extension (nodenext).
-  moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' },
-  globalSetup: '<rootDir>/test/global-setup.ts',
-  setupFiles: ['<rootDir>/test/env.ts'],
-  testTimeout: 30_000,
-  // Tests share one database; running files in parallel would interleave their fixtures.
-  maxWorkers: 1,
+    rootDir: '.',
+    testMatch: ['<rootDir>/test/**/*.spec.ts'],
+    transform: { '^.+\\.ts$': ['ts-jest', { tsconfig: 'tsconfig.json' }] },
+    // The generated Prisma client imports its own files with a `.js` extension (nodenext).
+    moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' },
+    globalSetup: '<rootDir>/test/global-setup.ts',
+    setupFiles: ['<rootDir>/test/env.ts'],
+    testTimeout: 30_000,
+    // Tests share one database; running files in parallel would interleave their fixtures.
+    maxWorkers: 1,
 };

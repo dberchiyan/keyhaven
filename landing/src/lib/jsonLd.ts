@@ -5,4 +5,4 @@
  * the same character and HTML parsers never see as a tag; `>` and `&` likewise.
  */
 export const toJsonLd = (value: unknown): string =>
-  JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');

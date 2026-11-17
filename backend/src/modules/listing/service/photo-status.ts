@@ -1,20 +1,20 @@
 /** Mirrored by ck_listing_photos_status. */
 export const PhotoStatus = {
-  /** An upload intent: the client was given a URL, the object may or may not be there yet. */
-  PENDING: 'PENDING',
-  /** Checked and shown. */
-  READY: 'READY',
+    /** An upload intent: the client was given a URL, the object may or may not be there yet. */
+    PENDING: 'PENDING',
+    /** Checked and shown. */
+    READY: 'READY',
 } as const;
 export type PhotoStatus = (typeof PhotoStatus)[keyof typeof PhotoStatus];
 export const PHOTO_STATUSES = Object.values(PhotoStatus) as [PhotoStatus, ...PhotoStatus[]];
 export const isPhotoStatus = (value: string): value is PhotoStatus =>
-  (PHOTO_STATUSES as readonly string[]).includes(value);
+    (PHOTO_STATUSES as readonly string[]).includes(value);
 
 /** Photo uploads: what is accepted (platform.md → one path for every size, an allowlist per use). */
 export const PHOTO_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 export type PhotoContentType = (typeof PHOTO_CONTENT_TYPES)[number];
 export const isPhotoContentType = (value: string): value is PhotoContentType =>
-  (PHOTO_CONTENT_TYPES as readonly string[]).includes(value);
+    (PHOTO_CONTENT_TYPES as readonly string[]).includes(value);
 /** The gallery is bounded: a listing holds at most this many ready photos. */
 export const MAX_PHOTOS = 20;
 /**

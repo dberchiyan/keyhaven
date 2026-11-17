@@ -15,12 +15,12 @@ export const PG_SESSION_OPTIONS = '-c timezone=UTC';
 
 /** One explicit pool shared by Prisma and the rate limiter store (platform.md → pool). */
 export const createPgPool = (config: AppConfigService): Pool =>
-  new Pool({
-    connectionString: config.get('DATABASE_URL'),
-    options: PG_SESSION_OPTIONS,
-    max: config.get('DB_POOL_SIZE'),
-    connectionTimeoutMillis: CONNECTION_TIMEOUT_MS,
-    idleTimeoutMillis: IDLE_TIMEOUT_MS,
-    statement_timeout: STATEMENT_TIMEOUT_MS,
-    query_timeout: STATEMENT_TIMEOUT_MS,
-  });
+    new Pool({
+        connectionString: config.get('DATABASE_URL'),
+        options: PG_SESSION_OPTIONS,
+        max: config.get('DB_POOL_SIZE'),
+        connectionTimeoutMillis: CONNECTION_TIMEOUT_MS,
+        idleTimeoutMillis: IDLE_TIMEOUT_MS,
+        statement_timeout: STATEMENT_TIMEOUT_MS,
+        query_timeout: STATEMENT_TIMEOUT_MS,
+    });

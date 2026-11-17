@@ -17,22 +17,22 @@ const NEVER_SLOW_MS = Number.POSITIVE_INFINITY;
 @ApiTags('Events')
 @Controller('api/v1')
 export class EventController {
-  constructor(private readonly events: EventService) {}
+    constructor(private readonly events: EventService) {}
 
-  @Sse('events')
-  @Authorize(can.subscribeEvents)
-  @SlowThreshold(NEVER_SLOW_MS)
-  // Nothing in between may buffer or transform the stream (nginx honours X-Accel-Buffering).
-  @Header('Cache-Control', 'no-cache, no-transform')
-  @Header('X-Accel-Buffering', 'no')
-  @ApiOperation({
-    summary:
-      'Live events for the caller (Server-Sent Events): new messages, reads, viewing changes, a heartbeat every 25 s',
-  })
-  @ApiErrors('UNAUTHORIZED', 'SESSION_EXPIRED')
-  stream(@CurrentPrincipal() principal: Principal): Observable<MessageEvent> {
-    return this.events
-      .subscribe(principal.userId, principal.agencyId, principal.hasAuthority(UserRole.ADMIN))
-      .pipe(map((event) => ({ data: event })));
-  }
+    @Sse('events')
+    @Authorize(can.subscribeEvents)
+    @SlowThreshold(NEVER_SLOW_MS)
+    // Nothing in between may buffer or transform the stream (nginx honours X-Accel-Buffering).
+    @Header('Cache-Control', 'no-cache, no-transform')
+    @Header('X-Accel-Buffering', 'no')
+    @ApiOperation({
+        summary:
+            'Live events for the caller (Server-Sent Events): new messages, reads, viewing changes, a heartbeat every 25 s',
+    })
+    @ApiErrors('UNAUTHORIZED', 'SESSION_EXPIRED')
+    stream(@CurrentPrincipal() principal: Principal): Observable<MessageEvent> {
+        return this.events
+            .subscribe(principal.userId, principal.agencyId, principal.hasAuthority(UserRole.ADMIN))
+            .pipe(map((event) => ({ data: event })));
+    }
 }

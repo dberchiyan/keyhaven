@@ -10,122 +10,122 @@ const { header, nav } = LANDING;
 ---
 
 <header class="site-header sticky top-0 z-40">
-  <div class="scroll-progress" aria-hidden="true"></div>
-  <Container class="flex h-16 items-center gap-6">
-    <a href="/" class="-m-1 rounded-lg p-1" aria-label={`${SITE.name} home`}>
-      <Logo />
-    </a>
+    <div class="scroll-progress" aria-hidden="true"></div>
+    <Container class="flex h-16 items-center gap-6">
+        <a href="/" class="-m-1 rounded-lg p-1" aria-label={`${SITE.name} home`}>
+            <Logo />
+        </a>
 
-    <nav aria-label="Browse" class="hidden md:block">
-      <ul class="flex items-center gap-1 rounded-full bg-surface-2 p-1">
-        {nav.map((item, index) => (
-          <li>
+        <nav aria-label="Browse" class="hidden md:block">
+            <ul class="flex items-center gap-1 rounded-full bg-surface-2 p-1">
+                {nav.map((item, index) => (
+                    <li>
+                        <a
+                            href={item.href}
+                            class:list={[
+                                'inline-flex min-h-9 items-center rounded-full px-4 text-[0.9375rem] font-medium transition-colors',
+                                index === 0
+                                    ? 'bg-surface text-ink shadow-card'
+                                    : 'text-muted hover:bg-surface/60 hover:text-ink',
+                            ]}
+                        >
+                            {item.label}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+
+        <div class="ml-auto flex items-center gap-2">
             <a
-              href={item.href}
-              class:list={[
-                'inline-flex min-h-9 items-center rounded-full px-4 text-[0.9375rem] font-medium transition-colors',
-                index === 0
-                  ? 'bg-surface text-ink shadow-card'
-                  : 'text-muted hover:bg-surface/60 hover:text-ink',
-              ]}
+                href={SITE.links.github}
+                target="_blank"
+                rel="noreferrer"
+                class="hidden size-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink sm:inline-flex"
+                aria-label={`${SITE.name} on GitHub`}
             >
-              {item.label}
+                <Icon name="github" class="size-5" />
             </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+            <!-- A wrapper hides it on phones: the button sets its own display. -->
+            <div class="hidden sm:block">
+                <Button href={SITE.links.signIn} variant="ghost">
+                    {header.signIn}
+                </Button>
+            </div>
+            <!-- On phones the two actions sit in the menu, so the bar fits 320 px. -->
+            <div class="hidden sm:block">
+                <Button href={SITE.links.signUp}>{header.listHome}</Button>
+            </div>
 
-    <div class="ml-auto flex items-center gap-2">
-      <a
-        href={SITE.links.github}
-        target="_blank"
-        rel="noreferrer"
-        class="hidden size-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink sm:inline-flex"
-        aria-label={`${SITE.name} on GitHub`}
-      >
-        <Icon name="github" class="size-5" />
-      </a>
-      <!-- A wrapper hides it on phones: the button sets its own display. -->
-      <div class="hidden sm:block">
-        <Button href={SITE.links.signIn} variant="ghost">
-          {header.signIn}
-        </Button>
-      </div>
-      <!-- On phones the two actions sit in the menu, so the bar fits 320 px. -->
-      <div class="hidden sm:block">
-        <Button href={SITE.links.signUp}>{header.listHome}</Button>
-      </div>
-
-      <!-- Phones: the menu is a native popover — no script, Esc and outside clicks close it. -->
-      <button
-        type="button"
-        popovertarget="mobile-menu"
-        class="-mr-2 inline-flex size-11 items-center justify-center rounded-full text-ink hover:bg-surface-2 md:hidden"
-        aria-label={header.openMenu}
-      >
-        <Icon name="menu" class="size-6" />
-      </button>
-    </div>
-  </Container>
+            <!-- Phones: the menu is a native popover — no script, Esc and outside clicks close it. -->
+            <button
+                type="button"
+                popovertarget="mobile-menu"
+                class="-mr-2 inline-flex size-11 items-center justify-center rounded-full text-ink hover:bg-surface-2 md:hidden"
+                aria-label={header.openMenu}
+            >
+                <Icon name="menu" class="size-6" />
+            </button>
+        </div>
+    </Container>
 </header>
 
 <div
-  id="mobile-menu"
-  popover
-  class="fixed inset-x-3 top-3 m-0 w-auto rounded-panel bg-surface p-3 text-ink-2 shadow-float ring-glass backdrop:bg-navy/30 backdrop:backdrop-blur-sm"
+    id="mobile-menu"
+    popover
+    class="fixed inset-x-3 top-3 m-0 w-auto rounded-panel bg-surface p-3 text-ink-2 shadow-float ring-glass backdrop:bg-navy/30 backdrop:backdrop-blur-sm"
 >
-  <div class="flex items-center justify-between pb-2 pl-2">
-    <Logo />
-    <button
-      type="button"
-      popovertarget="mobile-menu"
-      popovertargetaction="hide"
-      class="inline-flex size-11 items-center justify-center rounded-full hover:bg-surface-2"
-      aria-label={header.closeMenu}
-    >
-      <Icon name="close" class="size-6" />
-    </button>
-  </div>
-  <nav aria-label="Browse">
-    <ul class="flex flex-col">
-      {nav.map((item) => (
-        <li>
-          <a
-            href={item.href}
-            class="flex min-h-12 items-center rounded-xl px-3 text-base font-medium hover:bg-surface-2"
-          >
-            {item.label}
-          </a>
-        </li>
-      ))}
-      <li>
-        <a
-          href={SITE.links.github}
-          target="_blank"
-          rel="noreferrer"
-          class="flex min-h-12 items-center gap-2.5 rounded-xl px-3 text-base font-medium hover:bg-surface-2"
+    <div class="flex items-center justify-between pb-2 pl-2">
+        <Logo />
+        <button
+            type="button"
+            popovertarget="mobile-menu"
+            popovertargetaction="hide"
+            class="inline-flex size-11 items-center justify-center rounded-full hover:bg-surface-2"
+            aria-label={header.closeMenu}
         >
-          <Icon name="github" class="size-5" />
-          GitHub
-        </a>
-      </li>
-    </ul>
-  </nav>
-  <div class="mt-2 grid grid-cols-2 gap-2 border-t border-line pt-3">
-    <Button href={SITE.links.signIn} variant="secondary">
-      {header.signIn}
-    </Button>
-    <Button href={SITE.links.signUp}>{header.listHome}</Button>
-  </div>
+            <Icon name="close" class="size-6" />
+        </button>
+    </div>
+    <nav aria-label="Browse">
+        <ul class="flex flex-col">
+            {nav.map((item) => (
+                <li>
+                    <a
+                        href={item.href}
+                        class="flex min-h-12 items-center rounded-xl px-3 text-base font-medium hover:bg-surface-2"
+                    >
+                        {item.label}
+                    </a>
+                </li>
+            ))}
+            <li>
+                <a
+                    href={SITE.links.github}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="flex min-h-12 items-center gap-2.5 rounded-xl px-3 text-base font-medium hover:bg-surface-2"
+                >
+                    <Icon name="github" class="size-5" />
+                    GitHub
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <div class="mt-2 grid grid-cols-2 gap-2 border-t border-line pt-3">
+        <Button href={SITE.links.signIn} variant="secondary">
+            {header.signIn}
+        </Button>
+        <Button href={SITE.links.signUp}>{header.listHome}</Button>
+    </div>
 </div>
 
 <script>
-  // Following a link inside the phone menu closes it.
-  const menu = document.getElementById('mobile-menu');
-  menu?.addEventListener('click', (event) => {
-    if (event.target instanceof Element && event.target.closest('a')) {
-      menu.hidePopover();
-    }
-  });
+    // Following a link inside the phone menu closes it.
+    const menu = document.getElementById('mobile-menu');
+    menu?.addEventListener('click', (event) => {
+        if (event.target instanceof Element && event.target.closest('a')) {
+            menu.hidePopover();
+        }
+    });
 </script>

@@ -8,21 +8,21 @@ import { AuthCard } from '../components/AuthCard';
 import { ForgotPasswordForm } from '../components/ForgotPasswordForm';
 
 export default function ForgotPasswordPage() {
-  const { t } = useTranslation('auth');
-  useDocumentTitle(t('forgotPassword.pageTitle'));
-  const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
-  return (
-    <AuthCard
-      headingRef={headingRef}
-      title={t('forgotPassword.title')}
-      subtitle={t('forgotPassword.subtitle')}
-      footer={
-        <Link component={RouterLink} to={PATHS.login}>
-          {t('forgotPassword.backToLogin')}
-        </Link>
-      }
-    >
-      <ForgotPasswordForm />
-    </AuthCard>
-  );
+    const { t } = useTranslation('auth');
+    useDocumentTitle(t('forgotPassword.pageTitle'));
+    const headingRef = usePageHeadingFocus<HTMLHeadingElement>();
+    return (
+        <AuthCard
+            headingRef={headingRef}
+            title={t('forgotPassword.title')}
+            subtitle={t('forgotPassword.subtitle')}
+            footer={
+                <Link component={RouterLink} to={PATHS.login}>
+                    {t('forgotPassword.backToLogin')}
+                </Link>
+            }
+        >
+            <ForgotPasswordForm />
+        </AuthCard>
+    );
 }

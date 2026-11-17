@@ -9,35 +9,35 @@ const { listing } = LANDING;
 ---
 
 <section id="listing" aria-labelledby="listing-title" class="overflow-x-clip py-16 sm:py-20">
-  <Container class="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
-    <div class="reveal relative order-last mx-auto w-full max-w-md lg:order-first">
-      <div
-        class="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br from-brand/15 via-transparent to-accent-glow/20 blur-2xl"
-        aria-hidden="true"
-      ></div>
-      <SummaryCardMock label={listing.mockLabel} class="animate-float-slow" />
-    </div>
-    <div class="flex min-w-0 flex-col gap-10">
-      <SectionHeading
-        id="listing-title"
-        eyebrow={listing.eyebrow}
-        title={listing.title}
-        lead={listing.lead}
-        align="start"
-      />
-      <ul class="reveal flex flex-col gap-6">
-        {listing.points.map((point) => (
-          <li class="flex gap-3.5">
-            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
-              <Icon name={point.icon} class="size-5" />
-            </span>
-            <div>
-              <h3 class="font-semibold text-ink">{point.title}</h3>
-              <p class="mt-1 text-[0.9375rem] leading-relaxed text-muted">{point.text}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  </Container>
+    <Container class="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+        <div class="reveal relative order-last mx-auto w-full max-w-md lg:order-first">
+            <div
+                class="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br from-brand/15 via-transparent to-accent-glow/20 blur-2xl"
+                aria-hidden="true"
+            ></div>
+            <SummaryCardMock label={listing.mockLabel} class="animate-float-slow" />
+        </div>
+        <div class="flex min-w-0 flex-col gap-10">
+            <SectionHeading
+                id="listing-title"
+                eyebrow={listing.eyebrow}
+                title={listing.title}
+                lead={listing.lead}
+                align="start"
+            />
+            <ul class="reveal flex flex-col gap-6">
+                {listing.points.map((point) => (
+                    <li class="flex gap-3.5">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                            <Icon name={point.icon} class="size-5" />
+                        </span>
+                        <div>
+                            <h3 class="font-semibold text-ink">{point.title}</h3>
+                            <p class="mt-1 text-[0.9375rem] leading-relaxed text-muted">{point.text}</p>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    </Container>
 </section>

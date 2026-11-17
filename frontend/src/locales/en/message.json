@@ -1,85 +1,85 @@
 {
-  "pageTitle": "Messages",
-  "title": "Messages",
-  "subtitle": "Talk to the other side of a confirmed viewing — or to Keyhaven about anything else.",
-  "retry": "Try again",
-  "inbox": {
-    "title": "Conversations",
-    "loading": "Loading conversations",
-    "empty": "No conversations yet",
-    "emptyHintTenant": "Once a lister confirms your viewing, you can write to them here.",
-    "emptyHintOwner": "Confirm a viewing request and the tenant can write to you here.",
-    "youWrote": "You: {{text}}",
-    "noMessages": "Viewing {{when}} · say hello",
-    "closed": "Conversation closed",
-    "rowUnread_one": "{{name}}, {{count}} unread message",
-    "rowUnread_other": "{{name}}, {{count}} unread messages",
-    "filterLabel": "Which conversations",
-    "filter": {
-      "all": "All",
-      "unread": "Unread"
+    "pageTitle": "Messages",
+    "title": "Messages",
+    "subtitle": "Talk to the other side of a confirmed viewing — or to Keyhaven about anything else.",
+    "retry": "Try again",
+    "inbox": {
+        "title": "Conversations",
+        "loading": "Loading conversations",
+        "empty": "No conversations yet",
+        "emptyHintTenant": "Once a lister confirms your viewing, you can write to them here.",
+        "emptyHintOwner": "Confirm a viewing request and the tenant can write to you here.",
+        "youWrote": "You: {{text}}",
+        "noMessages": "Viewing {{when}} · say hello",
+        "closed": "Conversation closed",
+        "rowUnread_one": "{{name}}, {{count}} unread message",
+        "rowUnread_other": "{{name}}, {{count}} unread messages",
+        "filterLabel": "Which conversations",
+        "filter": {
+            "all": "All",
+            "unread": "Unread"
+        },
+        "allRead": "All caught up",
+        "allReadHint": "Nothing unread — every conversation is up to date.",
+        "support": {
+            "title": "Write to Keyhaven",
+            "hint": "Questions for the team"
+        },
+        "closedSupport": "Closed by Keyhaven",
+        "emptyHintStaff": "Members’ requests and the viewings’ conversations land here."
     },
-    "allRead": "All caught up",
-    "allReadHint": "Nothing unread — every conversation is up to date.",
-    "support": {
-      "title": "Write to Keyhaven",
-      "hint": "Questions for the team"
+    "thread": {
+        "label": "Conversation",
+        "loading": "Loading the conversation",
+        "back": "Back to conversations",
+        "messages": "Messages",
+        "when": "Viewing {{when}} {{zone}}",
+        "kind": {
+            "TENANT": "Tenant",
+            "LANDLORD": "Landlord",
+            "AGENCY": "Agency",
+            "AGENT": "Agent",
+            "KEYHAVEN": "Support"
+        },
+        "empty": "Say hello to {{name}}",
+        "emptyHint": "Ask about parking, the move-in day, the neighbourhood — anything before the visit.",
+        "closed": "This conversation is closed: the viewing was cancelled.",
+        "pick": "Pick a conversation",
+        "pickHint": "Every confirmed viewing has one. Choose it on the left to read and write.",
+        "seen": "Seen",
+        "new": "New",
+        "newLabel": "New messages below",
+        "behind_one": "{{count}} new message",
+        "behind_other": "{{count}} new messages",
+        "opened": "Opened {{when}}",
+        "open": "Open",
+        "closedBadge": "Closed",
+        "closedSupport": "Keyhaven closed this request. If there is more, start a new one.",
+        "closedSupportStaff": "Closed. Reopen it to write again.",
+        "close": "Close request",
+        "reopen": "Reopen",
+        "emptySupport": "Your request is with Keyhaven",
+        "emptySupportHint": "Someone from the team will answer here; you get an email too.",
+        "staffName": "{{name}} · Keyhaven",
+        "justNow": "just now"
     },
-    "closedSupport": "Closed by Keyhaven",
-    "emptyHintStaff": "Members’ requests and the viewings’ conversations land here."
-  },
-  "thread": {
-    "label": "Conversation",
-    "loading": "Loading the conversation",
-    "back": "Back to conversations",
-    "messages": "Messages",
-    "when": "Viewing {{when}} {{zone}}",
-    "kind": {
-      "TENANT": "Tenant",
-      "LANDLORD": "Landlord",
-      "AGENCY": "Agency",
-      "AGENT": "Agent",
-      "KEYHAVEN": "Support"
+    "composer": {
+        "label": "Write a message",
+        "field": "Message",
+        "placeholder": "Message {{name}}…",
+        "send": "Send",
+        "hint": "Enter sends · Shift+Enter for a new line",
+        "remaining_one": "{{count}} character left",
+        "remaining_other": "{{count}} characters left"
     },
-    "empty": "Say hello to {{name}}",
-    "emptyHint": "Ask about parking, the move-in day, the neighbourhood — anything before the visit.",
-    "closed": "This conversation is closed: the viewing was cancelled.",
-    "pick": "Pick a conversation",
-    "pickHint": "Every confirmed viewing has one. Choose it on the left to read and write.",
-    "seen": "Seen",
-    "new": "New",
-    "newLabel": "New messages below",
-    "behind_one": "{{count}} new message",
-    "behind_other": "{{count}} new messages",
-    "opened": "Opened {{when}}",
-    "open": "Open",
-    "closedBadge": "Closed",
-    "closedSupport": "Keyhaven closed this request. If there is more, start a new one.",
-    "closedSupportStaff": "Closed. Reopen it to write again.",
-    "close": "Close request",
-    "reopen": "Reopen",
-    "emptySupport": "Your request is with Keyhaven",
-    "emptySupportHint": "Someone from the team will answer here; you get an email too.",
-    "staffName": "{{name}} · Keyhaven",
-    "justNow": "just now"
-  },
-  "composer": {
-    "label": "Write a message",
-    "field": "Message",
-    "placeholder": "Message {{name}}…",
-    "send": "Send",
-    "hint": "Enter sends · Shift+Enter for a new line",
-    "remaining_one": "{{count}} character left",
-    "remaining_other": "{{count}} characters left"
-  },
-  "new": {
-    "title": "Write to Keyhaven",
-    "text": "Questions about your account or a listing, a problem on the site, anything the team should know. You get an answer here and by email.",
-    "subject": "Subject",
-    "subjectPlaceholder": "What is it about?",
-    "body": "Message",
-    "bodyPlaceholder": "Tell us what happened or what you need…",
-    "cancel": "Cancel",
-    "send": "Send"
-  }
+    "new": {
+        "title": "Write to Keyhaven",
+        "text": "Questions about your account or a listing, a problem on the site, anything the team should know. You get an answer here and by email.",
+        "subject": "Subject",
+        "subjectPlaceholder": "What is it about?",
+        "body": "Message",
+        "bodyPlaceholder": "Tell us what happened or what you need…",
+        "cancel": "Cancel",
+        "send": "Send"
+    }
 }

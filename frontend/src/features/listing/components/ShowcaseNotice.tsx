@@ -3,8 +3,8 @@ import AlertTitle from '@mui/material/AlertTitle';
 import { useTranslation } from 'react-i18next';
 
 export interface ShowcaseNoticeProps {
-  /** `listing`: on one showcase listing; `dashboard`: above the list, about all of them. */
-  scope: 'listing' | 'dashboard';
+    /** `listing`: on one showcase listing; `dashboard`: above the list, about all of them. */
+    scope: 'listing' | 'dashboard';
 }
 
 /**
@@ -14,11 +14,11 @@ export interface ShowcaseNoticeProps {
  * own "New listing" button is the way to add one (user decision).
  */
 export function ShowcaseNotice({ scope }: ShowcaseNoticeProps) {
-  const { t } = useTranslation('listing');
-  return (
-    <Alert severity="info" className="items-center">
-      <AlertTitle>{t(`showcase.${scope}.title`)}</AlertTitle>
-      {t(`showcase.${scope}.text`)}
-    </Alert>
-  );
+    const { t } = useTranslation('listing');
+    return (
+        <Alert severity="info" className="items-center">
+            <AlertTitle>{t(`showcase.${scope}.title`)}</AlertTitle>
+            {t(`showcase.${scope}.text`)}
+        </Alert>
+    );
 }

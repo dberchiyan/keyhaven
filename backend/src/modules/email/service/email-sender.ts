@@ -1,10 +1,10 @@
 /** One message, ready to send: the feature that sends it rendered both bodies. */
 export interface EmailMessage {
-  to: string;
-  subject: string;
-  text: string;
-  /** Every interpolated value is escaped by the renderer (security.md → Injection). */
-  html: string;
+    to: string;
+    subject: string;
+    text: string;
+    /** Every interpolated value is escaped by the renderer (security.md → Injection). */
+    html: string;
 }
 
 /**
@@ -13,5 +13,5 @@ export interface EmailMessage {
  * `UpstreamUnavailableException` when the server cannot be reached.
  */
 export abstract class EmailSender {
-  abstract send(message: EmailMessage): Promise<void>;
+    abstract send(message: EmailMessage): Promise<void>;
 }

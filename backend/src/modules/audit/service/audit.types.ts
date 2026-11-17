@@ -2,25 +2,25 @@ import type { AuditAction, AuditTargetType } from './audit-action';
 import type { AuditChange } from './audit-change';
 
 export interface NewAuditEvent {
-  action: AuditAction;
-  /** Who acted when there is no signed-in principal yet (sign-in); default: the principal. */
-  actorUserId?: string | null;
-  target: { type: AuditTargetType; id: string; label: string };
-  changes: AuditChange[];
+    action: AuditAction;
+    /** Who acted when there is no signed-in principal yet (sign-in); default: the principal. */
+    actorUserId?: string | null;
+    target: { type: AuditTargetType; id: string; label: string };
+    changes: AuditChange[];
 }
 
 /** One entry of a user's security log. */
 export interface SecurityEvent {
-  id: string;
-  occurredAt: Date;
-  action: AuditAction;
-  ipAddress: string | null;
-  userAgent: string | null;
-  /** A sign-in from a device the user had not signed in from before. */
-  newDevice: boolean;
+    id: string;
+    occurredAt: Date;
+    action: AuditAction;
+    ipAddress: string | null;
+    userAgent: string | null;
+    /** A sign-in from a device the user had not signed in from before. */
+    newDevice: boolean;
 }
 
 export interface SecurityEventPage {
-  content: SecurityEvent[];
-  totalElements: number;
+    content: SecurityEvent[];
+    totalElements: number;
 }

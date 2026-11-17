@@ -10,8 +10,8 @@ const HOUR_MS = 3_600_000;
 
 /** How long each kind of emailed link stays valid (product decision). */
 const TOKEN_LIFETIME_MS: Readonly<Record<TokenPurpose, number>> = {
-  EMAIL_VERIFICATION: 24 * HOUR_MS,
-  PASSWORD_RESET: 1 * HOUR_MS,
+    EMAIL_VERIFICATION: 24 * HOUR_MS,
+    PASSWORD_RESET: 1 * HOUR_MS,
 };
 
 /**
@@ -21,42 +21,42 @@ const TOKEN_LIFETIME_MS: Readonly<Record<TokenPurpose, number>> = {
  */
 @Injectable()
 export class AccountTokenService {
-  constructor(
-    private readonly accountTokenRepository: AccountTokenRepository,
-    @InjectPinoLogger(AccountTokenService.name) private readonly logger: PinoLogger,
-  ) {}
+    constructor(
+        private readonly accountTokenRepository: AccountTokenRepository,
+        @InjectPinoLogger(AccountTokenService.name) private readonly logger: PinoLogger,
+    ) {}
 
-  /** Returns the clear token for the link (never stored). Joins the caller's transaction. */
-  @Transactional()
-  async issue(userId: string, purpose: TokenPurpose): Promise<string> {
-    await this.accountTokenRepository.deleteByUserAndPurpose(userId, purpose);
-    const token = generateToken();
-    await this.accountTokenRepository.create({
-      userId,
-      purpose,
-      tokenHash: hashToken(token),
-      expiresAt: new Date(Date.now() + TOKEN_LIFETIME_MS[purpose]),
-    });
-    return token;
-  }
-
-  /** The user a live token of this purpose belongs to, or null (unknown, wrong purpose, expired). */
-  async resolve(token: string, purpose: TokenPurpose): Promise<string | null> {
-    const row = await this.accountTokenRepository.findByTokenHash(hashToken(token));
-    if (!row || row.purpose !== purpose || row.expiresAt.getTime() <= Date.now()) {
-      return null;
+    /** Returns the clear token for the link (never stored). Joins the caller's transaction. */
+    @Transactional()
+    async issue(userId: string, purpose: TokenPurpose): Promise<string> {
+        await this.accountTokenRepository.deleteByUserAndPurpose(userId, purpose);
+        const token = generateToken();
+        await this.accountTokenRepository.create({
+            userId,
+            purpose,
+            tokenHash: hashToken(token),
+            expiresAt: new Date(Date.now() + TOKEN_LIFETIME_MS[purpose]),
+        });
+        return token;
     }
-    return row.userId;
-  }
 
-  /** Spends the user's tokens of this purpose (inside the transaction that acts on the link). */
-  async spend(userId: string, purpose: TokenPurpose): Promise<void> {
-    await this.accountTokenRepository.deleteByUserAndPurpose(userId, purpose);
-  }
+    /** The user a live token of this purpose belongs to, or null (unknown, wrong purpose, expired). */
+    async resolve(token: string, purpose: TokenPurpose): Promise<string | null> {
+        const row = await this.accountTokenRepository.findByTokenHash(hashToken(token));
+        if (!row || row.purpose !== purpose || row.expiresAt.getTime() <= Date.now()) {
+            return null;
+        }
+        return row.userId;
+    }
 
-  @Cron(CronExpression.EVERY_HOUR)
-  async deleteExpired(): Promise<void> {
-    const count = await this.accountTokenRepository.deleteExpired(new Date());
-    this.logger.info({ count }, 'Expired account tokens deleted');
-  }
+    /** Spends the user's tokens of this purpose (inside the transaction that acts on the link). */
+    async spend(userId: string, purpose: TokenPurpose): Promise<void> {
+        await this.accountTokenRepository.deleteByUserAndPurpose(userId, purpose);
+    }
+
+    @Cron(CronExpression.EVERY_HOUR)
+    async deleteExpired(): Promise<void> {
+        const count = await this.accountTokenRepository.deleteExpired(new Date());
+        this.logger.info({ count }, 'Expired account tokens deleted');
+    }
 }

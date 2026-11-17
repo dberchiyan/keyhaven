@@ -34,8 +34,8 @@ export const DEFAULT_INSIGHT_PERIOD: InsightPeriod = 30;
 
 /** A tenant's saved homes: newest save first; page and size only. */
 export interface SavedListParams {
-  page: number;
-  size: number;
+    page: number;
+    size: number;
 }
 
 /** The search request as the API takes it (zero-based page). */
@@ -43,11 +43,11 @@ export type SearchRequestParams = Omit<BrowseParams, 'page'> & { page: number };
 
 /** The owner's dashboard: status, search, order, page and size. */
 export interface ManagedListParams {
-  status: ListingStatus | undefined;
-  search: string;
-  sort: 'updatedAt,desc' | 'price,desc' | 'price,asc' | 'title,asc';
-  page: number;
-  size: number;
+    status: ListingStatus | undefined;
+    search: string;
+    sort: 'updatedAt,desc' | 'price,desc' | 'price,asc' | 'title,asc';
+    page: number;
+    size: number;
 }
 
 /** A status change the owner (publish, unpublish) or an admin (suspend) makes. */

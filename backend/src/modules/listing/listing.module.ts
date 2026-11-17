@@ -11,16 +11,10 @@ import { ListingService } from './service/listing.service';
 import { SavedListingService } from './service/saved-listing.service';
 
 @Module({
-  imports: [AuditModule, StorageModule],
-  controllers: [ListingController, ManagedListingController, SavedListingController],
-  providers: [
-    ListingService,
-    SavedListingService,
-    ListingRepository,
-    ListingPhotoRepository,
-    SavedListingRepository,
-  ],
-  // ListingService: saved searches run the same search for their digests.
-  exports: [ListingService],
+    imports: [AuditModule, StorageModule],
+    controllers: [ListingController, ManagedListingController, SavedListingController],
+    providers: [ListingService, SavedListingService, ListingRepository, ListingPhotoRepository, SavedListingRepository],
+    // ListingService: saved searches run the same search for their digests.
+    exports: [ListingService],
 })
 export class ListingModule {}

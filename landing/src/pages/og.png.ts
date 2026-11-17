@@ -61,6 +61,6 @@ const svg = `
 </svg>`;
 
 export const GET: APIRoute = async () => {
-  const png = await sharp(Buffer.from(svg)).png().toBuffer();
-  return new Response(new Uint8Array(png), { headers: { 'Content-Type': 'image/png' } });
+    const png = await sharp(Buffer.from(svg)).png().toBuffer();
+    return new Response(new Uint8Array(png), { headers: { 'Content-Type': 'image/png' } });
 };

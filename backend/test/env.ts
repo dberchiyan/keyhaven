@@ -5,9 +5,9 @@ import { testDatabaseUrl } from './test-database';
  * then the test database replaces the development one and the mail transport is the log.
  */
 try {
-  process.loadEnvFile('.env');
+    process.loadEnvFile('.env');
 } catch {
-  // CI: every variable comes from the environment.
+    // CI: every variable comes from the environment.
 }
 // Jest sets NODE_ENV=test; the app knows the dev and prod profiles only (platform.md).
 process.env.NODE_ENV = 'development';

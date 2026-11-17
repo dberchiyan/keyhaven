@@ -4,23 +4,23 @@
  * markup inside is decorative and hidden from assistive tech.
  */
 interface Props {
-  label: string;
-  class?: string | undefined;
-  /** Extra delay (ms) before its parts animate — e.g. after the hero window has entered. */
-  delay?: number;
+    label: string;
+    class?: string | undefined;
+    /** Extra delay (ms) before its parts animate — e.g. after the hero window has entered. */
+    delay?: number;
 }
 
 const { label, class: className, delay = 0 } = Astro.props;
 ---
 
 <div
-  role="img"
-  aria-label={label}
-  class:list={['select-none', className]}
-  data-animate
-  style={delay ? `--base: ${delay}ms` : undefined}
+    role="img"
+    aria-label={label}
+    class:list={['select-none', className]}
+    data-animate
+    style={delay ? `--base: ${delay}ms` : undefined}
 >
-  <div aria-hidden="true" class="contents">
-    <slot />
-  </div>
+    <div aria-hidden="true" class="contents">
+        <slot />
+    </div>
 </div>

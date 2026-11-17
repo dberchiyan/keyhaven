@@ -9,11 +9,11 @@ import { defineConfig } from 'astro/config';
 const SITE_URL = process.env.SITE_URL ?? 'https://keyhaven.osdb.io';
 
 export default defineConfig({
-  site: SITE_URL,
-  output: 'static',
-  trailingSlash: 'never',
-  build: { assets: '_landing', format: 'file' },
-  compressHTML: true,
-  integrations: [sitemap()],
-  vite: { plugins: [tailwindcss()] },
+    site: SITE_URL,
+    output: 'static',
+    trailingSlash: 'never',
+    build: { assets: '_landing', format: 'file' },
+    compressHTML: true,
+    integrations: [sitemap()],
+    vite: { plugins: [tailwindcss()] },
 });

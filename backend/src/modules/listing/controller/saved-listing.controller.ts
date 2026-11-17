@@ -17,53 +17,42 @@ import { toListingPageResponse } from './mapper/listing.mapper';
 @ApiTags('Saved listings')
 @Controller('api/v1/saved-listings')
 export class SavedListingController {
-  constructor(private readonly savedListingService: SavedListingService) {}
+    constructor(private readonly savedListingService: SavedListingService) {}
 
-  @Get()
-  @Authorize(can.viewSavedListings)
-  @ApiOperation({
-    summary: "The caller's saved homes that are still on the site, newest save first",
-  })
-  @ApiPageable(SAVED_LISTING_PAGEABLE)
-  @ZodResponse({ status: HttpStatus.OK, type: ListingPageResponse })
-  @ApiErrors('INVALID_PARAMETER', 'UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN')
-  async findPage(
-    @CurrentPrincipal() principal: Principal,
-    @PageableQuery(SAVED_LISTING_PAGEABLE) pageable: Pageable<SavedListingSortField>,
-  ): Promise<ListingPageResponse> {
-    return toListingPageResponse(
-      await this.savedListingService.findPage(principal.userId, pageable),
-    );
-  }
+    @Get()
+    @Authorize(can.viewSavedListings)
+    @ApiOperation({
+        summary: "The caller's saved homes that are still on the site, newest save first",
+    })
+    @ApiPageable(SAVED_LISTING_PAGEABLE)
+    @ZodResponse({ status: HttpStatus.OK, type: ListingPageResponse })
+    @ApiErrors('INVALID_PARAMETER', 'UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN')
+    async findPage(
+        @CurrentPrincipal() principal: Principal,
+        @PageableQuery(SAVED_LISTING_PAGEABLE) pageable: Pageable<SavedListingSortField>,
+    ): Promise<ListingPageResponse> {
+        return toListingPageResponse(await this.savedListingService.findPage(principal.userId, pageable));
+    }
 
-  @Put(':listingId')
-  @Authorize(can.saveListing)
-  @ApiOperation({ summary: 'Save a published home (saving it again changes nothing)' })
-  @ZodResponse({ status: HttpStatus.OK, type: SavedListingResponse })
-  @ApiErrors(
-    'INVALID_PARAMETER',
-    'UNAUTHORIZED',
-    'SESSION_EXPIRED',
-    'FORBIDDEN',
-    'RESOURCE_NOT_FOUND',
-  )
-  async save(
-    @CurrentPrincipal() principal: Principal,
-    @UuidParam('listingId') listingId: string,
-  ): Promise<SavedListingResponse> {
-    await this.savedListingService.save(principal.userId, listingId);
-    return { listingId, saved: true };
-  }
+    @Put(':listingId')
+    @Authorize(can.saveListing)
+    @ApiOperation({ summary: 'Save a published home (saving it again changes nothing)' })
+    @ZodResponse({ status: HttpStatus.OK, type: SavedListingResponse })
+    @ApiErrors('INVALID_PARAMETER', 'UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN', 'RESOURCE_NOT_FOUND')
+    async save(
+        @CurrentPrincipal() principal: Principal,
+        @UuidParam('listingId') listingId: string,
+    ): Promise<SavedListingResponse> {
+        await this.savedListingService.save(principal.userId, listingId);
+        return { listingId, saved: true };
+    }
 
-  @Delete(':listingId')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Authorize(can.unsaveListing)
-  @ApiOperation({ summary: 'Remove a home from the saved ones' })
-  @ApiErrors('INVALID_PARAMETER', 'UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN')
-  async remove(
-    @CurrentPrincipal() principal: Principal,
-    @UuidParam('listingId') listingId: string,
-  ): Promise<void> {
-    await this.savedListingService.remove(principal.userId, listingId);
-  }
+    @Delete(':listingId')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Authorize(can.unsaveListing)
+    @ApiOperation({ summary: 'Remove a home from the saved ones' })
+    @ApiErrors('INVALID_PARAMETER', 'UNAUTHORIZED', 'SESSION_EXPIRED', 'FORBIDDEN')
+    async remove(@CurrentPrincipal() principal: Principal, @UuidParam('listingId') listingId: string): Promise<void> {
+        await this.savedListingService.remove(principal.userId, listingId);
+    }
 }

@@ -5,10 +5,10 @@ import { ThemeModeToggle } from '@/shared/components/ThemeModeToggle';
 import { cn } from '@/shared/lib/cn';
 
 export interface PageShellProps {
-  children: ReactNode;
-  /** Extra controls placed before the theme toggle in the top bar. */
-  actions?: ReactNode;
-  className?: string;
+    children: ReactNode;
+    /** Extra controls placed before the theme toggle in the top bar. */
+    actions?: ReactNode;
+    className?: string;
 }
 
 /**
@@ -16,24 +16,24 @@ export interface PageShellProps {
  * glows and a dot grid fading out from the centre — decorative). Signed-out screens.
  */
 export function PageShell({ children, actions, className }: PageShellProps) {
-  const { t } = useTranslation();
-  return (
-    <div className="relative isolate flex min-h-dvh flex-col bg-background">
-      <div aria-hidden className="app-brand-backdrop pointer-events-none absolute inset-0 -z-10" />
-      <Link
-        href="#main"
-        className="absolute top-2 left-2 z-10 -translate-y-24 rounded-sm bg-background-paper p-3 focus-visible:translate-y-0"
-      >
-        {t('a11y.skipToContent')}
-      </Link>
-      {/* Arbitrary value: safe-area inset for notched devices (one-off geometry). */}
-      <header className="flex items-center justify-end gap-2 px-4 pt-[max(0.5rem,env(safe-area-inset-top))] md:px-8">
-        {actions}
-        <ThemeModeToggle />
-      </header>
-      <main id="main" tabIndex={-1} className={cn('flex flex-1 flex-col outline-none', className)}>
-        {children}
-      </main>
-    </div>
-  );
+    const { t } = useTranslation();
+    return (
+        <div className="relative isolate flex min-h-dvh flex-col bg-background">
+            <div aria-hidden className="app-brand-backdrop pointer-events-none absolute inset-0 -z-10" />
+            <Link
+                href="#main"
+                className="absolute top-2 left-2 z-10 -translate-y-24 rounded-sm bg-background-paper p-3 focus-visible:translate-y-0"
+            >
+                {t('a11y.skipToContent')}
+            </Link>
+            {/* Arbitrary value: safe-area inset for notched devices (one-off geometry). */}
+            <header className="flex items-center justify-end gap-2 px-4 pt-[max(0.5rem,env(safe-area-inset-top))] md:px-8">
+                {actions}
+                <ThemeModeToggle />
+            </header>
+            <main id="main" tabIndex={-1} className={cn('flex flex-1 flex-col outline-none', className)}>
+                {children}
+            </main>
+        </div>
+    );
 }

@@ -7,8 +7,8 @@ import { SavedSearchService } from './service/saved-search.service';
 
 /** Saved searches and their daily digest (saved-search → listing, email; never back). */
 @Module({
-  imports: [ListingModule, EmailModule],
-  controllers: [SavedSearchController],
-  providers: [SavedSearchService, SavedSearchRepository],
+    imports: [ListingModule, EmailModule],
+    controllers: [SavedSearchController],
+    providers: [SavedSearchService, SavedSearchRepository],
 })
 export class SavedSearchModule {}

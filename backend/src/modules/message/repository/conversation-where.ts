@@ -8,24 +8,22 @@ import type { SupportScope, ViewingScope } from '../service/message.types';
  * nothing here comes from a request string.
  */
 export const viewingScopeSql = (scope: ViewingScope): Prisma.Sql => {
-  switch (scope.kind) {
-    case 'TENANT':
-      return Prisma.sql`v.tenant_id = ${scope.tenantId}::uuid`;
-    case 'LANDLORD':
-      return Prisma.sql`l.landlord_id = ${scope.landlordId}::uuid`;
-    case 'AGENCY':
-      return Prisma.sql`l.agency_id = ${scope.agencyId}::uuid`;
-    case 'ALL':
-      return Prisma.sql`TRUE`;
-  }
+    switch (scope.kind) {
+        case 'TENANT':
+            return Prisma.sql`v.tenant_id = ${scope.tenantId}::uuid`;
+        case 'LANDLORD':
+            return Prisma.sql`l.landlord_id = ${scope.landlordId}::uuid`;
+        case 'AGENCY':
+            return Prisma.sql`l.agency_id = ${scope.agencyId}::uuid`;
+        case 'ALL':
+            return Prisma.sql`TRUE`;
+    }
 };
 
 /** Over `conversations c` of kind SUPPORT. */
 export const supportScopeSql = (scope: SupportScope): Prisma.Sql =>
-  scope.kind === 'OWN' ? Prisma.sql`c.opened_by = ${scope.userId}::uuid` : Prisma.sql`TRUE`;
+    scope.kind === 'OWN' ? Prisma.sql`c.opened_by = ${scope.userId}::uuid` : Prisma.sql`TRUE`;
 
 /** The conversation column that says when this side last read it (`c` = conversations). */
 export const readAtSql = (side: MessageSide): Prisma.Sql =>
-  side === MessageSide.REQUESTER
-    ? Prisma.sql`c.requester_read_at`
-    : Prisma.sql`c.responder_read_at`;
+    side === MessageSide.REQUESTER ? Prisma.sql`c.requester_read_at` : Prisma.sql`c.responder_read_at`;

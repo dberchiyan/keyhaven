@@ -8,19 +8,17 @@ const MAX_TOKEN_LENGTH = 128;
 export const clientIp = (request: Request): string => request.ip ?? 'unknown';
 
 export const clientUserAgent = (request: Request): string | null => {
-  const userAgent = request.get('user-agent');
-  return userAgent ? userAgent.slice(0, MAX_USER_AGENT_LENGTH) : null;
+    const userAgent = request.get('user-agent');
+    return userAgent ? userAgent.slice(0, MAX_USER_AGENT_LENGTH) : null;
 };
 
 export const readCookie = (request: Request, name: string): string | undefined => {
-  const cookies: unknown = request.cookies;
-  if (typeof cookies !== 'object' || cookies === null || !(name in cookies)) {
-    return undefined;
-  }
-  const value: unknown = (cookies as Record<string, unknown>)[name];
-  return typeof value === 'string' && value.length > 0 && value.length <= MAX_TOKEN_LENGTH
-    ? value
-    : undefined;
+    const cookies: unknown = request.cookies;
+    if (typeof cookies !== 'object' || cookies === null || !(name in cookies)) {
+        return undefined;
+    }
+    const value: unknown = (cookies as Record<string, unknown>)[name];
+    return typeof value === 'string' && value.length > 0 && value.length <= MAX_TOKEN_LENGTH ? value : undefined;
 };
 
 /**
@@ -28,8 +26,6 @@ export const readCookie = (request: Request, name: string): string | undefined =
  * client address and the user agent — never stored in the clear, never tied to a person.
  */
 export const visitorKey = (request: Request): string =>
-  createHash('sha256')
-    .update(
-      `${new Date().toISOString().slice(0, 10)}|${clientIp(request)}|${clientUserAgent(request) ?? ''}`,
-    )
-    .digest('hex');
+    createHash('sha256')
+        .update(`${new Date().toISOString().slice(0, 10)}|${clientIp(request)}|${clientUserAgent(request) ?? ''}`)
+        .digest('hex');

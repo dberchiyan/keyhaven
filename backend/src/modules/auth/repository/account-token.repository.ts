@@ -5,39 +5,37 @@ import type { PrismaService } from '../../../common/persistence/prisma.service';
 import { type AccountTokenRecord, accountTokenSelect } from './record/account-token.record';
 
 export interface NewAccountToken {
-  userId: string;
-  purpose: string;
-  tokenHash: string;
-  expiresAt: Date;
+    userId: string;
+    purpose: string;
+    tokenHash: string;
+    expiresAt: Date;
 }
 
 @Injectable()
 export class AccountTokenRepository {
-  constructor(
-    private readonly txHost: TransactionHost<TransactionalAdapterPrisma<PrismaService>>,
-  ) {}
+    constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma<PrismaService>>) {}
 
-  async create(token: NewAccountToken): Promise<void> {
-    await this.txHost.tx.accountToken.create({ data: token, select: { id: true } });
-  }
+    async create(token: NewAccountToken): Promise<void> {
+        await this.txHost.tx.accountToken.create({ data: token, select: { id: true } });
+    }
 
-  findByTokenHash(tokenHash: string): Promise<AccountTokenRecord | null> {
-    return this.txHost.tx.accountToken.findUnique({
-      where: { tokenHash },
-      select: accountTokenSelect,
-    });
-  }
+    findByTokenHash(tokenHash: string): Promise<AccountTokenRecord | null> {
+        return this.txHost.tx.accountToken.findUnique({
+            where: { tokenHash },
+            select: accountTokenSelect,
+        });
+    }
 
-  /** Every token of the user for one purpose (a new link replaces the old ones; a used one is spent). */
-  async deleteByUserAndPurpose(userId: string, purpose: string): Promise<number> {
-    const { count } = await this.txHost.tx.accountToken.deleteMany({ where: { userId, purpose } });
-    return count;
-  }
+    /** Every token of the user for one purpose (a new link replaces the old ones; a used one is spent). */
+    async deleteByUserAndPurpose(userId: string, purpose: string): Promise<number> {
+        const { count } = await this.txHost.tx.accountToken.deleteMany({ where: { userId, purpose } });
+        return count;
+    }
 
-  async deleteExpired(now: Date): Promise<number> {
-    const { count } = await this.txHost.tx.accountToken.deleteMany({
-      where: { expiresAt: { lte: now } },
-    });
-    return count;
-  }
+    async deleteExpired(now: Date): Promise<number> {
+        const { count } = await this.txHost.tx.accountToken.deleteMany({
+            where: { expiresAt: { lte: now } },
+        });
+        return count;
+    }
 }

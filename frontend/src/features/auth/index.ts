@@ -19,26 +19,26 @@ export { useResendVerification } from './hooks/useAccountRecovery';
 export { applyServerFieldErrors } from './hooks/useServerFieldErrors';
 export { FormErrorLine, RESERVED_LINE } from './components/FormErrorLine';
 export {
-  useChangePassword,
-  useEndOtherSessions,
-  useEndSession,
-  useOwnSecurityLog,
-  useSessions,
-  useUpdateOwnName,
+    useChangePassword,
+    useEndOtherSessions,
+    useEndSession,
+    useOwnSecurityLog,
+    useSessions,
+    useUpdateOwnName,
 } from './hooks/useAccount';
 export { SecurityLogView } from './components/SecurityLogView';
 export { isSecurityCategory } from './securityLog';
 export { describeUserAgent } from './userAgent';
 export { AUTH_SESSION_ENDPOINTS } from './api/authApi';
 export type {
-  ChangePasswordRequest,
-  CurrentUser,
-  SecurityCategory,
-  SecurityEvent,
-  SecurityLog,
-  UpdateOwnNameRequest,
-  UserSession,
-  UserSessions,
+    ChangePasswordRequest,
+    CurrentUser,
+    SecurityCategory,
+    SecurityEvent,
+    SecurityLog,
+    UpdateOwnNameRequest,
+    UserSession,
+    UserSessions,
 } from './types';
 export { SECURITY_LOG_PAGE_SIZE, SESSIONS_PAGE_SIZE } from './api/accountApi';
 export type { LoginLocationState } from './hooks/useLoginRedirect';

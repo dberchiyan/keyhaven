@@ -4,8 +4,8 @@ import { NewPasswordSchema } from '../../../../common/dto/password';
 import { TokenSchema } from './verify-email.request';
 
 export const ResetPasswordRequestSchema = z.object({
-  token: TokenSchema,
-  newPassword: NewPasswordSchema,
+    token: TokenSchema,
+    newPassword: NewPasswordSchema,
 });
 
 export class ResetPasswordRequest extends createZodDto(ResetPasswordRequestSchema) {}

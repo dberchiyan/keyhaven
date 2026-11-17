@@ -10,19 +10,16 @@ import { EmailSender } from './service/email-sender';
  * never a code branch in the features that send mail.
  */
 @Module({
-  providers: [
-    LogEmailSender,
-    SmtpEmailSender,
-    {
-      provide: EmailSender,
-      inject: [AppConfigService, LogEmailSender, SmtpEmailSender],
-      useFactory: (
-        config: AppConfigService,
-        log: LogEmailSender,
-        smtp: SmtpEmailSender,
-      ): EmailSender => (config.get('EMAIL_TRANSPORT') === EmailTransport.SMTP ? smtp : log),
-    },
-  ],
-  exports: [EmailSender],
+    providers: [
+        LogEmailSender,
+        SmtpEmailSender,
+        {
+            provide: EmailSender,
+            inject: [AppConfigService, LogEmailSender, SmtpEmailSender],
+            useFactory: (config: AppConfigService, log: LogEmailSender, smtp: SmtpEmailSender): EmailSender =>
+                config.get('EMAIL_TRANSPORT') === EmailTransport.SMTP ? smtp : log,
+        },
+    ],
+    exports: [EmailSender],
 })
 export class EmailModule {}

@@ -3,12 +3,12 @@ import { toJsonLd } from '@/lib/jsonLd';
 import { SITE } from '@/content/site';
 
 interface Props {
-  title: string;
-  description: string;
-  /** Path of this page (canonical = site + path). */
-  path: string;
-  /** Pages that must not be indexed (404). */
-  noindex?: boolean;
+    title: string;
+    description: string;
+    /** Path of this page (canonical = site + path). */
+    path: string;
+    /** Pages that must not be indexed (404). */
+    noindex?: boolean;
 }
 
 const { title, description, path, noindex = false } = Astro.props;
@@ -18,34 +18,34 @@ const ogImage = new URL('/og.png', site).href;
 
 // Structured data: what Keyhaven is, who makes it, and the page's FAQ (rich results in search).
 const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': `${site.href}#organization`,
-      name: SITE.name,
-      url: site.href,
-      logo: new URL('/apple-touch-icon.png', site).href,
-    },
-    {
-      '@type': 'WebSite',
-      '@id': `${site.href}#website`,
-      url: site.href,
-      name: SITE.name,
-      inLanguage: SITE.locale,
-      publisher: { '@id': `${site.href}#organization` },
-    },
-    {
-      '@type': 'SoftwareApplication',
-      name: SITE.name,
-      applicationCategory: 'LifestyleApplication',
-      applicationSubCategory: 'Real estate listings',
-      operatingSystem: 'Web',
-      url: site.href,
-      description: SITE.description,
-      publisher: { '@id': `${site.href}#organization` },
-    },
-  ],
+    '@context': 'https://schema.org',
+    '@graph': [
+        {
+            '@type': 'Organization',
+            '@id': `${site.href}#organization`,
+            name: SITE.name,
+            url: site.href,
+            logo: new URL('/apple-touch-icon.png', site).href,
+        },
+        {
+            '@type': 'WebSite',
+            '@id': `${site.href}#website`,
+            url: site.href,
+            name: SITE.name,
+            inLanguage: SITE.locale,
+            publisher: { '@id': `${site.href}#organization` },
+        },
+        {
+            '@type': 'SoftwareApplication',
+            name: SITE.name,
+            applicationCategory: 'LifestyleApplication',
+            applicationSubCategory: 'Real estate listings',
+            operatingSystem: 'Web',
+            url: site.href,
+            description: SITE.description,
+            publisher: { '@id': `${site.href}#organization` },
+        },
+    ],
 };
 ---
 

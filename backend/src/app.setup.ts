@@ -18,42 +18,38 @@ const PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), payment=()
  * a test exercises the same middleware, headers and parsers as production.
  */
 export const setupApp = (app: NestExpressApplication): void => {
-  const config = app.get(AppConfigService);
-  const trustProxyHops = config.get('TRUST_PROXY_HOPS');
-  app.set('trust proxy', trustProxyHops > 0 ? trustProxyHops : false);
-  app.disable('x-powered-by');
-  app.use(new ClsMiddleware(CLS_MIDDLEWARE_OPTIONS).use);
-  app.useBodyParser('json', { limit: BODY_LIMIT });
-  app.use(cookieParser());
+    const config = app.get(AppConfigService);
+    const trustProxyHops = config.get('TRUST_PROXY_HOPS');
+    app.set('trust proxy', trustProxyHops > 0 ? trustProxyHops : false);
+    app.disable('x-powered-by');
+    app.use(new ClsMiddleware(CLS_MIDDLEWARE_OPTIONS).use);
+    app.useBodyParser('json', { limit: BODY_LIMIT });
+    app.use(cookieParser());
 
-  const strictHelmet = helmet({
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] },
-    },
-    strictTransportSecurity: { maxAge: 31_536_000, includeSubDomains: true },
-    xFrameOptions: { action: 'deny' },
-    referrerPolicy: { policy: 'no-referrer' },
-  });
-  const docsHelmet = helmet({ contentSecurityPolicy: false });
-  app.use((request: Request, response: Response, next: NextFunction) => {
-    response.setHeader('Permissions-Policy', PERMISSIONS_POLICY);
-    const isDocs = config.isDev && request.path.startsWith(`/${DOCS_PATH}`);
-    (isDocs ? docsHelmet : strictHelmet)(request, response, next);
-  });
+    const strictHelmet = helmet({
+        contentSecurityPolicy: {
+            useDefaults: false,
+            directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] },
+        },
+        strictTransportSecurity: { maxAge: 31_536_000, includeSubDomains: true },
+        xFrameOptions: { action: 'deny' },
+        referrerPolicy: { policy: 'no-referrer' },
+    });
+    const docsHelmet = helmet({ contentSecurityPolicy: false });
+    app.use((request: Request, response: Response, next: NextFunction) => {
+        response.setHeader('Permissions-Policy', PERMISSIONS_POLICY);
+        const isDocs = config.isDev && request.path.startsWith(`/${DOCS_PATH}`);
+        (isDocs ? docsHelmet : strictHelmet)(request, response, next);
+    });
 
-  app.enableCors({
-    origin: config.get('CORS_ALLOWED_ORIGINS'),
-    credentials: true,
-    exposedHeaders: ['Deprecation', 'Sunset', 'Retry-After', TRACE_ID_HEADER],
-  });
-  app.enableShutdownHooks();
+    app.enableCors({
+        origin: config.get('CORS_ALLOWED_ORIGINS'),
+        credentials: true,
+        exposedHeaders: ['Deprecation', 'Sunset', 'Retry-After', TRACE_ID_HEADER],
+    });
+    app.enableShutdownHooks();
 
-  if (config.isDev) {
-    SwaggerModule.setup(
-      DOCS_PATH,
-      app,
-      buildOpenApiDocument(app, config.get('SESSION_COOKIE_NAME')),
-    );
-  }
+    if (config.isDev) {
+        SwaggerModule.setup(DOCS_PATH, app, buildOpenApiDocument(app, config.get('SESSION_COOKIE_NAME')));
+    }
 };

@@ -17,39 +17,39 @@ const TENANTS = ['TENANT'] as const satisfies readonly UserRole[];
  * `useAccess()` / `<RequireAccess>`; never compare `user.role` in a component.
  */
 export const ACCESS = {
-  /** Menu sections (and their routes). */
-  'section.browse': EVERYONE,
-  'section.listings': LISTERS,
-  'section.settings': EVERYONE,
-  /** Home (`/`): the listings dashboard; everyone else lands on Browse. */
-  'home.manage': LISTERS,
-  /** Viewings: a tenant's own, or the owner's dashboard of them — one route, two pages. */
-  'section.viewings': EVERYONE,
-  /** Messages: the conversation of every confirmed viewing — everyone signed in has an inbox. */
-  'section.messages': EVERYONE,
-  /** Writing to Keyhaven: members ask, the staff answers. */
-  'message.start': ['TENANT', 'LANDLORD', 'AGENT'],
-  /** Closing and reopening a request: the staff. */
-  'message.manage': ADMINS,
-  /** Asking for a viewing (the backend also needs a verified email). */
-  'viewing.book': TENANTS,
-  /** The viewings dashboard: landlords (their homes'), agents (the agency's), admins (all). */
-  'viewing.manage': LISTERS,
-  /** Answering requests and setting viewing hours: the owners only. */
-  'viewing.decide': OWNERS,
-  'viewing.hours': OWNERS,
-  /** Saved homes and searches are a tenant's section. */
-  'section.saved': TENANTS,
-  'listing.save': TENANTS,
-  /** Writing listings and their photos: the owners. */
-  'listing.create': OWNERS,
-  'listing.edit': OWNERS,
-  /** One listing in the dashboard: publish and unpublish (owners), suspend (admins). */
-  'listing.publish': OWNERS,
-  'listing.suspend': ADMINS,
-  /** Settings → Account / Sessions: one's own password and other sessions. */
-  'account.changePassword': EVERYONE,
-  'account.endSessions': EVERYONE,
+    /** Menu sections (and their routes). */
+    'section.browse': EVERYONE,
+    'section.listings': LISTERS,
+    'section.settings': EVERYONE,
+    /** Home (`/`): the listings dashboard; everyone else lands on Browse. */
+    'home.manage': LISTERS,
+    /** Viewings: a tenant's own, or the owner's dashboard of them — one route, two pages. */
+    'section.viewings': EVERYONE,
+    /** Messages: the conversation of every confirmed viewing — everyone signed in has an inbox. */
+    'section.messages': EVERYONE,
+    /** Writing to Keyhaven: members ask, the staff answers. */
+    'message.start': ['TENANT', 'LANDLORD', 'AGENT'],
+    /** Closing and reopening a request: the staff. */
+    'message.manage': ADMINS,
+    /** Asking for a viewing (the backend also needs a verified email). */
+    'viewing.book': TENANTS,
+    /** The viewings dashboard: landlords (their homes'), agents (the agency's), admins (all). */
+    'viewing.manage': LISTERS,
+    /** Answering requests and setting viewing hours: the owners only. */
+    'viewing.decide': OWNERS,
+    'viewing.hours': OWNERS,
+    /** Saved homes and searches are a tenant's section. */
+    'section.saved': TENANTS,
+    'listing.save': TENANTS,
+    /** Writing listings and their photos: the owners. */
+    'listing.create': OWNERS,
+    'listing.edit': OWNERS,
+    /** One listing in the dashboard: publish and unpublish (owners), suspend (admins). */
+    'listing.publish': OWNERS,
+    'listing.suspend': ADMINS,
+    /** Settings → Account / Sessions: one's own password and other sessions. */
+    'account.changePassword': EVERYONE,
+    'account.endSessions': EVERYONE,
 } as const satisfies Record<string, readonly UserRole[]>;
 
 export type AccessPart = keyof typeof ACCESS;
@@ -58,17 +58,10 @@ export type AccessPart = keyof typeof ACCESS;
  * Turned off for the demo's shared showcase accounts (`demoRestricted` from the server, which
  * refuses them too): each would lock other visitors out. An account a visitor created keeps them.
  */
-const DEMO_RESTRICTED: ReadonlySet<AccessPart> = new Set<AccessPart>([
-  'account.changePassword',
-  'account.endSessions',
-]);
+const DEMO_RESTRICTED: ReadonlySet<AccessPart> = new Set<AccessPart>(['account.changePassword', 'account.endSessions']);
 
 /** Does this role use that part (and is it open to a demo showcase account)? No user → no. */
-export const canAccess = (
-  role: UserRole | undefined,
-  part: AccessPart,
-  demoRestricted = false,
-): boolean =>
-  role !== undefined &&
-  (ACCESS[part] as readonly UserRole[]).includes(role) &&
-  !(demoRestricted && DEMO_RESTRICTED.has(part));
+export const canAccess = (role: UserRole | undefined, part: AccessPart, demoRestricted = false): boolean =>
+    role !== undefined &&
+    (ACCESS[part] as readonly UserRole[]).includes(role) &&
+    !(demoRestricted && DEMO_RESTRICTED.has(part));

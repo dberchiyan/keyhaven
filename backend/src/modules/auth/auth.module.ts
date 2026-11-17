@@ -15,19 +15,19 @@ import { PasswordHasher } from './service/password-hasher.service';
 import { SessionService } from './service/session.service';
 
 @Module({
-  imports: [UserModule, AuditModule, EmailModule],
-  controllers: [AuthController, RegistrationController, AccountRecoveryController],
-  providers: [
-    AuthService,
-    AccountService,
-    AccountTokenService,
-    SessionService,
-    PasswordHasher,
-    SessionRepository,
-    AccountTokenRepository,
-    { provide: SessionAuthenticator, useExisting: SessionService },
-  ],
-  // PasswordHasher: the seed hashes the shared password with the same settings.
-  exports: [SessionAuthenticator, PasswordHasher],
+    imports: [UserModule, AuditModule, EmailModule],
+    controllers: [AuthController, RegistrationController, AccountRecoveryController],
+    providers: [
+        AuthService,
+        AccountService,
+        AccountTokenService,
+        SessionService,
+        PasswordHasher,
+        SessionRepository,
+        AccountTokenRepository,
+        { provide: SessionAuthenticator, useExisting: SessionService },
+    ],
+    // PasswordHasher: the seed hashes the shared password with the same settings.
+    exports: [SessionAuthenticator, PasswordHasher],
 })
 export class AuthModule {}

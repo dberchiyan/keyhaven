@@ -12,8 +12,8 @@ import { ViewingService } from './service/viewing.service';
 
 /** Viewings (M2): hours, slots, requests and answers (viewing → audit, email, storage; never back into listing's code). */
 @Module({
-  imports: [AuditModule, EmailModule, EventModule, StorageModule],
-  controllers: [ViewingController, ManagedViewingController],
-  providers: [ViewingService, ViewingScheduleService, ViewingRepository, ViewingScheduleRepository],
+    imports: [AuditModule, EmailModule, EventModule, StorageModule],
+    controllers: [ViewingController, ManagedViewingController],
+    providers: [ViewingService, ViewingScheduleService, ViewingRepository, ViewingScheduleRepository],
 })
 export class ViewingModule {}

@@ -6,24 +6,18 @@ import type { PhotoContentType } from './photo-status';
  * WebP `RIFF????WEBP`.
  */
 export const sniffImageType = (head: Uint8Array): PhotoContentType | null => {
-  if (head.length >= 3 && head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) {
-    return 'image/jpeg';
-  }
-  if (
-    head.length >= 4 &&
-    head[0] === 0x89 &&
-    head[1] === 0x50 &&
-    head[2] === 0x4e &&
-    head[3] === 0x47
-  ) {
-    return 'image/png';
-  }
-  if (
-    head.length >= 12 &&
-    String.fromCodePoint(...head.subarray(0, 4)) === 'RIFF' &&
-    String.fromCodePoint(...head.subarray(8, 12)) === 'WEBP'
-  ) {
-    return 'image/webp';
-  }
-  return null;
+    if (head.length >= 3 && head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) {
+        return 'image/jpeg';
+    }
+    if (head.length >= 4 && head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47) {
+        return 'image/png';
+    }
+    if (
+        head.length >= 12 &&
+        String.fromCodePoint(...head.subarray(0, 4)) === 'RIFF' &&
+        String.fromCodePoint(...head.subarray(8, 12)) === 'WEBP'
+    ) {
+        return 'image/webp';
+    }
+    return null;
 };

@@ -9,15 +9,12 @@ import { type EmailMessage, EmailSender } from '../../service/email-sender';
  */
 @Injectable()
 export class LogEmailSender extends EmailSender {
-  constructor(@InjectPinoLogger(LogEmailSender.name) private readonly logger: PinoLogger) {
-    super();
-  }
+    constructor(@InjectPinoLogger(LogEmailSender.name) private readonly logger: PinoLogger) {
+        super();
+    }
 
-  send(message: EmailMessage): Promise<void> {
-    this.logger.info(
-      { to: message.to, subject: message.subject, text: message.text },
-      'Email (log transport)',
-    );
-    return Promise.resolve();
-  }
+    send(message: EmailMessage): Promise<void> {
+        this.logger.info({ to: message.to, subject: message.subject, text: message.text }, 'Email (log transport)');
+        return Promise.resolve();
+    }
 }

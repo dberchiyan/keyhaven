@@ -13,45 +13,45 @@ const FIELDS: ReadonlySet<string> = new Set(['name', 'emailAlerts']);
 
 /** The "Save this search" dialog: a name and the alerts switch; one Idempotency-Key per opening. */
 export const useSaveSearchForm = (filters: SearchFilters, onSaved: () => void) => {
-  const create = useCreateSavedSearch();
-  const [idempotencyKey] = useState(() => crypto.randomUUID());
-  const [errorCode, setErrorCode] = useState<ErrorCode | null>(null);
-  const errorRef = useRef<HTMLDivElement>(null);
+    const create = useCreateSavedSearch();
+    const [idempotencyKey] = useState(() => crypto.randomUUID());
+    const [errorCode, setErrorCode] = useState<ErrorCode | null>(null);
+    const errorRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (errorCode) {
-      errorRef.current?.focus();
-    }
-  }, [errorCode]);
+    useEffect(() => {
+        if (errorCode) {
+            errorRef.current?.focus();
+        }
+    }, [errorCode]);
 
-  const form = useForm<SaveSearchValues, unknown, SaveSearchOutput>({
-    resolver: zodResolver(saveSearchSchema),
-    mode: 'onSubmit',
-    reValidateMode: 'onSubmit',
-    defaultValues: { name: '', emailAlerts: true },
-  });
+    const form = useForm<SaveSearchValues, unknown, SaveSearchOutput>({
+        resolver: zodResolver(saveSearchSchema),
+        mode: 'onSubmit',
+        reValidateMode: 'onSubmit',
+        defaultValues: { name: '', emailAlerts: true },
+    });
 
-  const onSubmit = form.handleSubmit(async (values) => {
-    setErrorCode(null);
-    try {
-      await create.mutateAsync({
-        request: {
-          name: values.name,
-          emailAlerts: values.emailAlerts,
-          criteria: toCriteria(filters),
-        },
-        key: idempotencyKey,
-      });
-      onSaved();
-    } catch (error) {
-      if (!isApiError(error)) {
-        throw error;
-      }
-      if (!applyServerFieldErrors(error, FIELDS, form.setError)) {
-        setErrorCode(error.code);
-      }
-    }
-  });
+    const onSubmit = form.handleSubmit(async (values) => {
+        setErrorCode(null);
+        try {
+            await create.mutateAsync({
+                request: {
+                    name: values.name,
+                    emailAlerts: values.emailAlerts,
+                    criteria: toCriteria(filters),
+                },
+                key: idempotencyKey,
+            });
+            onSaved();
+        } catch (error) {
+            if (!isApiError(error)) {
+                throw error;
+            }
+            if (!applyServerFieldErrors(error, FIELDS, form.setError)) {
+                setErrorCode(error.code);
+            }
+        }
+    });
 
-  return { form, onSubmit, errorCode, errorRef };
+    return { form, onSubmit, errorCode, errorRef };
 };

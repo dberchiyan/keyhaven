@@ -10,56 +10,51 @@ const { cities } = LANDING;
 ---
 
 <section id="cities" aria-labelledby="cities-title" class="py-16 sm:py-20">
-  <Container>
-    <SectionHeading
-      id="cities-title"
-      eyebrow={cities.eyebrow}
-      title={cities.title}
-      lead={cities.lead}
-    />
-    <ul class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {CITIES.map((city) => (
-        <li class="reveal">
-          <article class="group relative flex h-full flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass">
-            <!-- A home of the city from the catalogue, dimmed towards the text. -->
-            <div class="relative h-40 bg-surface-2" aria-hidden="true">
-              <img
-                src={CITY_PHOTOS[city.slug]}
-                alt=""
-                width="1200"
-                height="800"
-                loading="lazy"
-                decoding="async"
-                class="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-              />
-              <span class="absolute inset-0 bg-gradient-to-t from-navy/60 via-navy/10 to-transparent"></span>
-            </div>
-            <div class="flex flex-1 flex-col gap-3 p-5">
-              <div class="flex items-center gap-2">
-                <Icon name="pin" class="size-4 text-brand" />
-                <h3 class="text-lg font-semibold tracking-[-0.015em] text-ink">
-                  {city.name}, {city.state}
-                </h3>
-              </div>
-              <p class="text-sm leading-relaxed text-muted">{cities.tagline[city.slug]}</p>
-              <div class="mt-auto flex gap-2 pt-2">
-                <a
-                  href={`/rent/${city.slug}`}
-                  class="inline-flex min-h-9 items-center rounded-full bg-brand-soft px-3.5 text-sm font-semibold text-brand-strong transition-colors hover:bg-brand hover:text-on-brand"
-                >
-                  {cities.rent}
-                </a>
-                <a
-                  href={`/buy/${city.slug}`}
-                  class="inline-flex min-h-9 items-center rounded-full bg-surface-2 px-3.5 text-sm font-semibold text-ink-2 ring-1 ring-line transition-colors hover:bg-brand hover:text-on-brand"
-                >
-                  {cities.buy}
-                </a>
-              </div>
-            </div>
-          </article>
-        </li>
-      ))}
-    </ul>
-  </Container>
+    <Container>
+        <SectionHeading id="cities-title" eyebrow={cities.eyebrow} title={cities.title} lead={cities.lead} />
+        <ul class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {CITIES.map((city) => (
+                <li class="reveal">
+                    <article class="group relative flex h-full flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass">
+                        <!-- A home of the city from the catalogue, dimmed towards the text. -->
+                        <div class="relative h-40 bg-surface-2" aria-hidden="true">
+                            <img
+                                src={CITY_PHOTOS[city.slug]}
+                                alt=""
+                                width="1200"
+                                height="800"
+                                loading="lazy"
+                                decoding="async"
+                                class="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                            />
+                            <span class="absolute inset-0 bg-gradient-to-t from-navy/60 via-navy/10 to-transparent"></span>
+                        </div>
+                        <div class="flex flex-1 flex-col gap-3 p-5">
+                            <div class="flex items-center gap-2">
+                                <Icon name="pin" class="size-4 text-brand" />
+                                <h3 class="text-lg font-semibold tracking-[-0.015em] text-ink">
+                                    {city.name}, {city.state}
+                                </h3>
+                            </div>
+                            <p class="text-sm leading-relaxed text-muted">{cities.tagline[city.slug]}</p>
+                            <div class="mt-auto flex gap-2 pt-2">
+                                <a
+                                    href={`/rent/${city.slug}`}
+                                    class="inline-flex min-h-9 items-center rounded-full bg-brand-soft px-3.5 text-sm font-semibold text-brand-strong transition-colors hover:bg-brand hover:text-on-brand"
+                                >
+                                    {cities.rent}
+                                </a>
+                                <a
+                                    href={`/buy/${city.slug}`}
+                                    class="inline-flex min-h-9 items-center rounded-full bg-surface-2 px-3.5 text-sm font-semibold text-ink-2 ring-1 ring-line transition-colors hover:bg-brand hover:text-on-brand"
+                                >
+                                    {cities.buy}
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </li>
+            ))}
+        </ul>
+    </Container>
 </section>

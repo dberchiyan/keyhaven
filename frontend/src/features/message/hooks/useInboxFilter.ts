@@ -9,15 +9,15 @@ const urlSchema = z.enum(INBOX_FILTERS).catch('all');
 
 /** All or unread conversations — in the URL (data.md → Client state), the default keeps it clean. */
 export const useInboxFilter = (): {
-  filter: InboxFilter;
-  setFilter: (filter: InboxFilter) => void;
+    filter: InboxFilter;
+    setFilter: (filter: InboxFilter) => void;
 } => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const setFilter = useCallback(
-    (filter: InboxFilter): void => {
-      setSearchParams(filter === 'all' ? {} : { filter }, { replace: true });
-    },
-    [setSearchParams],
-  );
-  return { filter: urlSchema.parse(searchParams.get('filter') ?? undefined), setFilter };
+    const [searchParams, setSearchParams] = useSearchParams();
+    const setFilter = useCallback(
+        (filter: InboxFilter): void => {
+            setSearchParams(filter === 'all' ? {} : { filter }, { replace: true });
+        },
+        [setSearchParams],
+    );
+    return { filter: urlSchema.parse(searchParams.get('filter') ?? undefined), setFilter };
 };
