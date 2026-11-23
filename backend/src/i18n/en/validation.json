@@ -1,0 +1,157 @@
+{
+    "invalid": "Invalid value",
+    "email": {
+        "required": "Enter your email",
+        "invalid": "Enter a valid email address",
+        "tooLong": "Email must be at most {max} characters"
+    },
+    "password": {
+        "required": "Enter your password",
+        "tooLong": "Password must be at most {max} characters"
+    },
+    "currentPassword": {
+        "required": "Enter your current password"
+    },
+    "newPassword": {
+        "required": "Enter a new password",
+        "tooShort": "Use at least {min} characters",
+        "needsUppercase": "Add an upper-case letter",
+        "needsLowercase": "Add a lower-case letter",
+        "needsDigit": "Add a digit",
+        "needsSymbol": "Add a symbol, such as ! or #"
+    },
+    "firstName": {
+        "required": "Enter a first name",
+        "tooLong": "First name must be at most {max} characters"
+    },
+    "lastName": {
+        "required": "Enter a last name",
+        "tooLong": "Last name must be at most {max} characters"
+    },
+    "role": {
+        "invalid": "Choose whether you are looking for a home or listing one"
+    },
+    "token": {
+        "required": "The link is incomplete — open it from the email again",
+        "invalid": "The link is not valid"
+    },
+    "search": {
+        "tooLong": "Search must be at most {max} characters"
+    },
+    "city": {
+        "invalid": "Choose a city from the list",
+        "required": "Choose a city"
+    },
+    "amount": {
+        "invalid": "Enter an amount like 1800 or 1800.50"
+    },
+    "moveInOn": {
+        "invalid": "Enter a date"
+    },
+    "title": {
+        "required": "Enter a title",
+        "tooLong": "Title must be at most {max} characters"
+    },
+    "description": {
+        "required": "Describe the home",
+        "tooLong": "Description must be at most {max} characters"
+    },
+    "propertyType": {
+        "required": "Choose a property type"
+    },
+    "bedrooms": {
+        "invalid": "Enter the number of bedrooms (0 for a studio)"
+    },
+    "bathrooms": {
+        "invalid": "Enter the number of bathrooms, e.g. 1 or 1.5"
+    },
+    "sizeSqft": {
+        "invalid": "Enter the size in square feet"
+    },
+    "addressLine1": {
+        "required": "Enter the street address",
+        "tooLong": "Address must be at most {max} characters"
+    },
+    "addressLine2": {
+        "tooLong": "Address must be at most {max} characters"
+    },
+    "neighborhood": {
+        "tooLong": "Neighborhood must be at most {max} characters"
+    },
+    "zip": {
+        "required": "Enter the ZIP code",
+        "invalid": "Enter a ZIP code like 78701 or 78701-1234"
+    },
+    "availableOn": {
+        "invalid": "Enter the move-in date"
+    },
+    "photo": {
+        "filenameRequired": "The file has no name",
+        "filenameTooLong": "The file name is too long",
+        "typeRejected": "Upload a JPEG, PNG or WebP",
+        "sizeInvalid": "The file size is not valid",
+        "tooLarge": "A photo can be at most 10 MB"
+    },
+    "savedSearchName": {
+        "required": "Name this search",
+        "tooLong": "Name must be at most {max} characters"
+    },
+    "price": {
+        "maxBelowMin": "The highest price must not be below the lowest"
+    },
+    "kind": {
+        "required": "Choose whether the home is for rent or for sale"
+    },
+    "message": {
+        "body": {
+            "required": "Write a message first",
+            "tooLong": "A message must be at most {max} characters"
+        },
+        "subject": {
+            "required": "Say what it is about",
+            "tooLong": "The subject must be at most {max} characters"
+        },
+        "listingId": {
+            "invalid": "Choose a home from the list"
+        }
+    },
+    "viewing": {
+        "listingId": {
+            "invalid": "Choose a home"
+        },
+        "startsAt": {
+            "invalid": "Choose a time slot"
+        },
+        "message": {
+            "tooLong": "The note must be at most {max} characters"
+        },
+        "note": {
+            "tooLong": "The note must be at most {max} characters"
+        }
+    },
+    "schedule": {
+        "slotMinutes": {
+            "invalid": "Choose how long a viewing takes"
+        },
+        "noticeHours": {
+            "invalid": "Notice must be between {min} and {max} hours"
+        },
+        "horizonDays": {
+            "invalid": "Bookings can open between {min} and {max} days ahead"
+        },
+        "windows": {
+            "required": "Open at least one day with hours",
+            "tooMany": "At most {max} time ranges a day",
+            "order": "The end must come after the start",
+            "overlap": "Time ranges on the same day must not overlap",
+            "tooShort": "A time range must fit at least one viewing"
+        },
+        "blockedDays": {
+            "tooMany": "At most {max} blocked days",
+            "invalid": "Enter a date"
+        }
+    },
+    "cursor": {
+        "invalid": "This page link is out of date — start from the first page"
+    }
+}

@@ -1,0 +1,22 @@
+export const EMAIL_MAX_LENGTH = 254;
+export const PERSON_NAME_MAX_LENGTH = 100;
+export const PERSON_FULL_NAME_MAX_LENGTH = PERSON_NAME_MAX_LENGTH * 2 + 1;
+export const PHONE_MAX_LENGTH = 32;
+export const AGENCY_NAME_MAX_LENGTH = 120;
+export const WEBSITE_MAX_LENGTH = 255;
+
+export const CITY_NAME_MAX_LENGTH = 100;
+export const CITY_SLUG_MAX_LENGTH = 100;
+export const TIME_ZONE_MAX_LENGTH = 64;
+
+export const LISTING_TITLE_MAX_LENGTH = 120;
+export const LISTING_DESCRIPTION_MAX_LENGTH = 4000;
+export const ADDRESS_LINE_MAX_LENGTH = 255;
+export const NEIGHBORHOOD_MAX_LENGTH = 100;
+export const ZIP_MAX_LENGTH = 10;
+export const PHOTO_URL_MAX_LENGTH = 500;
+
+export const CURRENCY_CODE_LENGTH = 3;
+export const AMOUNT_INPUT_MAX_LENGTH = 16;
+export const MAX_BEDROOMS = 20;
+export const SEARCH_TEXT_MAX_LENGTH = 100;
