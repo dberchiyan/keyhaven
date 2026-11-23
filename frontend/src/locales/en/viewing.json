@@ -1,0 +1,171 @@
+{
+    "status": {
+        "REQUESTED": "Requested",
+        "CONFIRMED": "Confirmed",
+        "HELD": "Took place",
+        "DECLINED": "Declined",
+        "CANCELLED": "Cancelled",
+        "EXPIRED": "Expired"
+    },
+    "book": {
+        "title": "Book a viewing",
+        "hint": "Pick a time that suits you; times are in {{zone}}. The lister confirms, then you get the exact address.",
+        "closed": "{{lister}} has not opened viewing hours for this home yet — use Contact to ask for a time.",
+        "theLandlord": "The landlord",
+        "loadingSlots": "Loading available times",
+        "dayLabel": "{{date}}: {{count}} free times",
+        "noneAhead": "No free times in the lister's calendar right now.",
+        "message": "A note for the lister (optional)",
+        "messageHint": "Who you are, when you want to move, questions about the home.",
+        "messageLeft_one": "{{count}} character left",
+        "messageLeft_other": "{{count}} characters left",
+        "pickFirst": "Pick a time first.",
+        "verifyFirst": "Verify your email address before booking.",
+        "verifyLink": "Open Settings → Account",
+        "submit": "Request this time",
+        "requested": "Requested for {{when}}. The lister usually answers within a day — you will get an email.",
+        "seeAll": "All your viewings are in one place:",
+        "seeAllLink": "Viewings",
+        "notATenant": "Only renters book viewings. You are signed in as a lister.",
+        "signInToBook": "Sign in to book",
+        "signInHint": "Booking needs a free tenant account.",
+        "signUpLink": "Create one",
+        "earlierWeeks": "Earlier dates",
+        "laterWeeks": "Later dates",
+        "zoneNote": "Times in {{zone}}",
+        "dayMeta_one": "{{minutes}}-minute viewing · {{count}} free time",
+        "dayMeta_other": "{{minutes}}-minute viewing · {{count}} free times",
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "evening": "Evening",
+        "noneInRange": "Nothing free on these dates",
+        "tryLater": "The lister's calendar is full here — look at later dates.",
+        "summary": "{{day}} · {{from}} – {{to}} {{zone}}",
+        "submitPick": "Pick a time to request"
+    },
+    "card": {
+        "tenant": "{{name}}",
+        "theirNote": "Their note: “{{note}}”",
+        "yourNote": "Your note: “{{note}}”",
+        "answerNote": "Note: “{{note}}”",
+        "address": "Address:",
+        "waiting": "Waiting for the lister's answer. The time is held for you meanwhile.",
+        "cancelledBy": {
+            "TENANT": "by the tenant",
+            "OWNER": "by the lister"
+        },
+        "confirm": "Confirm",
+        "decline": "Decline",
+        "cancel": "Cancel viewing",
+        "messageLister": "Message the lister",
+        "messageTenant": "Message the tenant",
+        "until": "to {{time}} {{zone}}"
+    },
+    "decision": {
+        "note": "A note for the other side (optional)",
+        "noteLeft_one": "{{count}} character left",
+        "noteLeft_other": "{{count}} characters left",
+        "back": "Back",
+        "decline": {
+            "title": "Decline this request?",
+            "text": "{{subject}}. The tenant is told by email and the time opens up again.",
+            "confirm": "Decline request"
+        },
+        "cancel": {
+            "title": "Cancel this viewing?",
+            "text": "{{subject}}. The other side is told by email and the time opens up again.",
+            "confirm": "Cancel viewing"
+        }
+    },
+    "mine": {
+        "pageTitle": "My viewings",
+        "title": "My viewings",
+        "subtitle": "What you asked to see, what was confirmed, and what already happened.",
+        "upcoming_one": "Ahead ({{count}})",
+        "upcoming_other": "Ahead ({{count}})",
+        "noneUpcoming": "Nothing ahead right now — pick a time on any home's page.",
+        "past_one": "Earlier ({{count}})",
+        "past_other": "Earlier ({{count}})",
+        "empty": "No viewings yet",
+        "emptyHint": "Open a home and pick a time from its viewing hours.",
+        "browse": "Browse homes"
+    },
+    "manage": {
+        "pageTitle": "Viewings",
+        "title": "Viewings",
+        "subtitle": "Requests to answer and the visits ahead, across the homes you manage.",
+        "summary": {
+            "requested": "To answer",
+            "upcoming": "Confirmed ahead"
+        },
+        "views": {
+            "label": "Which viewings",
+            "requests": "Requests",
+            "upcoming": "Upcoming",
+            "all": "All",
+            "requestsCount": "{{count}} to answer",
+            "upcomingCount": "{{count}} confirmed ahead"
+        },
+        "empty": {
+            "requests": "No requests waiting",
+            "upcoming": "Nothing confirmed ahead",
+            "all": "No viewings yet"
+        },
+        "emptyHint": {
+            "requests": "New requests land here first — confirm or decline them within a day.",
+            "upcoming": "Confirmed visits appear here, day by day, with who comes when.",
+            "all": "Open viewing hours on a listing and tenants can pick a time."
+        },
+        "pages": "Pages of viewings"
+    },
+    "listing": {
+        "title": "Viewings ahead",
+        "all": "All viewings",
+        "empty": "No viewings ahead for this home."
+    },
+    "hours": {
+        "title": "Viewing hours",
+        "none": "No viewing hours yet: tenants can only email. Open hours and they pick a time themselves.",
+        "summary": "{{minutes}}-minute viewings · at least {{notice}} h notice · bookable {{days}} days ahead · times in {{zone}}",
+        "open": "Open viewing hours",
+        "edit": "Edit hours",
+        "close": "Close hours",
+        "closed": "Closed",
+        "blockedList": "Days off",
+        "loading": "Loading viewing hours",
+        "saved": "Viewing hours saved.",
+        "openTitle": "Open viewing hours",
+        "editTitle": "Edit viewing hours",
+        "intro": "Times are the home's local time ({{zone}}). Tenants see only the slots inside these ranges, after your notice, up to your horizon.",
+        "slot": "Viewing length",
+        "minutes_one": "{{count}} minute",
+        "minutes_other": "{{count}} minutes",
+        "notice": "Minimum notice",
+        "noNotice": "None",
+        "hoursAhead_one": "{{count}} hour ahead",
+        "hoursAhead_other": "{{count}} hours ahead",
+        "horizon": "Book up to",
+        "daysAhead_one": "{{count}} day ahead",
+        "daysAhead_other": "{{count}} days ahead",
+        "week": "Weekly hours",
+        "openOn": "Open on {{day}}",
+        "from": "From",
+        "to": "To",
+        "addRange": "Add a range",
+        "removeRange": "Remove this range",
+        "blocked": "Days off",
+        "blockedHint": "Holidays, trips: no slots on these days.",
+        "blockedDay": "Day",
+        "addBlocked": "Add",
+        "cancel": "Cancel",
+        "save": "Save hours",
+        "closeTitle": "Close viewing hours?",
+        "closeText": "Nothing more can be booked for this home. Viewings already requested or confirmed stay as they are.",
+        "closeCancel": "Keep hours",
+        "closeConfirm": "Close hours"
+    },
+    "agenda": {
+        "count_one": "{{count}} viewing",
+        "count_other": "{{count}} viewings"
+    }
+}

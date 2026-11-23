@@ -1,0 +1,48 @@
+import Avatar from '@mui/material/Avatar';
+import Typography from '@mui/material/Typography';
+import type { ReactElement } from 'react';
+
+import { cn } from '@/shared/lib/cn';
+
+const AVATAR_TONES = [
+    'bg-avatar-c1',
+    'bg-avatar-c2',
+    'bg-avatar-c3',
+    'bg-avatar-c4',
+    'bg-avatar-c5',
+    'bg-avatar-c6',
+    'bg-avatar-c7',
+    'bg-avatar-c8',
+] as const;
+
+const HASH_MULTIPLIER = 31;
+
+const SIZE_CLASS = { sm: 'size-7', md: 'size-8', lg: 'size-16' } as const;
+
+/** Same person → same tone, on every screen and every load. */
+const toneFor = (id: string): string => {
+    let hash = 0;
+    for (const char of id) {
+        hash = (hash * HASH_MULTIPLIER + char.charCodeAt(0)) >>> 0;
+    }
+    return AVATAR_TONES[hash % AVATAR_TONES.length] ?? AVATAR_TONES[0];
+};
+
+export interface InitialsAvatarProps {
+    id: string;
+    firstName: string;
+    lastName: string;
+    size?: 'sm' | 'md' | 'lg';
+    className?: string;
+}
+
+/** Initials on a per-person tone; decorative — the name is always shown or labelled nearby. */
+export function InitialsAvatar({ id, firstName, lastName, size = 'md', className }: InitialsAvatarProps): ReactElement {
+    return (
+        <Avatar aria-hidden className={cn(toneFor(id), 'text-avatar-text', SIZE_CLASS[size], className)}>
+            <Typography variant={size === 'lg' ? 'h5' : 'caption'} component="span" className="app-tabular">
+                {`${firstName.charAt(0)}${lastName.charAt(0)}`}
+            </Typography>
+        </Avatar>
+    );
+}

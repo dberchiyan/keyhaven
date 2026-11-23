@@ -1,0 +1,101 @@
+{
+    "nav": {
+        "label": "Main navigation",
+        "listings": "Listings",
+        "browse": "Browse homes",
+        "settings": "Settings",
+        "viewings": "Viewings",
+        "withBadge": "{{label}} — {{count}} to answer",
+        "messages": "Messages",
+        "withUnread": "{{label}} — {{count}} unread"
+    },
+    "menu": {
+        "open": "Open menu",
+        "close": "Close menu",
+        "collapse": "Collapse menu",
+        "expand": "Expand menu"
+    },
+    "account": {
+        "open": "Account menu for {{name}}",
+        "signOut": "Sign out",
+        "signingOut": "Signing out…",
+        "title": "Account",
+        "theme": "Theme",
+        "profile": "Account",
+        "securityDevices": "Security & devices",
+        "settings": "Settings",
+        "roleAt": "{{role}} · {{agency}}",
+        "demoReset": "Public demo · resets daily at 00:00 Kyiv time",
+        "viewings": "Viewings",
+        "messages": "Messages"
+    },
+    "role": {
+        "TENANT": "Tenant",
+        "LANDLORD": "Landlord",
+        "AGENT": "Agent",
+        "ADMIN": "Administrator"
+    },
+    "site": {
+        "home": "Keyhaven home",
+        "catalogue": "Homes",
+        "tabs": {
+            "rent": "Rent",
+            "sale": "Buy",
+            "houses": "Houses"
+        },
+        "signIn": "Sign in",
+        "listHome": "List your home",
+        "saved": "Saved",
+        "dashboard": "Dashboard",
+        "viewings": "Viewings",
+        "landing": "About Keyhaven",
+        "messages": "Messages",
+        "messagesUnread": "Messages, {{count}} unread",
+        "yours": "Your places"
+    },
+    "footer": {
+        "tagline": "Homes to rent and to buy in six US cities.",
+        "icons": {
+            "github": "Keyhaven on GitHub",
+            "readme": "Docs (README)",
+            "email": "Email Keyhaven"
+        },
+        "columns": {
+            "browse": "Browse",
+            "cities": "Cities",
+            "company": "Company"
+        },
+        "links": {
+            "rent": "Rent",
+            "buy": "Buy",
+            "houses": "Houses",
+            "about": "About",
+            "listHome": "List your home",
+            "github": "Source on GitHub",
+            "privacy": "Privacy",
+            "terms": "Terms"
+        },
+        "rights": "© {{year}} Keyhaven. Public demo: all people and homes are fictional.",
+        "signInLink": "Sign in",
+        "signedInAs": "Signed in as {{name}}",
+        "legal": "Legal"
+    },
+    "tabBar": {
+        "label": "Keyhaven",
+        "rent": "Rent",
+        "buy": "Buy",
+        "saved": "Saved",
+        "saved_visitor": "Saved",
+        "dashboard": "Dashboard",
+        "account": "Account",
+        "account_visitor": "Sign in",
+        "viewings": "Viewings",
+        "accountUnread": "Account, {{count}} unread messages"
+    },
+    "notFound": {
+        "pageTitle": "Page not found · Keyhaven",
+        "title": "We could not find that page",
+        "hint": "The link may be old or mistyped. The homes are still where they were.",
+        "browse": "Browse homes"
+    }
+}

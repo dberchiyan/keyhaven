@@ -1,0 +1,10 @@
+{
+    "singleQuote": true,
+    "trailingComma": "all",
+    "printWidth": 120,
+    "tabWidth": 4,
+    "plugins": ["prettier-plugin-tailwindcss"],
+    "tailwindStylesheet": "./src/theme/tailwind.css",
+    "tailwindFunctions": ["cn"],
+    "overrides": [{ "files": ["*.yml", "*.yaml"], "options": { "tabWidth": 2 } }]
+}

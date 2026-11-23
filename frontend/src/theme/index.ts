@@ -1,0 +1,271 @@
+import { createTheme, type Shadows } from '@mui/material/styles';
+import type { CSSProperties } from 'react';
+
+import { TOKENS } from './tokens';
+import { muiTypography } from './typography';
+
+type SidebarPalette = Record<keyof (typeof TOKENS.colors.light)['sidebar'], string>;
+type AvatarPalette = Record<keyof (typeof TOKENS.colors.light)['avatar'], string>;
+type ChartPalette = Record<keyof (typeof TOKENS.colors.light)['chart'], string>;
+type BadgePalette = Record<keyof (typeof TOKENS.colors.light)['badge'], string>;
+type ShadowPalette = Record<keyof (typeof TOKENS.colors.light)['shadow'], string>;
+type StatusPalette = Record<keyof (typeof TOKENS.colors.light)['status'], string>;
+type FooterPalette = Record<keyof (typeof TOKENS.colors.light)['footer'], string>;
+
+declare module '@mui/material/styles' {
+    interface TypographyVariants {
+        metric: CSSProperties;
+        tableHeader: CSSProperties;
+        chartTick: CSSProperties;
+        calendarDate: CSSProperties;
+        calendarCount: CSSProperties;
+    }
+    interface TypographyVariantsOptions {
+        metric?: CSSProperties;
+        tableHeader?: CSSProperties;
+        chartTick?: CSSProperties;
+        calendarDate?: CSSProperties;
+        calendarCount?: CSSProperties;
+    }
+    interface Palette {
+        sidebar: SidebarPalette;
+        avatar: AvatarPalette;
+        badge: BadgePalette;
+        chart: ChartPalette;
+        shadow: ShadowPalette;
+        status: StatusPalette;
+        footer: FooterPalette;
+    }
+    interface PaletteOptions {
+        sidebar?: SidebarPalette;
+        avatar?: AvatarPalette;
+        badge?: BadgePalette;
+        chart?: ChartPalette;
+        shadow?: ShadowPalette;
+        status?: StatusPalette;
+        footer?: FooterPalette;
+    }
+}
+
+const SOFT = 'var(--mui-palette-shadow-soft)';
+const STRONG = 'var(--mui-palette-shadow-strong)';
+const elevation = (level: number): string => {
+    if (level === 0) {
+        return 'none';
+    }
+    if (level === 1) {
+        return `0 1px 2px ${SOFT}, 0 12px 28px -18px ${STRONG}`;
+    }
+    if (level <= 8) {
+        return `0 1px 3px ${SOFT}, 0 8px 24px -4px ${STRONG}`;
+    }
+    return `0 2px 6px ${SOFT}, 0 24px 56px -8px ${STRONG}`;
+};
+const shadows = Array.from({ length: 25 }, (_, level) => elevation(level)) as Shadows;
+
+/**
+ * A pressed control gives a little (feedback, 120 ms). Only when the person allows motion; the
+ * transform never moves layout.
+ */
+const pressable = (scale: number) => ({
+    '@media (prefers-reduced-motion: no-preference)': {
+        transition: 'transform 120ms ease-out, background-color 150ms, border-color 150ms, color 150ms',
+        '&:active:not(:disabled)': { transform: `scale(${scale})` },
+    },
+});
+
+/** One visible focus ring for every clickable control (ripples are off). */
+const focusRing = (offset: number) => ({
+    '&.Mui-focusVisible': {
+        outline: '2px solid var(--mui-palette-primary-main)',
+        outlineOffset: offset,
+    },
+});
+
+export const theme = createTheme({
+    cssVariables: { colorSchemeSelector: 'class', nativeColor: true },
+    colorSchemes: {
+        light: { palette: TOKENS.colors.light },
+        dark: { palette: TOKENS.colors.dark },
+    },
+    breakpoints: { values: TOKENS.breakpoints },
+    shape: { borderRadius: TOKENS.radius.sm },
+    shadows,
+    typography: muiTypography,
+    components: {
+        MuiModal: { defaultProps: { disableScrollLock: true } },
+        MuiTypography: {
+            defaultProps: {
+                variantMapping: {
+                    metric: 'p',
+                    tableHeader: 'span',
+                    chartTick: 'span',
+                    calendarDate: 'span',
+                    calendarCount: 'span',
+                },
+            },
+        },
+        MuiButtonBase: {
+            defaultProps: { disableRipple: true },
+            styleOverrides: { root: focusRing(2) },
+        },
+        MuiMenuItem: { styleOverrides: { root: focusRing(-2) } },
+        MuiListItemButton: { styleOverrides: { root: focusRing(-2) } },
+        MuiButton: {
+            defaultProps: { disableElevation: true },
+            styleOverrides: {
+                root: { minHeight: 44, borderRadius: 999, paddingInline: 20, ...pressable(0.98) },
+                sizeSmall: { minHeight: 36, paddingInline: 14 },
+            },
+        },
+        MuiOutlinedInput: { styleOverrides: { root: { borderRadius: TOKENS.radius.sm } } },
+        MuiChip: { styleOverrides: { root: { borderRadius: 999 } } },
+        MuiIconButton: {
+            styleOverrides: { root: { minWidth: 44, minHeight: 44, ...pressable(0.94) } },
+        },
+        MuiSkeleton: {
+            defaultProps: { animation: 'wave' },
+            styleOverrides: {
+                root: {
+                    '@media (prefers-reduced-motion: reduce)': { '&::after': { animation: 'none' } },
+                },
+            },
+        },
+        MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
+        MuiPopover: {
+            defaultProps: { disableScrollLock: true },
+            styleOverrides: {
+                paper: ({ theme: t }) => ({
+                    borderRadius: TOKENS.radius.md,
+                    border: `1px solid ${t.vars.palette.divider}`,
+                }),
+            },
+        },
+        MuiToggleButtonGroup: {
+            styleOverrides: {
+                root: ({ theme: t }) => ({
+                    gap: 2,
+                    padding: 3,
+                    borderRadius: 999,
+                    backgroundColor: t.vars.palette.background.default,
+                    border: `1px solid ${t.vars.palette.divider}`,
+                    '&.MuiToggleButtonGroup-fullWidth': { display: 'flex' },
+                }),
+                grouped: {
+                    margin: 0,
+                    border: 0,
+                    borderRadius: 999,
+                    '&:not(:first-of-type), &:not(:last-of-type)': {
+                        margin: 0,
+                        border: 0,
+                        borderRadius: 999,
+                    },
+                },
+            },
+        },
+        MuiToggleButton: {
+            styleOverrides: {
+                root: ({ theme: t }) => ({
+                    ...t.typography.subtitle2,
+                    minHeight: 36,
+                    '@media (pointer: coarse)': { minHeight: 44 },
+                    paddingInline: 14,
+                    textTransform: 'none',
+                    color: t.vars.palette.text.secondary,
+                    '@media (prefers-reduced-motion: no-preference)': {
+                        transition: 'background-color 150ms, box-shadow 150ms, color 150ms',
+                    },
+                    '&:hover': { color: t.vars.palette.text.primary, backgroundColor: 'transparent' },
+                    '&.Mui-selected, &.Mui-selected:hover': {
+                        color: t.vars.palette.text.primary,
+                        backgroundColor: t.vars.palette.background.paper,
+                        boxShadow: `0 1px 2px ${SOFT}, 0 1px 1px ${SOFT}`,
+                        ...t.applyStyles('dark', {
+                            backgroundColor: `color-mix(in oklch, ${t.vars.palette.background.paper}, white 9%)`,
+                        }),
+                    },
+                    ...focusRing(-2),
+                }),
+            },
+            variants: [
+                {
+                    props: { size: 'small' },
+                    style: {
+                        minHeight: 30,
+                        paddingInline: 12,
+                        '@media (pointer: coarse)': { minHeight: 44 },
+                    },
+                },
+            ],
+        },
+        MuiPaginationItem: {
+            styleOverrides: {
+                root: { '@media (pointer: coarse)': { minWidth: 44, height: 44, borderRadius: 22 } },
+            },
+        },
+        MuiTablePagination: {
+            styleOverrides: {
+                toolbar: { flexWrap: 'wrap', justifyContent: 'flex-end', rowGap: 4 },
+                spacer: { display: 'none' },
+            },
+        },
+        MuiDialog: {
+            styleOverrides: {
+                paper: ({ theme: t, ownerState }) =>
+                    ownerState.fullScreen
+                        ? {}
+                        : {
+                              borderRadius: TOKENS.radius.lg,
+                              [t.breakpoints.down('sm')]: {
+                                  margin: 16,
+                                  width: 'calc(100% - 32px)',
+                                  maxHeight: 'calc(100% - 32px)',
+                              },
+                          },
+            },
+        },
+        MuiTableCell: {
+            styleOverrides: {
+                head: ({ theme: t }) => ({
+                    ...t.typography.tableHeader,
+                    color: t.vars.palette.text.secondary,
+                    backgroundColor: t.vars.palette.background.default,
+                    borderBottom: `1px solid ${t.vars.palette.divider}`,
+                }),
+            },
+        },
+        MuiTableRow: {
+            styleOverrides: {
+                root: ({ theme: t }) => ({
+                    transition: t.transitions.create('background-color', {
+                        duration: t.transitions.duration.shortest,
+                    }),
+                    '.MuiTableBody-root &:hover': { backgroundColor: t.vars.palette.action.hover },
+                }),
+            },
+        },
+        MuiCard: {
+            defaultProps: { elevation: 1 },
+            styleOverrides: {
+                root: ({ theme: t }) => ({
+                    borderRadius: TOKENS.radius.lg,
+                    border: `1px solid ${t.vars.palette.divider}`,
+                    boxShadow: t.shadows[1],
+                }),
+            },
+        },
+    },
+});
+
+export { TOKENS } from './tokens';
+export { typographyGlobalStyles } from './typography';
+
+declare module '@mui/material/Typography' {
+    interface TypographyPropsVariantOverrides {
+        metric: true;
+        tableHeader: true;
+        chartTick: true;
+        calendarDate: true;
+        calendarCount: true;
+    }
+}

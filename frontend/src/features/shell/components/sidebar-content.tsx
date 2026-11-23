@@ -1,0 +1,96 @@
+import KeyboardDoubleArrowLeftOutlined from '@mui/icons-material/KeyboardDoubleArrowLeftOutlined';
+import KeyboardDoubleArrowRightOutlined from '@mui/icons-material/KeyboardDoubleArrowRightOutlined';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import type { ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import { BrandMark } from '@/shared/components/brand-mark';
+import { cn } from '@/shared/lib/cn';
+
+import { useNavigationItems } from '../hooks/use-navigation-items';
+import { NavItemLink } from './nav-item-link';
+
+export interface SidebarContentProps {
+    isCollapsed: boolean;
+    onNavigate?: () => void;
+    onToggleCollapsed?: () => void;
+}
+
+/** Brand, main items and the separate bottom group (Settings, then the fold toggle). */
+export function SidebarContent({ isCollapsed, onNavigate, onToggleCollapsed }: SidebarContentProps): ReactElement {
+    const { t } = useTranslation(['common', 'shell']);
+    const { main, bottom } = useNavigationItems();
+
+    return (
+        <nav
+            aria-label={t('shell:nav.label')}
+            className="flex h-full flex-col gap-8 border-r border-sidebar-border bg-sidebar-background px-3 pb-[max(1rem,env(safe-area-inset-bottom))]"
+        >
+            <div
+                className={cn(
+                    'flex h-top-bar-height shrink-0 items-center gap-2 border-b border-sidebar-border px-1',
+                    isCollapsed && 'justify-center px-0',
+                )}
+            >
+                <BrandMark className="size-9" />
+                {!isCollapsed && (
+                    <Typography variant="h6" component="p" className="text-sidebar-title">
+                        {t('app.name')}
+                    </Typography>
+                )}
+            </div>
+            <List disablePadding className="flex flex-1 flex-col gap-2">
+                {main.map((item) => (
+                    <li key={item.section}>
+                        <NavItemLink item={item} isCollapsed={isCollapsed} {...(onNavigate ? { onNavigate } : {})} />
+                    </li>
+                ))}
+            </List>
+            <List disablePadding className="flex flex-col gap-2 border-t border-sidebar-border pt-4">
+                {bottom.map((item) => (
+                    <li key={item.section}>
+                        <NavItemLink item={item} isCollapsed={isCollapsed} {...(onNavigate ? { onNavigate } : {})} />
+                    </li>
+                ))}
+                {onToggleCollapsed && (
+                    <li>
+                        <CollapseToggle isCollapsed={isCollapsed} onToggle={onToggleCollapsed} />
+                    </li>
+                )}
+            </List>
+        </nav>
+    );
+}
+
+function CollapseToggle({ isCollapsed, onToggle }: { isCollapsed: boolean; onToggle: () => void }) {
+    const { t } = useTranslation('shell');
+    const label = isCollapsed ? t('menu.expand') : t('menu.collapse');
+    const Icon = isCollapsed ? KeyboardDoubleArrowRightOutlined : KeyboardDoubleArrowLeftOutlined;
+    const button = (
+        <ListItemButton
+            onClick={onToggle}
+            aria-label={isCollapsed ? label : undefined}
+            className={cn(
+                'min-h-12 gap-4 rounded-sm px-3 text-sidebar-text hover:bg-sidebar-hover',
+                isCollapsed && 'justify-center px-0',
+            )}
+        >
+            <ListItemIcon className="min-w-0 text-inherit">
+                <Icon aria-hidden />
+            </ListItemIcon>
+            {!isCollapsed && <ListItemText primary={label} />}
+        </ListItemButton>
+    );
+    return isCollapsed ? (
+        <Tooltip title={label} placement="right">
+            {button}
+        </Tooltip>
+    ) : (
+        button
+    );
+}

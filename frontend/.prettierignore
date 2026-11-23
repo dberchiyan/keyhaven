@@ -1,0 +1,6 @@
+dist
+node_modules
+src/shared/types/api.ts
+src/shared/api/schemas.generated.ts
+src/theme/tailwind.theme.css
+package-lock.json

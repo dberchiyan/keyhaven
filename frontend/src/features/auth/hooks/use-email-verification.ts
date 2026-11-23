@@ -1,0 +1,35 @@
+import type { UseMutationResult } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router';
+
+import type { ApiError } from '@/shared/api/api-error';
+
+import type { EmailVerification, VerifyEmailRequest } from '../types';
+import { useVerifyEmail } from './use-auth-queries';
+
+export interface UseEmailVerificationResult {
+    token: string;
+    verify: UseMutationResult<EmailVerification, ApiError, VerifyEmailRequest>;
+}
+
+/**
+ * Opening the emailed link redeems its token: a one-shot mutation on mount — not a query (it
+ * changes the account and must never be retried or refetched) and never from a render. The
+ * ref guards StrictMode's double effect: the token is spent on first use.
+ */
+export const useEmailVerification = (): UseEmailVerificationResult => {
+    const [searchParams] = useSearchParams();
+    const token = searchParams.get('token')?.trim() ?? '';
+    const verify = useVerifyEmail();
+    const { mutate } = verify;
+    const started = useRef(false);
+
+    useEffect(() => {
+        if (token && !started.current) {
+            started.current = true;
+            mutate({ token });
+        }
+    }, [token, mutate]);
+
+    return { token, verify };
+};

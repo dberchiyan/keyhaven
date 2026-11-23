@@ -1,0 +1,132 @@
+{
+    "invalid": "Invalid value",
+    "email": {
+        "required": "Enter your email",
+        "invalid": "Enter a valid email address",
+        "tooLong": "Email must be at most {{max}} characters"
+    },
+    "password": {
+        "required": "Enter your password",
+        "tooLong": "Password must be at most {{max}} characters"
+    },
+    "currentPassword": {
+        "required": "Enter your current password"
+    },
+    "newPassword": {
+        "required": "Enter a new password",
+        "tooShort": "Use at least {{min}} characters",
+        "needsUppercase": "Add an upper-case letter",
+        "needsLowercase": "Add a lower-case letter",
+        "needsDigit": "Add a digit",
+        "needsSymbol": "Add a symbol, such as ! or #"
+    },
+    "confirmPassword": {
+        "required": "Repeat the new password",
+        "mismatch": "The passwords don’t match"
+    },
+    "firstName": {
+        "required": "Enter a first name",
+        "tooLong": "First name must be at most {{max}} characters"
+    },
+    "lastName": {
+        "required": "Enter a last name",
+        "tooLong": "Last name must be at most {{max}} characters"
+    },
+    "role": {
+        "invalid": "Choose whether you are looking for a home or listing one"
+    },
+    "token": {
+        "required": "The link is incomplete — open it from the email again",
+        "invalid": "The link is not valid"
+    },
+    "search": {
+        "tooLong": "Search must be at most {{max}} characters"
+    },
+    "title": {
+        "required": "Enter a title",
+        "tooLong": "Title must be at most {{max}} characters"
+    },
+    "description": {
+        "required": "Describe the home",
+        "tooLong": "Description must be at most {{max}} characters"
+    },
+    "propertyType": {
+        "required": "Choose the type of home"
+    },
+    "amount": {
+        "invalid": "Enter an amount such as 1850 or 1850.50"
+    },
+    "bedrooms": {
+        "invalid": "Enter a whole number from 0 to 20"
+    },
+    "bathrooms": {
+        "invalid": "Enter a number such as 1, 1.5 or 2"
+    },
+    "sizeSqft": {
+        "invalid": "Enter a whole number of square feet"
+    },
+    "availableOn": {
+        "invalid": "Enter a date"
+    },
+    "addressLine1": {
+        "required": "Enter the street address",
+        "tooLong": "Address must be at most {{max}} characters"
+    },
+    "addressLine2": {
+        "tooLong": "This line must be at most {{max}} characters"
+    },
+    "city": {
+        "required": "Choose a city"
+    },
+    "neighborhood": {
+        "tooLong": "Neighborhood must be at most {{max}} characters"
+    },
+    "zip": {
+        "invalid": "Enter a 5-digit ZIP, optionally with -1234"
+    },
+    "savedSearchName": {
+        "required": "Name the search",
+        "tooLong": "Name must be at most {{max}} characters"
+    },
+    "kind": {
+        "required": "Choose whether the home is for rent or for sale"
+    },
+    "viewing": {
+        "message": {
+            "tooLong": "The note must be at most {{max}} characters"
+        },
+        "note": {
+            "tooLong": "The note must be at most {{max}} characters"
+        },
+        "slot": {
+            "required": "Pick a time"
+        }
+    },
+    "schedule": {
+        "windows": {
+            "required": "Open at least one day",
+            "order": "The end must come after the start",
+            "overlap": "Time ranges on the same day must not overlap",
+            "tooShort": "A range must fit at least one viewing",
+            "tooMany": "At most {{max}} ranges a day"
+        },
+        "blockedDays": {
+            "invalid": "Enter a date",
+            "tooMany": "At most {{max}} blocked days",
+            "duplicate": "That day is already blocked"
+        }
+    },
+    "message": {
+        "subject": {
+            "required": "Say what it is about",
+            "tooLong": "The subject must be at most {{max}} characters"
+        },
+        "body": {
+            "required": "Write a message first",
+            "tooLong": "A message must be at most {{max}} characters"
+        }
+    },
+    "cursor": {
+        "invalid": "This page link is out of date — start from the first page"
+    }
+}
