@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: keyhaven
+          POSTGRES_PASSWORD: keyhaven
+          POSTGRES_DB: keyhaven
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U keyhaven" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://keyhaven:keyhaven@localhost:5432/keyhaven?schema=public
+      SHADOW_DATABASE_URL: postgresql://keyhaven:keyhaven@localhost:5432/keyhaven_shadow?schema=public
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Shadow database for db:check
+        run: psql "postgresql://keyhaven:keyhaven@localhost:5432/keyhaven" -c 'CREATE DATABASE keyhaven_shadow'
+      - run: cp .env.example .env
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run db:check
+      - run: npm run i18n:check
+      - run: npm run db:migrate:deploy
+      - run: npm run openapi:check
+      - run: npm run audit
+
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VITE_API_BASE_URL: ""
+      VITE_DEFAULT_LOCALE: en
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm run i18n:check
+      - run: npm run api:check
+
+  landing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: landing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: landing/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run build
+
+  e2e-code:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            landing/package-lock.json
+            e2e/package-lock.json
+      - name: Install (the landing tests import landing/src/content)
+        run: |
+          (cd landing && npm ci)
+          (cd e2e && npm ci)
+      - name: Format, lint and typecheck the tests
+        working-directory: e2e
+        run: npm run format:check && npm run lint && npm run typecheck
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: keyhaven
+          POSTGRES_PASSWORD: keyhaven
+          POSTGRES_DB: keyhaven_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U keyhaven" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      E2E_DATABASE_URL: postgresql://keyhaven:keyhaven@localhost:5432/keyhaven_test?schema=public
+      DATABASE_URL: postgresql://keyhaven:keyhaven@localhost:5432/keyhaven_test?schema=public
+      VITE_API_BASE_URL: ""
+      VITE_DEFAULT_LOCALE: en
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+            landing/package-lock.json
+            e2e/package-lock.json
+      - name: Install
+        run: |
+          (cd backend && npm ci)
+          (cd frontend && npm ci)
+          (cd landing && npm ci)
+          (cd e2e && npm ci && npx playwright install --with-deps chromium)
+      - name: End-to-end tests (the global setup builds and starts the stack)
+        working-directory: e2e
+        run: npx playwright test
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7
