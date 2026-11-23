@@ -18,7 +18,7 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "audit": "npm audit --omit=dev --audit-level=high",
-        "postinstall": "prisma generate",
+        "postinstall": "prisma generate && npm run i18n:generate",
         "db:generate": "prisma generate",
         "db:migrate:create": "prisma migrate dev --create-only",
         "db:migrate:dev": "prisma migrate dev",
