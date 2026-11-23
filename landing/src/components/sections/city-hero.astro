@@ -1,0 +1,46 @@
+---
+import ButtonLink from '@/components/ui/button-link.astro';
+import Container from '@/components/ui/container.astro';
+import Icon from '@/components/ui/icon.astro';
+import type { CityKind, Kind } from '@/content/catalogue-schema';
+import { CITY_PAGE } from '@/content/city-page';
+import type { City } from '@/content/site';
+import { fill, mediumDay, wholeNumber } from '@/lib/format';
+
+import CityBreadcrumbs from './city-breadcrumbs.astro';
+import CityStats from './city-stats.astro';
+
+interface Props {
+    city: City;
+    kind: Kind;
+    data: CityKind;
+    takenOn: string;
+    browseHref: string;
+}
+
+const { city, kind, data, takenOn, browseHref } = Astro.props;
+const copy = CITY_PAGE.kinds[kind];
+const other = CITY_PAGE.kinds[kind === 'RENT' ? 'SALE' : 'RENT'];
+const place = `${city.name}, ${city.state}`;
+---
+
+<section aria-labelledby="city-title" class="relative isolate -mt-16 overflow-hidden pt-16">
+    <Container class="pt-12 pb-10 sm:pt-16">
+        <CityBreadcrumbs place={place} kind={kind} />
+        <h1 id="city-title" class="type-title mt-6 max-w-3xl">
+            {fill(copy.title, { city: place })}
+        </h1>
+        <p class="type-lead mt-4 max-w-2xl text-muted">{fill(copy.lead, { city: city.name })}</p>
+        <CityStats kind={kind} data={data} />
+        <p class="mt-3 text-xs text-subtle">{fill(CITY_PAGE.asOf, { date: mediumDay(takenOn) })}</p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+            <ButtonLink href={browseHref} variant="brand" isLarge>
+                {fill(CITY_PAGE.openAll, { count: wholeNumber(data.total) })}
+                <Icon name="arrowRight" class="size-4.5" />
+            </ButtonLink>
+            <ButtonLink href={`/${other.segment}/${city.slug}`} variant="outline" isLarge>
+                {copy.switchTo}
+            </ButtonLink>
+        </div>
+    </Container>
+</section>

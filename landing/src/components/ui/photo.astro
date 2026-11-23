@@ -1,0 +1,39 @@
+---
+import { Picture } from 'astro:assets';
+
+interface Props {
+    src: string;
+    width: number;
+    height: number;
+    widths: number[];
+    sizes: string;
+    class?: string;
+    loading?: 'lazy' | 'eager';
+    fetchpriority?: 'high' | 'auto';
+}
+
+/**
+ * A catalogue photo resized at build into AVIF with a WebP fallback under `/_landing/` (LD-34), so
+ * the page loads no third-party image; the `<picture>` is `display: contents` to size against its frame.
+ */
+const { src, width, height, widths, sizes, class: className, loading = 'lazy', fetchpriority = 'auto' } = Astro.props;
+
+const QUALITY = 60;
+---
+
+<Picture
+    src={src}
+    alt=""
+    width={width}
+    height={height}
+    widths={widths}
+    sizes={sizes}
+    formats={['avif']}
+    fallbackFormat="webp"
+    quality={QUALITY}
+    loading={loading}
+    fetchpriority={fetchpriority}
+    decoding="async"
+    class={className}
+    pictureAttributes={{ class: 'contents' }}
+/>

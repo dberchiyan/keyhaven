@@ -1,0 +1,174 @@
+@media (prefers-reduced-motion: no-preference) {
+    .search-demo[data-visible]
+        :is(
+            .d-city,
+            .d-city-off,
+            .d-city-on,
+            .d-popover-city,
+            .d-pick-city,
+            .d-beds,
+            .d-beds-off,
+            .d-beds-on,
+            .d-popover-beds,
+            .d-pick-beds,
+            .d-count-0,
+            .d-count-1,
+            .d-count-2,
+            .d-chip-city,
+            .d-chip-beds,
+            .d-clear,
+            .d-set-0,
+            .d-set-1,
+            .d-set-2,
+            .d-heart-on,
+            .d-cursor,
+            .d-click,
+            .d-cover
+        ) {
+        animation-duration: var(--cycle);
+        animation-iteration-count: infinite;
+        animation-fill-mode: both;
+        animation-timing-function: linear;
+    }
+
+    .search-demo[data-visible] .d-cover {
+        animation-name: d-cover;
+    }
+    @keyframes d-cover {
+        0% {
+            opacity: 1;
+        }
+        3% {
+            opacity: 0;
+        }
+        92% {
+            opacity: 0;
+        }
+        95% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+
+    .search-demo[data-visible] .d-cursor {
+        animation-name: d-cursor;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes d-cursor {
+        0% {
+            left: 55%;
+            top: 80%;
+            opacity: 0;
+        }
+        4% {
+            left: 55%;
+            top: 80%;
+            opacity: 0;
+        }
+        6% {
+            opacity: 1;
+        }
+        12% {
+            left: 7%;
+            top: 7%;
+        }
+        14% {
+            left: 7%;
+            top: 7%;
+        }
+        20% {
+            left: 10%;
+            top: 28%;
+        }
+        23% {
+            left: 10%;
+            top: 28%;
+        }
+        25% {
+            left: 12%;
+            top: 14%;
+        }
+        30% {
+            left: 12%;
+            top: 14%;
+        }
+        37% {
+            left: 27%;
+            top: 7%;
+        }
+        39% {
+            left: 27%;
+            top: 7%;
+        }
+        45% {
+            left: 32.5%;
+            top: 15.5%;
+        }
+        48% {
+            left: 32.5%;
+            top: 15.5%;
+        }
+        51% {
+            left: 34%;
+            top: 20%;
+        }
+        58% {
+            left: 31%;
+            top: 27%;
+        }
+        62% {
+            left: 31%;
+            top: 27%;
+            opacity: 1;
+        }
+        66% {
+            left: 40%;
+            top: 45%;
+            opacity: 0;
+        }
+        100% {
+            left: 55%;
+            top: 80%;
+            opacity: 0;
+        }
+    }
+    .search-demo[data-visible] .d-click {
+        animation-name: d-click;
+        animation-timing-function: ease-out;
+    }
+    @keyframes d-click {
+        0%,
+        12.9%,
+        14.5%,
+        20.9%,
+        22.5%,
+        37.9%,
+        39.5%,
+        45.9%,
+        47.5%,
+        58.9%,
+        60.5%,
+        100% {
+            opacity: 0;
+            transform: scale(0.3);
+        }
+        13%,
+        21%,
+        38%,
+        46%,
+        59% {
+            opacity: 0.9;
+            transform: scale(0.4);
+        }
+        14%,
+        22%,
+        39%,
+        47%,
+        60% {
+            opacity: 0;
+            transform: scale(1.4);
+        }
+    }
+}

@@ -1,0 +1,175 @@
+:root {
+    color-scheme: light dark;
+
+    --c-canvas: oklch(96% 0.012 79.8);
+    --c-surface: oklch(99.4% 0.006 84.6);
+    --c-surface-2: oklch(93.3% 0.017 79.3);
+    --c-ink: oklch(27.2% 0.02 163);
+    --c-ink-2: oklch(33% 0.022 163);
+    --c-muted: oklch(47% 0.023 163.9);
+    --c-subtle: oklch(63% 0.018 150);
+    --c-line: oklch(90.1% 0.02 77.3);
+    --c-line-strong: oklch(84% 0.025 77);
+
+    --c-brand: oklch(43.8% 0.074 167.8);
+    --c-brand-strong: oklch(36.3% 0.062 165.5);
+    --c-brand-soft: oklch(94% 0.013 159.9);
+    --c-brand-glow: oklch(72% 0.08 165);
+    --c-accent-glow: oklch(80% 0.1 78);
+    --c-on-brand: oklch(99.4% 0.006 84.6);
+    --c-navy: oklch(22% 0.03 165);
+    --c-footer: oklch(23% 0.03 165);
+    --c-footer-line: oklch(32% 0.03 165);
+    --c-footer-tile: oklch(29% 0.03 165);
+    --c-footer-text: oklch(97% 0.01 84);
+    --c-footer-muted: oklch(78% 0.02 150);
+    --c-sky: oklch(86% 0.065 164);
+    --c-dark: oklch(25% 0.032 165);
+    --c-dark-raised: oklch(30% 0.034 165);
+    --c-dark-line: oklch(37% 0.032 165);
+    --c-dark-text: oklch(97% 0.01 84);
+    --c-dark-muted: oklch(80% 0.02 150);
+
+    --c-success-bg: oklch(94% 0.03 160);
+    --c-success-fg: oklch(40% 0.085 162);
+    --c-success-dot: oklch(60% 0.14 160);
+    --c-warning-bg: oklch(95.5% 0.045 85);
+    --c-warning-fg: oklch(45% 0.1 62);
+    --c-warning-dot: oklch(72% 0.15 68);
+    --c-danger-dot: oklch(62% 0.19 27);
+
+    --c-avatar-1: oklch(43.8% 0.074 167.8);
+    --c-avatar-2: oklch(52% 0.12 65);
+    --c-avatar-3: oklch(50% 0.12 35);
+    --c-avatar-4: oklch(48% 0.09 120);
+    --c-avatar-5: oklch(48% 0.08 200);
+    --c-avatar-6: oklch(45% 0.11 330);
+    --c-avatar-7: oklch(45% 0.04 250);
+    --c-avatar-8: oklch(42% 0.07 150);
+
+    --c-on-avatar: oklch(99.4% 0.006 84.6);
+    --c-glass-edge: oklch(100% 0 0 / 0.55);
+    --c-highlight: oklch(100% 0 0 / 0.22);
+
+    --shadow-soft: oklch(35% 0.04 70 / 0.07);
+    --shadow-strong: oklch(35% 0.05 70 / 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --c-canvas: oklch(21% 0.014 160);
+        --c-surface: oklch(25.5% 0.016 160);
+        --c-surface-2: oklch(30% 0.016 140);
+        --c-ink: oklch(95% 0.012 82);
+        --c-ink-2: oklch(92% 0.012 85);
+        --c-muted: oklch(78% 0.016 100);
+        --c-subtle: oklch(62% 0.016 120);
+        --c-line: oklch(34% 0.02 160);
+        --c-line-strong: oklch(40% 0.022 160);
+
+        --c-brand: oklch(78% 0.09 165);
+        --c-brand-strong: oklch(86% 0.065 164);
+        --c-brand-soft: oklch(32% 0.04 165);
+        --c-brand-glow: oklch(55% 0.08 165);
+        --c-accent-glow: oklch(55% 0.1 75);
+        --c-on-brand: oklch(21% 0.014 160);
+        --c-navy: oklch(16% 0.02 160);
+        --c-footer: oklch(17% 0.022 160);
+        --c-footer-line: oklch(27% 0.025 162);
+        --c-footer-tile: oklch(23% 0.025 162);
+        --c-footer-text: oklch(97% 0.01 84);
+        --c-footer-muted: oklch(76% 0.02 150);
+        --c-sky: oklch(86% 0.065 164);
+        --c-dark: oklch(15.5% 0.018 160);
+        --c-dark-raised: oklch(20.5% 0.022 162);
+        --c-dark-line: oklch(29% 0.026 162);
+        --c-dark-text: oklch(97% 0.01 84);
+        --c-dark-muted: oklch(77% 0.02 150);
+
+        --c-success-bg: oklch(32% 0.05 157);
+        --c-success-fg: oklch(86% 0.09 156);
+        --c-success-dot: oklch(75% 0.13 156);
+        --c-warning-bg: oklch(33% 0.05 70);
+        --c-warning-fg: oklch(88% 0.1 82);
+        --c-warning-dot: oklch(80% 0.14 75);
+        --c-danger-dot: oklch(72% 0.15 25);
+
+        --c-glass-edge: oklch(100% 0 0 / 0.08);
+
+        --shadow-soft: oklch(0% 0 0 / 0.3);
+        --shadow-strong: oklch(0% 0 0 / 0.5);
+    }
+}
+
+@theme inline {
+    --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    --color-canvas: var(--c-canvas);
+    --color-surface: var(--c-surface);
+    --color-surface-2: var(--c-surface-2);
+    --color-ink: var(--c-ink);
+    --color-ink-2: var(--c-ink-2);
+    --color-muted: var(--c-muted);
+    --color-subtle: var(--c-subtle);
+    --color-line: var(--c-line);
+    --color-line-strong: var(--c-line-strong);
+    --color-brand: var(--c-brand);
+    --color-brand-strong: var(--c-brand-strong);
+    --color-brand-soft: var(--c-brand-soft);
+    --color-brand-glow: var(--c-brand-glow);
+    --color-accent-glow: var(--c-accent-glow);
+    --color-on-brand: var(--c-on-brand);
+    --color-navy: var(--c-navy);
+    --color-sky: var(--c-sky);
+    --color-dark: var(--c-dark);
+    --color-dark-raised: var(--c-dark-raised);
+    --color-dark-line: var(--c-dark-line);
+    --color-dark-text: var(--c-dark-text);
+    --color-dark-muted: var(--c-dark-muted);
+    --color-success-bg: var(--c-success-bg);
+    --color-success-fg: var(--c-success-fg);
+    --color-success-dot: var(--c-success-dot);
+    --color-warning-bg: var(--c-warning-bg);
+    --color-warning-fg: var(--c-warning-fg);
+    --color-warning-dot: var(--c-warning-dot);
+    --color-danger-dot: var(--c-danger-dot);
+    --color-avatar-1: var(--c-avatar-1);
+    --color-avatar-2: var(--c-avatar-2);
+    --color-avatar-3: var(--c-avatar-3);
+    --color-avatar-4: var(--c-avatar-4);
+    --color-avatar-5: var(--c-avatar-5);
+    --color-avatar-6: var(--c-avatar-6);
+    --color-avatar-7: var(--c-avatar-7);
+    --color-avatar-8: var(--c-avatar-8);
+    --color-on-avatar: var(--c-on-avatar);
+    --color-footer: var(--c-footer);
+    --color-footer-line: var(--c-footer-line);
+    --color-footer-tile: var(--c-footer-tile);
+    --color-footer-text: var(--c-footer-text);
+    --color-footer-muted: var(--c-footer-muted);
+
+    --text-nano: 0.625rem;
+    --text-micro: 0.6875rem;
+    --text-caption: 0.8125rem;
+    --text-body: 0.9375rem;
+    --text-body-lg: 1.0625rem;
+    --text-logo: 1.2rem;
+    --text-price: 2rem;
+    --text-avatar-xs: 0.55rem;
+    --text-avatar-sm: 0.65rem;
+
+    --tracking-card: -0.015em;
+    --tracking-heading: -0.02em;
+    --tracking-price: -0.03em;
+
+    --radius-stage: 2rem;
+    --radius-glow: 3rem;
+
+    --radius-card: 1.125rem;
+    --radius-panel: 1.5rem;
+    --container-page: 76rem;
+
+    --shadow-card: 0 1px 2px var(--shadow-soft), 0 4px 16px -4px var(--shadow-soft);
+    --shadow-float: 0 2px 6px var(--shadow-soft), 0 24px 48px -12px var(--shadow-strong);
+    --shadow-window: 0 2px 8px var(--shadow-soft), 0 40px 80px -24px var(--shadow-strong);
+}

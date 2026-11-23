@@ -1,0 +1,46 @@
+---
+interface Props {
+    pause: string;
+    play: string;
+    replay: string;
+}
+
+const { pause, play, replay } = Astro.props;
+---
+
+<div class="flex items-center gap-1">
+    <button
+        type="button"
+        data-demo-pause
+        aria-pressed="false"
+        class="text-caption inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 font-medium text-muted transition-colors hover:bg-surface hover:text-ink active:scale-[0.98]"
+    >
+        <svg viewBox="0 0 24 24" class="d-icon-pause size-4" fill="currentColor" aria-hidden="true">
+            <path d="M7 5h4v14H7zM13 5h4v14h-4z"></path>
+        </svg>
+        <svg viewBox="0 0 24 24" class="d-icon-play size-4" fill="currentColor" aria-hidden="true">
+            <path d="M7 4.5v15l13-7.5z"></path>
+        </svg>
+        <span class="d-label-pause">{pause}</span>
+        <span class="d-label-play">{play}</span>
+    </button>
+    <button
+        type="button"
+        data-demo-replay
+        class="text-caption inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 font-medium text-muted transition-colors hover:bg-surface hover:text-ink active:scale-[0.98]"
+    >
+        <svg
+            viewBox="0 0 24 24"
+            class="size-4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+        >
+            <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6M3.5 4v4h4"></path>
+        </svg>
+        {replay}
+    </button>
+</div>

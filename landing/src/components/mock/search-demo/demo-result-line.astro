@@ -1,0 +1,36 @@
+---
+import { SEARCH_DEMO } from '@/content/search-demo';
+import { DEMO_TOTALS } from '@/content/showcase';
+import { fill, wholeNumber } from '@/lib/format';
+
+const { homes, matchCount, city, beds, remove, clear } = SEARCH_DEMO;
+const COUNTS = [DEMO_TOTALS.all, DEMO_TOTALS.seattle, matchCount];
+const CHIPS = [
+    { name: 'd-chip-city', label: city.picked },
+    { name: 'd-chip-beds', label: beds.picked },
+];
+---
+
+<div class="text-caption relative z-10 mt-3 mb-3 flex min-h-7 flex-wrap items-center gap-2 px-1 text-muted">
+    <span class="relative inline-grid tabular-nums">
+        {COUNTS.map((count, index) => (
+            <span class:list={[`d-count-${index}`, 'col-start-1 row-start-1']}>
+                {fill(homes, { count: wholeNumber(count) })}
+            </span>
+        ))}
+    </span>
+    {CHIPS.map((chip) => (
+        <span
+            class:list={[
+                'd-chip inline-flex h-7 items-center gap-1.5 rounded-full bg-surface-2 pr-1.5 pl-2.5 text-ink-2',
+                chip.name,
+            ]}
+        >
+            {chip.label}
+            <span class="text-nano flex size-4 items-center justify-center rounded-full bg-line text-ink-2">
+                {remove}
+            </span>
+        </span>
+    ))}
+    <span class="d-clear font-semibold text-brand">{clear}</span>
+</div>

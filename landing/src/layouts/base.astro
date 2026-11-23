@@ -1,0 +1,58 @@
+---
+import '@/styles/global.css';
+
+import fontUrl from '@fontsource-variable/inter/files/inter-latin-opsz-normal.woff2?url';
+
+import Seo from '@/components/seo/seo.astro';
+import { CHROME } from '@/content/chrome';
+import { pageAt } from '@/content/pages';
+import { CANONICAL_URL, SITE } from '@/content/site';
+
+interface Props {
+    path: string;
+}
+
+/**
+ * Every page goes through here (LD-39): its meta comes from `content/pages.ts`; a build for any
+ * host but the canonical one (a preview, staging) is `noindex` (LD-40).
+ */
+const { path } = Astro.props;
+const page = pageAt(path);
+const site = Astro.site ?? new URL(CANONICAL_URL);
+const isIndexed = page.isIndexed && site.origin === new URL(CANONICAL_URL).origin;
+---
+
+<!doctype html>
+<html lang={SITE.locale}>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="color-scheme" content="light dark" />
+        <meta name="theme-color" content={SITE.themeColor.light} media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content={SITE.themeColor.dark} media="(prefers-color-scheme: dark)" />
+        <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="sitemap" href="/sitemap-index.xml" />
+        <meta name="generator" content={Astro.generator} />
+        <Seo page={page} site={site} isIndexed={isIndexed}>
+            <slot name="head" />
+        </Seo>
+    </head>
+    <body class="min-h-dvh bg-canvas">
+        <a
+            href="#main"
+            class="sr-only z-50 rounded-full bg-surface px-4 py-2 font-medium text-ink shadow-float focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+        >
+            {CHROME.skipLink}
+        </a>
+        <slot />
+        <script>
+            import { revealHeadingLines } from './line-reveal';
+            import { revealDrawings } from './reveal-drawings';
+
+            revealHeadingLines();
+            revealDrawings();
+        </script>
+    </body>
+</html>

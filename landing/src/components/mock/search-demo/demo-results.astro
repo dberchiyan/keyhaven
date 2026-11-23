@@ -1,0 +1,36 @@
+---
+import { SEARCH_DEMO } from '@/content/search-demo';
+import { DEMO_PHOTOS } from '@/content/showcase';
+
+import DemoCard from './demo-card.astro';
+
+const { sets } = SEARCH_DEMO;
+const SETS = [
+    { homes: sets.all, name: 'd-set-0', isInFlow: true, photoOffset: 0, isMatch: false },
+    { homes: sets.city, name: 'd-set-1', isInFlow: false, photoOffset: sets.all.length, isMatch: false },
+    {
+        homes: sets.matches,
+        name: 'd-set-2',
+        isInFlow: false,
+        photoOffset: sets.all.length + sets.city.length,
+        isMatch: true,
+    },
+];
+const photoAt = (index: number): string => DEMO_PHOTOS[index % DEMO_PHOTOS.length] ?? '';
+---
+
+<div class="d-viewport relative overflow-hidden">
+    {SETS.map((set) => (
+        <div
+            class:list={[
+                set.name,
+                'grid grid-cols-1 gap-3 sm:grid-cols-3',
+                !set.isInFlow && 'absolute inset-x-0 top-0',
+            ]}
+        >
+            {set.homes.map((home, index) => (
+                <DemoCard home={home} photo={photoAt(set.photoOffset + index)} index={index} isMatch={set.isMatch} />
+            ))}
+        </div>
+    ))}
+</div>

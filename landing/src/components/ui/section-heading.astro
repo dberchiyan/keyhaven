@@ -1,0 +1,39 @@
+---
+import type { Heading } from '@/content/landing-types';
+
+import LineHeading from './line-heading.astro';
+
+interface Props {
+    id: string;
+    eyebrow: string;
+    title: Heading;
+    lead?: string;
+    layout?: 'center' | 'start' | 'split';
+}
+
+/**
+ * A section's eyebrow, two-part heading and lede (LD-17). `split` puts the lede beside the heading on desktop, for the
+ * full-width sections; under it on phones. The heading rises line by line, the eyebrow and lede fade up after it.
+ */
+const { id, eyebrow, title, lead, layout = 'center' } = Astro.props;
+const LAYOUTS = {
+    center: 'mx-auto max-w-3xl items-center text-center',
+    start: 'max-w-3xl items-start',
+    split: 'items-start lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:gap-x-16',
+} as const;
+---
+
+<div class:list={['reveal-text flex flex-col gap-4', LAYOUTS[layout]]}>
+    <p class="type-eyebrow eyebrow-rule text-brand">{eyebrow}</p>
+    <LineHeading id={id} title={title} class="type-title" />
+    {lead && (
+        <p
+            class:list={[
+                'type-lead max-w-2xl text-muted',
+                layout === 'split' && 'lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-end',
+            ]}
+        >
+            {lead}
+        </p>
+    )}
+</div>

@@ -1,0 +1,31 @@
+---
+import SummaryCardMock from '@/components/mock/summary-card-mock.astro';
+import Container from '@/components/ui/container.astro';
+import SectionHeading from '@/components/ui/section-heading.astro';
+import { LANDING } from '@/content/landing';
+import { SUMMARY_HOME } from '@/content/showcase';
+
+import PointList from './point-list.astro';
+
+const { listing } = LANDING;
+---
+
+<section id="listing" aria-labelledby="listing-title" class="overflow-x-clip py-16 sm:py-20">
+    <Container class="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+        {SUMMARY_HOME && (
+            <div class="reveal-media relative order-last mx-auto w-full max-w-md lg:order-first">
+                <SummaryCardMock home={SUMMARY_HOME} class="animate-float-slow" />
+            </div>
+        )}
+        <div class="flex min-w-0 flex-col gap-10">
+            <SectionHeading
+                id="listing-title"
+                eyebrow={listing.eyebrow}
+                title={listing.title}
+                lead={listing.lead}
+                layout="start"
+            />
+            <PointList points={listing.points} class="flex flex-col gap-6" />
+        </div>
+    </Container>
+</section>

@@ -1,0 +1,62 @@
+---
+import ButtonLink from '@/components/ui/button-link.astro';
+import Container from '@/components/ui/container.astro';
+import Icon from '@/components/ui/icon.astro';
+import Logo from '@/components/ui/logo.astro';
+import { CHROME } from '@/content/chrome';
+import { SITE } from '@/content/site';
+
+import MobileMenu from './mobile-menu.astro';
+
+const { header } = CHROME;
+---
+
+<header class="site-header sticky top-0 z-40">
+    <div class="scroll-progress" aria-hidden="true"></div>
+    <Container class="flex h-16 items-center gap-6">
+        <a href="/" class="-m-1 rounded-lg p-1" aria-label={header.homeLabel}>
+            <Logo />
+        </a>
+
+        <nav aria-label={header.sectionsLabel} class="hidden lg:block">
+            <ul class="flex items-center gap-1 rounded-full bg-surface-2 p-1">
+                {header.anchors.map((anchor) => (
+                    <li>
+                        <a
+                            href={anchor.href}
+                            data-section-link
+                            class="text-body inline-flex min-h-9 items-center rounded-full px-4 font-medium text-muted transition-colors hover:bg-surface/60 hover:text-ink aria-[current=location]:bg-surface aria-[current=location]:text-ink aria-[current=location]:shadow-card"
+                        >
+                            {anchor.label}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+
+        <div class="ml-auto flex items-center gap-2">
+            <ButtonLink href={SITE.links.signIn} variant="ghost" class="hidden sm:inline-flex">
+                {header.signIn}
+            </ButtonLink>
+            <ButtonLink href={SITE.links.browse} variant="brand" class="hidden sm:inline-flex">
+                {header.primary}
+            </ButtonLink>
+            <button
+                type="button"
+                popovertarget="mobile-menu"
+                class="-mr-2 inline-flex size-11 items-center justify-center rounded-full text-ink hover:bg-surface-2 active:scale-[0.98] lg:hidden"
+                aria-label={header.openMenu}
+            >
+                <Icon name="menu" class="size-6" />
+            </button>
+        </div>
+    </Container>
+</header>
+
+<MobileMenu />
+
+<script>
+    import { markCurrentSection } from './current-section';
+
+    markCurrentSection();
+</script>

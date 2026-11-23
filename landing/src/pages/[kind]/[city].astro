@@ -1,0 +1,45 @@
+---
+import type { GetStaticPaths } from 'astro';
+
+import CityHero from '@/components/sections/city-hero.astro';
+import CityNeighborhoods from '@/components/sections/city-neighborhoods.astro';
+import CityNewest from '@/components/sections/city-newest.astro';
+import SiteFooter from '@/components/sections/site-footer.astro';
+import SiteHeader from '@/components/sections/site-header.astro';
+import CityJsonLd from '@/components/seo/city-json-ld.astro';
+import { CATALOGUE, CITY_KINDS, cityKindOf } from '@/content/catalogue';
+import type { Kind } from '@/content/catalogue-schema';
+import { CITY_PAGE } from '@/content/city-page';
+import { CANONICAL_URL, type City, SITE } from '@/content/site';
+import Base from '@/layouts/base.astro';
+
+interface Props {
+    city: City;
+    kind: Kind;
+}
+
+/** One prerendered page per city and kind (`/rent/austin`, `/buy/austin`): search entry points into the catalogue. */
+export const getStaticPaths = (() =>
+    CITY_KINDS.map(({ city, kind }) => ({
+        params: { kind: CITY_PAGE.kinds[kind].segment, city: city.slug },
+        props: { city, kind },
+    }))) satisfies GetStaticPaths;
+
+const { city, kind } = Astro.props;
+const data = cityKindOf(city, kind);
+const copy = CITY_PAGE.kinds[kind];
+const path = `/${copy.segment}/${city.slug}`;
+const browseHref = `${SITE.links.browse}?kind=${copy.browseKind}&city=${city.slug}`;
+const site = Astro.site ?? new URL(CANONICAL_URL);
+---
+
+<Base path={path}>
+    <CityJsonLd slot="head" city={city} kind={kind} data={data} path={path} site={site} />
+    <SiteHeader />
+    <main id="main">
+        <CityHero city={city} kind={kind} data={data} takenOn={CATALOGUE.takenOn} browseHref={browseHref} />
+        <CityNeighborhoods city={city} neighborhoods={data.neighborhoods} browseHref={browseHref} />
+        <CityNewest city={city} kind={kind} homes={data.newest} browseHref={browseHref} />
+    </main>
+    <SiteFooter />
+</Base>

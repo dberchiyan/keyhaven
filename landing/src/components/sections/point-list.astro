@@ -1,0 +1,25 @@
+---
+import Icon from '@/components/ui/icon.astro';
+import type { Point } from '@/content/landing-types';
+
+interface Props {
+    points: readonly Point[];
+    class?: string;
+}
+
+const { points, class: className } = Astro.props;
+---
+
+<ul class:list={['reveal-list', className]}>
+    {points.map((point) => (
+        <li class="flex gap-3.5">
+            <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                <Icon name={point.icon} class="size-5" />
+            </span>
+            <div>
+                <h3 class="font-semibold text-ink">{point.title}</h3>
+                <p class="text-body mt-1 leading-relaxed text-muted">{point.text}</p>
+            </div>
+        </li>
+    ))}
+</ul>

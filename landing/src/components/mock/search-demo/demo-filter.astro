@@ -1,0 +1,47 @@
+---
+import DemoChevron from './demo-chevron.astro';
+
+interface Props {
+    name: 'city' | 'beds';
+    label: string;
+    picked: string;
+    options: readonly string[];
+    pickedOption: string;
+}
+
+const { name, label, picked, options, pickedOption } = Astro.props;
+
+const POPOVER: Record<Props['name'], string> = {
+    city: 'd-popover-city flex w-44 flex-col',
+    beds: 'd-popover-beds flex gap-1',
+};
+const OPTION: Record<Props['name'], string> = {
+    city: 'd-option text-caption flex h-8 items-center rounded-lg px-2.5 font-medium text-ink-2',
+    beds: 'd-option text-caption flex h-8 min-w-9 items-center justify-center rounded-full px-2 font-medium text-ink-2',
+};
+---
+
+<span class="relative">
+    <span
+        class:list={[
+            `d-pill d-${name}`,
+            'text-caption flex h-9 items-center gap-1.5 rounded-full px-3.5 font-medium whitespace-nowrap ring-1 ring-line',
+        ]}
+    >
+        <span class="inline-grid">
+            <span class:list={[`d-${name}-off`, 'col-start-1 row-start-1']}>{label}</span>
+            <span class:list={[`d-${name}-on`, 'col-start-1 row-start-1']}>{picked}</span>
+        </span>
+        <DemoChevron />
+    </span>
+    <span
+        class:list={[
+            'd-popover absolute top-11 left-0 rounded-xl bg-surface p-1.5 shadow-window ring-glass',
+            POPOVER[name],
+        ]}
+    >
+        {options.map((option) => (
+            <span class:list={[OPTION[name], option === pickedOption && `d-pick-${name}`]}>{option}</span>
+        ))}
+    </span>
+</span>

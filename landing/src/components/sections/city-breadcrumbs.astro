@@ -1,0 +1,30 @@
+---
+import type { Kind } from '@/content/catalogue-schema';
+import { CITY_PAGE } from '@/content/city-page';
+
+interface Props {
+    place: string;
+    kind: Kind;
+}
+
+const { place, kind } = Astro.props;
+const copy = CITY_PAGE.kinds[kind];
+---
+
+<nav aria-label={CITY_PAGE.breadcrumb} class="text-sm text-muted">
+    <ol class="flex flex-wrap items-center gap-2">
+        <li>
+            <a href="/" class="inline-flex min-h-11 items-center hover:text-ink">
+                {CITY_PAGE.home}
+            </a>
+        </li>
+        <li aria-hidden="true">·</li>
+        <li>
+            <a href={copy.crumbHref} class="inline-flex min-h-11 items-center hover:text-ink">
+                {copy.crumb}
+            </a>
+        </li>
+        <li aria-hidden="true">·</li>
+        <li aria-current="page">{place}</li>
+    </ol>
+</nav>

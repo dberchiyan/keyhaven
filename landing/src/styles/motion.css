@@ -1,0 +1,356 @@
+@keyframes float {
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @media (hover: hover) and (min-width: 64rem) {
+        .animate-float-slow {
+            animation: float 8s ease-in-out infinite;
+            animation-delay: -3s;
+        }
+
+        .animate-float-slow:hover {
+            animation-play-state: paused;
+        }
+    }
+}
+
+:root {
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes enter {
+    from {
+        opacity: 0.01;
+        transform: translateY(14px);
+        filter: blur(6px);
+    }
+}
+
+@keyframes tilt-flat {
+    from {
+        transform: rotateX(14deg) scale(0.94);
+    }
+}
+
+@keyframes anim-rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@keyframes anim-fade {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes anim-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+}
+
+@keyframes anim-grow {
+    from {
+        transform: scaleY(0);
+    }
+}
+
+@keyframes header-solid {
+    from {
+        opacity: 0;
+    }
+}
+
+.anim-grow {
+    transform-origin: bottom;
+}
+
+.anim-pop {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.scroll-progress {
+    display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+    .scroll-progress {
+        display: block;
+        position: absolute;
+        inset: 0 0 auto;
+        height: 0.5rem;
+        overflow-x: clip;
+        pointer-events: none;
+        animation-name: progress-show;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(root);
+        animation-range: 0 3rem;
+    }
+
+    .scroll-progress::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto;
+        height: 2px;
+        border-radius: 0 999px 999px 0;
+        background: linear-gradient(
+            90deg,
+            color-mix(in oklch, var(--c-brand-strong) 0%, transparent) 0%,
+            var(--c-brand) 35%,
+            var(--c-brand-glow) 80%,
+            var(--c-sky) 100%
+        );
+        box-shadow:
+            0 0 10px color-mix(in oklch, var(--c-brand-glow) 70%, transparent),
+            0 0 2px color-mix(in oklch, var(--c-sky) 80%, transparent);
+        transform: translateX(-100%);
+        animation-name: progress-fill;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(root);
+    }
+
+    .scroll-progress::after {
+        content: '';
+        position: absolute;
+        inset: -3px 0 auto;
+        height: 8px;
+        background: radial-gradient(
+            3rem 4px at 100% 50%,
+            color-mix(in oklch, var(--c-sky) 90%, transparent),
+            transparent
+        );
+        transform: translateX(-100%);
+        animation-name: progress-fill;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(root);
+    }
+}
+
+@keyframes progress-show {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes progress-fill {
+    to {
+        transform: translateX(0);
+    }
+}
+
+.site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in oklch, var(--c-canvas) 78%, transparent);
+    border-bottom: 1px solid var(--c-line);
+    box-shadow: 0 8px 24px -16px var(--shadow-strong);
+    backdrop-filter: blur(20px) saturate(1.5);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .enter {
+        animation: enter 1000ms var(--ease-out) both;
+        animation-delay: calc(var(--i, 0) * 90ms + 60ms);
+    }
+
+    @supports (animation-timeline: scroll()) {
+        .tilt-stage {
+            perspective: 2000px;
+        }
+
+        .tilt {
+            transform-origin: 50% 0%;
+            animation-name: tilt-flat;
+            animation-timing-function: linear;
+            animation-fill-mode: both;
+            animation-timeline: scroll(root);
+            animation-range: 0 28rem;
+        }
+
+        .site-header::before {
+            animation-name: header-solid;
+            animation-timing-function: linear;
+            animation-fill-mode: both;
+            animation-timeline: scroll(root);
+            animation-range: 0 5rem;
+        }
+    }
+
+    @media (scripting: enabled) {
+        [data-animate]:not([data-visible]) :is(.anim-rise, .anim-fade, .anim-pop, .anim-grow) {
+            opacity: 0;
+        }
+    }
+
+    [data-visible] :is(.anim-rise, .anim-fade, .anim-pop) {
+        animation-duration: 1000ms;
+        animation-timing-function: var(--ease-out);
+        animation-fill-mode: both;
+        animation-delay: calc(var(--i, 0) * 60ms);
+    }
+
+    [data-visible] .anim-rise {
+        animation-name: anim-rise;
+    }
+
+    [data-visible] .anim-fade {
+        animation-name: anim-fade;
+    }
+
+    [data-visible] .anim-pop {
+        animation-name: anim-pop;
+    }
+
+    [data-visible] .anim-grow {
+        animation-duration: 900ms;
+        animation-timing-function: var(--ease-out);
+        animation-fill-mode: both;
+        animation-delay: calc(var(--i, 0) * 50ms + 200ms);
+        animation-name: anim-grow;
+    }
+}
+
+@keyframes reveal-settle {
+    from {
+        opacity: 0;
+        transform: translateY(2rem) scale(0.97);
+    }
+}
+
+@keyframes reveal-blur {
+    from {
+        opacity: 0;
+        transform: translateY(0.875rem);
+        filter: blur(8px);
+    }
+}
+
+@keyframes line-rise {
+    from {
+        transform: translateY(110%);
+    }
+}
+
+.line-word {
+    display: inline-block;
+    overflow: clip;
+    padding-block: 0.06em 0.18em;
+    margin-block: -0.06em -0.18em;
+}
+
+.line-word-inner {
+    display: inline-block;
+}
+
+@keyframes reveal-unmask {
+    from {
+        opacity: 0.01;
+        clip-path: inset(8% 6% 8% 6% round 2rem);
+        transform: scale(1.04);
+    }
+    to {
+        clip-path: inset(-4rem round 0);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @media (scripting: enabled) {
+        :is(.reveal, .reveal-media):not([data-visible]),
+        :is(.reveal-text, .reveal-list):not([data-visible]) > :not(.line-reveal) {
+            opacity: 0;
+        }
+
+        .line-reveal:not([data-visible]) .line-word-inner {
+            transform: translateY(110%);
+        }
+    }
+
+    :is(.reveal, .reveal-media)[data-visible],
+    :is(.reveal-text, .reveal-list)[data-visible] > :not(.line-reveal) {
+        animation-duration: 1100ms;
+        animation-timing-function: var(--ease-out);
+        animation-fill-mode: backwards;
+    }
+
+    .reveal[data-visible] {
+        animation-name: reveal-settle;
+        animation-delay: calc(var(--i, 0) * 110ms);
+    }
+
+    .reveal-media[data-visible] {
+        animation-name: reveal-unmask;
+        animation-duration: 1300ms;
+        animation-delay: 120ms;
+    }
+
+    .reveal-text[data-visible] > :not(.line-reveal) {
+        animation-name: reveal-blur;
+    }
+
+    .line-reveal[data-visible] .line-word-inner {
+        animation-name: line-rise;
+        animation-duration: 1000ms;
+        animation-timing-function: var(--ease-out);
+        animation-fill-mode: backwards;
+        animation-delay: calc(var(--line, 0) * 110ms + 60ms);
+    }
+
+    .reveal-list[data-visible] > * {
+        animation-name: reveal-settle;
+    }
+
+    :is(.reveal-text, .reveal-list)[data-visible] > :nth-child(2) {
+        animation-delay: 80ms;
+    }
+
+    :is(.reveal-text, .reveal-list)[data-visible] > :nth-child(3) {
+        animation-delay: 160ms;
+    }
+
+    :is(.reveal-text, .reveal-list)[data-visible] > :nth-child(4) {
+        animation-delay: 240ms;
+    }
+
+    :is(.reveal-text, .reveal-list)[data-visible] > :nth-child(5) {
+        animation-delay: 320ms;
+    }
+
+    :is(.reveal-text, .reveal-list)[data-visible] > :nth-child(n + 6) {
+        animation-delay: 400ms;
+    }
+}
+
+.mobile-dock {
+    opacity: 0;
+    transform: translateY(calc(100% + 1.5rem));
+    pointer-events: none;
+}
+
+.mobile-dock[data-shown] {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .mobile-dock {
+        transition:
+            transform 0.5s var(--ease-out),
+            opacity 0.3s var(--ease-out);
+    }
+}

@@ -1,0 +1,52 @@
+---
+import Photo from '@/components/ui/photo.astro';
+import { staggerClass } from '@/components/ui/stagger';
+import type { DemoHome } from '@/content/search-demo';
+
+import DemoHeart from './demo-heart.astro';
+
+interface Props {
+    home: DemoHome;
+    photo: string;
+    index: number;
+    isMatch: boolean;
+}
+
+const { home, photo, index, isMatch } = Astro.props;
+
+const CARDS_PER_ROW = 3;
+const PHOTO_WIDTH = 1200;
+const PHOTO_HEIGHT = 800;
+const PHOTO_WIDTHS = [400, 800];
+---
+
+<div
+    class:list={[
+        'd-card flex-col overflow-hidden rounded-card bg-surface shadow-card ring-glass',
+        index % CARDS_PER_ROW === 0 ? 'flex' : 'hidden sm:flex',
+        staggerClass(index),
+    ]}
+>
+    <div class="relative aspect-[4/3] bg-surface-2">
+        <Photo
+            src={photo}
+            width={PHOTO_WIDTH}
+            height={PHOTO_HEIGHT}
+            widths={PHOTO_WIDTHS}
+            sizes="(min-width: 1024px) 22rem, (min-width: 640px) 33vw, 100vw"
+            loading="eager"
+            fetchpriority={isMatch ? 'high' : 'auto'}
+            class="size-full object-cover"
+        />
+        <DemoHeart isSaved={isMatch && index === 0} />
+    </div>
+    <div class="flex flex-col gap-1 p-4">
+        <p class="text-lg font-semibold text-ink tabular-nums">{home.price}</p>
+        <p class="truncate text-sm font-medium text-ink-2">{home.title}</p>
+        <p class="text-caption text-muted">{home.facts}</p>
+        <p class="text-caption truncate text-muted">{home.place}</p>
+        <span class="text-micro mt-1.5 inline-flex w-fit items-center rounded-full bg-success-bg px-2 py-0.5 font-medium text-success-fg">
+            {home.pill}
+        </span>
+    </div>
+</div>

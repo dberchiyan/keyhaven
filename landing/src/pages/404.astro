@@ -1,0 +1,32 @@
+---
+import SiteFooter from '@/components/sections/site-footer.astro';
+import SiteHeader from '@/components/sections/site-header.astro';
+import ButtonLink from '@/components/ui/button-link.astro';
+import Container from '@/components/ui/container.astro';
+import { NOT_FOUND } from '@/content/legal';
+import { NOT_FOUND_PATH } from '@/content/pages';
+import Base from '@/layouts/base.astro';
+---
+
+<Base path={NOT_FOUND_PATH}>
+    <SiteHeader />
+    <main id="main">
+        <section aria-labelledby="not-found-title">
+            <Container class="flex flex-col items-start gap-5 pt-16 pb-24 sm:pt-24">
+                <p class="type-eyebrow eyebrow-rule text-brand">{NOT_FOUND.eyebrow}</p>
+                <h1 id="not-found-title" class="type-title">
+                    {NOT_FOUND.heading}
+                </h1>
+                <p class="type-lead max-w-xl text-muted">{NOT_FOUND.lead}</p>
+                <div class="mt-3 flex flex-col gap-3 sm:flex-row">
+                    {NOT_FOUND.links.map((link) => (
+                        <ButtonLink href={link.href} variant={link.isPrimary ? 'brand' : 'outline'} isLarge>
+                            {link.label}
+                        </ButtonLink>
+                    ))}
+                </div>
+            </Container>
+        </section>
+    </main>
+    <SiteFooter />
+</Base>

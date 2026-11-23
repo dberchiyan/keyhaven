@@ -1,0 +1,52 @@
+---
+import '@/styles/search-demo/base.css';
+import '@/styles/search-demo/pointer.css';
+import '@/styles/search-demo/filters.css';
+import '@/styles/search-demo/results.css';
+
+import { SEARCH_DEMO } from '@/content/search-demo';
+
+import DemoControls from './demo-controls.astro';
+import DemoResultLine from './demo-result-line.astro';
+import DemoResults from './demo-results.astro';
+import DemoToolbar from './demo-toolbar.astro';
+
+/**
+ * The hero's search played as one CSS film (LD-32): every part runs a keyframe track over the same
+ * cycle, so the loop stays in step. One labelled image (LD-37); the buttons pause and replay
+ * (LD-38); reduced motion and a page without JS show the final frame (LD-28).
+ */
+const { label, controls } = SEARCH_DEMO;
+---
+
+<div class="flex flex-col items-center gap-3">
+    <div role="img" aria-label={label} class="search-demo w-full select-none" data-demo>
+        <div
+            aria-hidden="true"
+            class="relative overflow-hidden rounded-panel bg-canvas/80 p-3 shadow-window ring-glass sm:p-4"
+        >
+            <DemoToolbar />
+            <DemoResultLine />
+            <DemoResults />
+            <span class="d-cursor absolute z-30 hidden sm:block">
+                <span class="d-click absolute -top-3 -left-3 size-7 rounded-full bg-brand/30"></span>
+                <svg
+                    viewBox="0 0 24 24"
+                    class="size-6 fill-ink stroke-surface drop-shadow"
+                    stroke-width="1.5"
+                    stroke-linejoin="round"
+                >
+                    <path d="M5.5 3.5 19 11.3l-6 1.6-3.3 5.6L5.5 3.5Z"></path>
+                </svg>
+            </span>
+            <span class="d-cover pointer-events-none absolute inset-0 z-40 bg-canvas"></span>
+        </div>
+    </div>
+    <DemoControls pause={controls.pause} play={controls.play} replay={controls.replay} />
+</div>
+
+<script>
+    import { startSearchDemos } from './search-demo-controls';
+
+    startSearchDemos();
+</script>

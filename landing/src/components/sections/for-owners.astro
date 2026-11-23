@@ -1,0 +1,60 @@
+---
+import DashboardMock from '@/components/mock/dashboard-mock.astro';
+import ButtonLink from '@/components/ui/button-link.astro';
+import Container from '@/components/ui/container.astro';
+import Icon from '@/components/ui/icon.astro';
+import SectionHeading from '@/components/ui/section-heading.astro';
+import { LANDING } from '@/content/landing';
+import { SITE } from '@/content/site';
+
+import PointList from './point-list.astro';
+
+const { owners } = LANDING;
+const { notice } = owners.mock;
+---
+
+<section id="owners" aria-labelledby="owners-title" class="overflow-x-clip py-16 sm:py-20">
+    <Container class="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+        <div class="flex min-w-0 flex-col gap-10">
+            <SectionHeading
+                id="owners-title"
+                eyebrow={owners.eyebrow}
+                title={owners.title}
+                lead={owners.lead}
+                layout="start"
+            />
+            <PointList
+                points={owners.points}
+                class="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2"
+            />
+            <div class="reveal flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-6">
+                <ButtonLink href={SITE.links.signUp} variant="outline" isLarge>
+                    {owners.primary}
+                    <Icon name="arrowRight" class="size-4.5" />
+                </ButtonLink>
+                <a
+                    href={SITE.links.signIn}
+                    class="inline-flex min-h-11 items-center px-2 font-semibold text-ink-2 underline-offset-4 hover:text-ink hover:underline"
+                >
+                    {owners.secondary}
+                </a>
+            </div>
+        </div>
+        <div class="reveal-media relative min-w-0 rounded-stage bg-surface-2 p-2 ring-glass sm:p-8">
+            <DashboardMock class="animate-float-slow" />
+            <div
+                class="absolute -top-4 right-4 hidden items-center gap-3 rounded-card bg-surface px-4 py-3 shadow-float ring-glass sm:-top-5 sm:right-8 sm:flex"
+                aria-hidden="true"
+            >
+                <span class="relative flex size-9 items-center justify-center rounded-full bg-warning-bg text-warning-fg">
+                    <Icon name="bell" class="size-4.5" />
+                    <span class="absolute top-1.5 right-1.5 size-2 rounded-full bg-warning-dot ring-2 ring-surface"></span>
+                </span>
+                <span class="flex flex-col gap-0.5">
+                    <span class="text-sm font-semibold text-ink">{notice.title}</span>
+                    <span class="text-micro text-muted">{notice.text}</span>
+                </span>
+            </div>
+        </div>
+    </Container>
+</section>

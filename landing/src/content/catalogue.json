@@ -1,0 +1,1431 @@
+{
+    "takenOn": "2026-11-13",
+    "cities": {
+        "austin": {
+            "RENT": {
+                "total": 119,
+                "medianPrice": "2550.00",
+                "types": {
+                    "APARTMENT": 47,
+                    "TOWNHOUSE": 20,
+                    "CONDO": 20,
+                    "STUDIO": 17,
+                    "HOUSE": 15
+                },
+                "neighborhoods": {
+                    "Zilker": 23,
+                    "East Austin": 21,
+                    "Hyde Park": 18,
+                    "Mueller": 18,
+                    "Clarksville": 16,
+                    "Barton Hills": 13,
+                    "South Congress": 10
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000438",
+                        "title": "Sunny 2-bedroom house in Clarksville",
+                        "propertyType": "HOUSE",
+                        "price": "2825.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1160,
+                        "neighborhood": "Clarksville",
+                        "availableOn": "2026-11-23",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000363",
+                        "title": "Quiet 3-bedroom apartment in East Austin",
+                        "propertyType": "APARTMENT",
+                        "price": "3475.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1429,
+                        "neighborhood": "East Austin",
+                        "availableOn": "2026-11-06",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000892",
+                        "title": "Quiet 1-bedroom apartment in Zilker",
+                        "propertyType": "APARTMENT",
+                        "price": "2050.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 700,
+                        "neighborhood": "Zilker",
+                        "availableOn": "2026-11-03",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000417",
+                        "title": "Airy 3-bedroom apartment in Hyde Park",
+                        "propertyType": "APARTMENT",
+                        "price": "3400.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1135,
+                        "neighborhood": "Hyde Park",
+                        "availableOn": "2026-11-10",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000483",
+                        "title": "Sunny 3-bedroom townhouse in East Austin",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "2800.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1252,
+                        "neighborhood": "East Austin",
+                        "availableOn": "2027-01-19",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000379",
+                        "title": "Charming 2-bedroom condo in Clarksville",
+                        "propertyType": "CONDO",
+                        "price": "2400.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1201,
+                        "neighborhood": "Clarksville",
+                        "availableOn": "2026-12-28",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000371",
+                        "title": "Modern 2-bedroom house in Zilker",
+                        "propertyType": "HOUSE",
+                        "price": "2800.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1268,
+                        "neighborhood": "Zilker",
+                        "availableOn": "2026-11-24",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000162",
+                        "title": "Modern 3-bedroom townhouse in Mueller",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "3475.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1607,
+                        "neighborhood": "Mueller",
+                        "availableOn": "2027-02-06",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            },
+            "SALE": {
+                "total": 31,
+                "medianPrice": "475000.00",
+                "types": {
+                    "APARTMENT": 14,
+                    "TOWNHOUSE": 5,
+                    "HOUSE": 4,
+                    "STUDIO": 4,
+                    "CONDO": 4
+                },
+                "neighborhoods": {
+                    "Hyde Park": 7,
+                    "Zilker": 6,
+                    "Barton Hills": 6,
+                    "East Austin": 6,
+                    "Clarksville": 3,
+                    "Mueller": 3
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001133",
+                        "title": "Quiet 3-bedroom apartment in Hyde Park for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "490000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1621,
+                        "neighborhood": "Hyde Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001044",
+                        "title": "Sunny 2-bedroom apartment in Clarksville for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "370000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 924,
+                        "neighborhood": "Clarksville",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001215",
+                        "title": "Renovated 3-bedroom townhouse in Zilker for sale",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "500000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1165,
+                        "neighborhood": "Zilker",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001252",
+                        "title": "Modern 3-bedroom apartment in Barton Hills for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "475000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1352,
+                        "neighborhood": "Barton Hills",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001242",
+                        "title": "Modern 2-bedroom house in Zilker for sale",
+                        "propertyType": "HOUSE",
+                        "price": "505000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1082,
+                        "neighborhood": "Zilker",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001169",
+                        "title": "Renovated 2-bedroom house in Barton Hills for sale",
+                        "propertyType": "HOUSE",
+                        "price": "670000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1148,
+                        "neighborhood": "Barton Hills",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001173",
+                        "title": "Quiet 1-bedroom apartment in Mueller for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "350000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 799,
+                        "neighborhood": "Mueller",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001288",
+                        "title": "Quiet 2-bedroom apartment in Hyde Park for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "390000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1288,
+                        "neighborhood": "Hyde Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            }
+        },
+        "denver": {
+            "RENT": {
+                "total": 136,
+                "medianPrice": "2600.00",
+                "types": {
+                    "APARTMENT": 62,
+                    "HOUSE": 22,
+                    "CONDO": 20,
+                    "STUDIO": 17,
+                    "TOWNHOUSE": 15
+                },
+                "neighborhoods": {
+                    "Washington Park": 26,
+                    "Cherry Creek": 24,
+                    "LoHi": 21,
+                    "Highland": 20,
+                    "Capitol Hill": 18,
+                    "RiNo": 16,
+                    "Baker": 11
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000966",
+                        "title": "Bright 3-bedroom townhouse in Washington Park",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "2950.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1550,
+                        "neighborhood": "Washington Park",
+                        "availableOn": "2026-12-18",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000046",
+                        "title": "Sunny studio in Washington Park",
+                        "propertyType": "STUDIO",
+                        "price": "1325.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 391,
+                        "neighborhood": "Washington Park",
+                        "availableOn": "2027-02-01",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1588854337115-1c67d9247e4d?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000992",
+                        "title": "Renovated 1-bedroom condo in Highland",
+                        "propertyType": "CONDO",
+                        "price": "2225.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 907,
+                        "neighborhood": "Highland",
+                        "availableOn": "2026-11-29",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000088",
+                        "title": "Quiet studio in RiNo",
+                        "propertyType": "STUDIO",
+                        "price": "1450.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 499,
+                        "neighborhood": "RiNo",
+                        "availableOn": "2027-01-01",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000828",
+                        "title": "Charming 3-bedroom condo in LoHi",
+                        "propertyType": "CONDO",
+                        "price": "2750.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1614,
+                        "neighborhood": "LoHi",
+                        "availableOn": "2026-12-31",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000442",
+                        "title": "Sunny 2-bedroom apartment in Washington Park",
+                        "propertyType": "APARTMENT",
+                        "price": "2850.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1023,
+                        "neighborhood": "Washington Park",
+                        "availableOn": "2027-01-25",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000242",
+                        "title": "Quiet 2-bedroom townhouse in Cherry Creek",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "2750.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1276,
+                        "neighborhood": "Cherry Creek",
+                        "availableOn": "2027-01-09",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000339",
+                        "title": "Charming 3-bedroom apartment in LoHi",
+                        "propertyType": "APARTMENT",
+                        "price": "3200.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1464,
+                        "neighborhood": "LoHi",
+                        "availableOn": "2026-12-18",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            },
+            "SALE": {
+                "total": 32,
+                "medianPrice": "565000.00",
+                "types": {
+                    "APARTMENT": 14,
+                    "HOUSE": 8,
+                    "TOWNHOUSE": 4,
+                    "CONDO": 3,
+                    "STUDIO": 3
+                },
+                "neighborhoods": {
+                    "Baker": 7,
+                    "LoHi": 7,
+                    "Washington Park": 5,
+                    "RiNo": 5,
+                    "Highland": 4,
+                    "Capitol Hill": 3,
+                    "Cherry Creek": 1
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001098",
+                        "title": "Updated 3-bedroom townhouse in Washington Park for sale",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "610000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1550,
+                        "neighborhood": "Washington Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001124",
+                        "title": "Modern 1-bedroom condo in Highland for sale",
+                        "propertyType": "CONDO",
+                        "price": "530000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 907,
+                        "neighborhood": "Highland",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001255",
+                        "title": "Charming studio in Baker for sale",
+                        "propertyType": "STUDIO",
+                        "price": "355000.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 500,
+                        "neighborhood": "Baker",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001057",
+                        "title": "Quiet studio in Baker for sale",
+                        "propertyType": "STUDIO",
+                        "price": "275000.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 500,
+                        "neighborhood": "Baker",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001047",
+                        "title": "Charming 2-bedroom apartment in Washington Park for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "585000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 960,
+                        "neighborhood": "Washington Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001006",
+                        "title": "Modern 2-bedroom house in LoHi for sale",
+                        "propertyType": "HOUSE",
+                        "price": "585000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1257,
+                        "neighborhood": "LoHi",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001107",
+                        "title": "Renovated 4-bedroom house in LoHi for sale",
+                        "propertyType": "HOUSE",
+                        "price": "815000.0000",
+                        "bedrooms": 4,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1531,
+                        "neighborhood": "LoHi",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001194",
+                        "title": "Bright 2-bedroom townhouse in Washington Park for sale",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "550000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1044,
+                        "neighborhood": "Washington Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            }
+        },
+        "seattle": {
+            "RENT": {
+                "total": 141,
+                "medianPrice": "2925.00",
+                "types": {
+                    "APARTMENT": 57,
+                    "STUDIO": 25,
+                    "HOUSE": 21,
+                    "CONDO": 19,
+                    "TOWNHOUSE": 19
+                },
+                "neighborhoods": {
+                    "Ballard": 27,
+                    "Belltown": 26,
+                    "Capitol Hill": 21,
+                    "Fremont": 20,
+                    "Wallingford": 17,
+                    "Columbia City": 17,
+                    "Queen Anne": 13
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000904",
+                        "title": "Quiet 3-bedroom house in Wallingford",
+                        "propertyType": "HOUSE",
+                        "price": "3775.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1192,
+                        "neighborhood": "Wallingford",
+                        "availableOn": "2027-01-16",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000217",
+                        "title": "Quiet 4-bedroom house in Fremont",
+                        "propertyType": "HOUSE",
+                        "price": "4475.0000",
+                        "bedrooms": 4,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1702,
+                        "neighborhood": "Fremont",
+                        "availableOn": "2027-01-25",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000005",
+                        "title": "Spacious 1-bedroom apartment in Belltown",
+                        "propertyType": "APARTMENT",
+                        "price": "2525.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 776,
+                        "neighborhood": "Belltown",
+                        "availableOn": "2027-01-08",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000336",
+                        "title": "Airy 2-bedroom house in Capitol Hill",
+                        "propertyType": "HOUSE",
+                        "price": "3475.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1204,
+                        "neighborhood": "Capitol Hill",
+                        "availableOn": "2026-11-08",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000332",
+                        "title": "Sunny studio in Ballard",
+                        "propertyType": "STUDIO",
+                        "price": "1575.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 404,
+                        "neighborhood": "Ballard",
+                        "availableOn": "2027-01-19",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000192",
+                        "title": "Cozy 3-bedroom apartment in Belltown",
+                        "propertyType": "APARTMENT",
+                        "price": "4050.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1516,
+                        "neighborhood": "Belltown",
+                        "availableOn": "2026-12-17",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000409",
+                        "title": "Renovated studio in Belltown",
+                        "propertyType": "STUDIO",
+                        "price": "1650.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 420,
+                        "neighborhood": "Belltown",
+                        "availableOn": "2027-01-20",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000164",
+                        "title": "Sunny 3-bedroom condo in Fremont",
+                        "propertyType": "CONDO",
+                        "price": "4250.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1208,
+                        "neighborhood": "Fremont",
+                        "availableOn": "2026-11-09",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            },
+            "SALE": {
+                "total": 44,
+                "medianPrice": "835000.00",
+                "types": {
+                    "APARTMENT": 20,
+                    "TOWNHOUSE": 8,
+                    "CONDO": 8,
+                    "STUDIO": 5,
+                    "HOUSE": 3
+                },
+                "neighborhoods": {
+                    "Wallingford": 11,
+                    "Queen Anne": 10,
+                    "Columbia City": 8,
+                    "Ballard": 6,
+                    "Belltown": 5,
+                    "Fremont": 4
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001254",
+                        "title": "Quiet 1-bedroom townhouse in Belltown for sale",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "710000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 747,
+                        "neighborhood": "Belltown",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001214",
+                        "title": "Modern 2-bedroom townhouse in Wallingford for sale",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "835000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 892,
+                        "neighborhood": "Wallingford",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001230",
+                        "title": "Renovated 2-bedroom house in Belltown for sale",
+                        "propertyType": "HOUSE",
+                        "price": "1085000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 934,
+                        "neighborhood": "Belltown",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001085",
+                        "title": "Updated studio in Wallingford for sale",
+                        "propertyType": "STUDIO",
+                        "price": "390000.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 424,
+                        "neighborhood": "Wallingford",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001293",
+                        "title": "Updated 1-bedroom apartment in Wallingford for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "745000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 973,
+                        "neighborhood": "Wallingford",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001054",
+                        "title": "Sunny 3-bedroom apartment in Wallingford for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "815000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1169,
+                        "neighborhood": "Wallingford",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001052",
+                        "title": "Sunny 1-bedroom apartment in Belltown for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "730000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 960,
+                        "neighborhood": "Belltown",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1556911220-bff31c812dba?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001236",
+                        "title": "Bright studio in Queen Anne for sale",
+                        "propertyType": "STUDIO",
+                        "price": "420000.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 476,
+                        "neighborhood": "Queen Anne",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            }
+        },
+        "chicago": {
+            "RENT": {
+                "total": 155,
+                "medianPrice": "2575.00",
+                "types": {
+                    "APARTMENT": 69,
+                    "HOUSE": 28,
+                    "STUDIO": 22,
+                    "CONDO": 22,
+                    "TOWNHOUSE": 14
+                },
+                "neighborhoods": {
+                    "Logan Square": 27,
+                    "Lakeview": 26,
+                    "West Loop": 25,
+                    "Lincoln Park": 25,
+                    "Pilsen": 20,
+                    "Wicker Park": 17,
+                    "Hyde Park": 15
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000168",
+                        "title": "Modern 3-bedroom house in Lakeview",
+                        "propertyType": "HOUSE",
+                        "price": "3200.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1120,
+                        "neighborhood": "Lakeview",
+                        "availableOn": "2026-11-23",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000097",
+                        "title": "Renovated 2-bedroom apartment in West Loop",
+                        "propertyType": "APARTMENT",
+                        "price": "2875.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 901,
+                        "neighborhood": "West Loop",
+                        "availableOn": "2027-01-17",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000536",
+                        "title": "Renovated studio in West Loop",
+                        "propertyType": "STUDIO",
+                        "price": "1675.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 435,
+                        "neighborhood": "West Loop",
+                        "availableOn": "2027-01-16",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000239",
+                        "title": "Sunny 1-bedroom apartment in Lincoln Park",
+                        "propertyType": "APARTMENT",
+                        "price": "2300.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 746,
+                        "neighborhood": "Lincoln Park",
+                        "availableOn": "2026-12-04",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000216",
+                        "title": "Cozy studio in Hyde Park",
+                        "propertyType": "STUDIO",
+                        "price": "1425.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 420,
+                        "neighborhood": "Hyde Park",
+                        "availableOn": "2026-12-14",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000651",
+                        "title": "Quiet 1-bedroom apartment in Pilsen",
+                        "propertyType": "APARTMENT",
+                        "price": "2100.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 702,
+                        "neighborhood": "Pilsen",
+                        "availableOn": "2026-12-17",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000562",
+                        "title": "Charming 3-bedroom apartment in Logan Square",
+                        "propertyType": "APARTMENT",
+                        "price": "3875.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1211,
+                        "neighborhood": "Logan Square",
+                        "availableOn": "2027-01-14",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000473",
+                        "title": "Updated 3-bedroom condo in Logan Square",
+                        "propertyType": "CONDO",
+                        "price": "3650.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1260,
+                        "neighborhood": "Logan Square",
+                        "availableOn": "2026-11-27",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            },
+            "SALE": {
+                "total": 45,
+                "medianPrice": "370000.00",
+                "types": {
+                    "APARTMENT": 17,
+                    "HOUSE": 12,
+                    "CONDO": 6,
+                    "STUDIO": 6,
+                    "TOWNHOUSE": 4
+                },
+                "neighborhoods": {
+                    "Pilsen": 10,
+                    "Lincoln Park": 9,
+                    "Lakeview": 7,
+                    "Wicker Park": 6,
+                    "Logan Square": 6,
+                    "Hyde Park": 4,
+                    "West Loop": 3
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001021",
+                        "title": "Bright 1-bedroom condo in Hyde Park for sale",
+                        "propertyType": "CONDO",
+                        "price": "305000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 862,
+                        "neighborhood": "Hyde Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1588854337115-1c67d9247e4d?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001160",
+                        "title": "Spacious 1-bedroom condo in Wicker Park for sale",
+                        "propertyType": "CONDO",
+                        "price": "275000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 860,
+                        "neighborhood": "Wicker Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001216",
+                        "title": "Cozy 1-bedroom apartment in Pilsen for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "335000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 792,
+                        "neighborhood": "Pilsen",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001118",
+                        "title": "Cozy 3-bedroom house in Wicker Park for sale",
+                        "propertyType": "HOUSE",
+                        "price": "615000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1573,
+                        "neighborhood": "Wicker Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001260",
+                        "title": "Quiet 3-bedroom apartment in Hyde Park for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "500000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1540,
+                        "neighborhood": "Hyde Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001224",
+                        "title": "Updated studio in Wicker Park for sale",
+                        "propertyType": "STUDIO",
+                        "price": "185000.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 375,
+                        "neighborhood": "Wicker Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001139",
+                        "title": "Quiet 1-bedroom apartment in Lincoln Park for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "285000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 817,
+                        "neighborhood": "Lincoln Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001096",
+                        "title": "Updated studio in Hyde Park for sale",
+                        "propertyType": "STUDIO",
+                        "price": "230000.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 497,
+                        "neighborhood": "Hyde Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1588854337115-1c67d9247e4d?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            }
+        },
+        "atlanta": {
+            "RENT": {
+                "total": 146,
+                "medianPrice": "2175.00",
+                "types": {
+                    "APARTMENT": 68,
+                    "STUDIO": 23,
+                    "TOWNHOUSE": 22,
+                    "HOUSE": 17,
+                    "CONDO": 16
+                },
+                "neighborhoods": {
+                    "Virginia-Highland": 28,
+                    "Midtown": 24,
+                    "Old Fourth Ward": 21,
+                    "Buckhead": 19,
+                    "West End": 19,
+                    "Grant Park": 19,
+                    "Inman Park": 16
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000593",
+                        "title": "Spacious 1-bedroom townhouse in Buckhead",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "1925.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 787,
+                        "neighborhood": "Buckhead",
+                        "availableOn": "2027-01-22",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000356",
+                        "title": "Renovated studio in West End",
+                        "propertyType": "STUDIO",
+                        "price": "1425.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 391,
+                        "neighborhood": "West End",
+                        "availableOn": "2026-11-07",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000933",
+                        "title": "Spacious 3-bedroom apartment in Inman Park",
+                        "propertyType": "APARTMENT",
+                        "price": "2625.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1625,
+                        "neighborhood": "Inman Park",
+                        "availableOn": "2027-02-10",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000321",
+                        "title": "Quiet 4-bedroom house in Midtown",
+                        "propertyType": "HOUSE",
+                        "price": "3225.0000",
+                        "bedrooms": 4,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1752,
+                        "neighborhood": "Midtown",
+                        "availableOn": "2026-11-05",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000131",
+                        "title": "Charming 2-bedroom apartment in Midtown",
+                        "propertyType": "APARTMENT",
+                        "price": "2275.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1169,
+                        "neighborhood": "Midtown",
+                        "availableOn": "2026-11-12",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000325",
+                        "title": "Quiet 3-bedroom townhouse in Midtown",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "2625.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1140,
+                        "neighborhood": "Midtown",
+                        "availableOn": "2026-11-20",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000248",
+                        "title": "Modern 2-bedroom apartment in Inman Park",
+                        "propertyType": "APARTMENT",
+                        "price": "2675.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1128,
+                        "neighborhood": "Inman Park",
+                        "availableOn": "2026-11-30",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000735",
+                        "title": "Bright studio in Virginia-Highland",
+                        "propertyType": "STUDIO",
+                        "price": "1400.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 493,
+                        "neighborhood": "Virginia-Highland",
+                        "availableOn": "2026-11-20",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            },
+            "SALE": {
+                "total": 39,
+                "medianPrice": "400000.00",
+                "types": {
+                    "APARTMENT": 18,
+                    "STUDIO": 8,
+                    "HOUSE": 8,
+                    "CONDO": 3,
+                    "TOWNHOUSE": 2
+                },
+                "neighborhoods": {
+                    "Virginia-Highland": 9,
+                    "Inman Park": 6,
+                    "Buckhead": 6,
+                    "West End": 5,
+                    "Grant Park": 5,
+                    "Old Fourth Ward": 5,
+                    "Midtown": 3
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001065",
+                        "title": "Quiet 3-bedroom apartment in Inman Park for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "425000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1625,
+                        "neighborhood": "Inman Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001226",
+                        "title": "Airy studio in Buckhead for sale",
+                        "propertyType": "STUDIO",
+                        "price": "215000.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 493,
+                        "neighborhood": "Buckhead",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001149",
+                        "title": "Renovated 4-bedroom house in Midtown for sale",
+                        "propertyType": "HOUSE",
+                        "price": "680000.0000",
+                        "bedrooms": 4,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1786,
+                        "neighborhood": "Midtown",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001071",
+                        "title": "Bright 4-bedroom house in Buckhead for sale",
+                        "propertyType": "HOUSE",
+                        "price": "680000.0000",
+                        "bedrooms": 4,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1439,
+                        "neighborhood": "Buckhead",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001056",
+                        "title": "Spacious studio in Inman Park for sale",
+                        "propertyType": "STUDIO",
+                        "price": "205000.0000",
+                        "bedrooms": 0,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 439,
+                        "neighborhood": "Inman Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001061",
+                        "title": "Renovated 3-bedroom condo in West End for sale",
+                        "propertyType": "CONDO",
+                        "price": "565000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1474,
+                        "neighborhood": "West End",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001101",
+                        "title": "Quiet 1-bedroom apartment in Grant Park for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "315000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 873,
+                        "neighborhood": "Grant Park",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001185",
+                        "title": "Quiet 1-bedroom apartment in Old Fourth Ward for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "350000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 879,
+                        "neighborhood": "Old Fourth Ward",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            }
+        },
+        "phoenix": {
+            "RENT": {
+                "total": 130,
+                "medianPrice": "2350.00",
+                "types": {
+                    "APARTMENT": 56,
+                    "HOUSE": 26,
+                    "TOWNHOUSE": 20,
+                    "CONDO": 18,
+                    "STUDIO": 10
+                },
+                "neighborhoods": {
+                    "Coronado": 29,
+                    "Ahwatukee": 24,
+                    "Arcadia": 22,
+                    "Biltmore": 16,
+                    "Willo": 14,
+                    "Encanto": 14,
+                    "Roosevelt Row": 11
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000276",
+                        "title": "Renovated 1-bedroom townhouse in Willo",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "1525.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 760,
+                        "neighborhood": "Willo",
+                        "availableOn": "2026-12-28",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000671",
+                        "title": "Bright 4-bedroom house in Coronado",
+                        "propertyType": "HOUSE",
+                        "price": "2725.0000",
+                        "bedrooms": 4,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1657,
+                        "neighborhood": "Coronado",
+                        "availableOn": "2026-11-05",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000081",
+                        "title": "Cozy 3-bedroom condo in Ahwatukee",
+                        "propertyType": "CONDO",
+                        "price": "2950.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1532,
+                        "neighborhood": "Ahwatukee",
+                        "availableOn": "2026-11-21",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000533",
+                        "title": "Sunny 1-bedroom apartment in Coronado",
+                        "propertyType": "APARTMENT",
+                        "price": "1700.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 845,
+                        "neighborhood": "Coronado",
+                        "availableOn": "2026-12-21",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000484",
+                        "title": "Bright 3-bedroom townhouse in Arcadia",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "2550.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1587,
+                        "neighborhood": "Arcadia",
+                        "availableOn": "2026-11-05",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1523217582562-09d0def993a6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000744",
+                        "title": "Cozy 3-bedroom condo in Arcadia",
+                        "propertyType": "CONDO",
+                        "price": "2875.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1364,
+                        "neighborhood": "Arcadia",
+                        "availableOn": "2027-02-08",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000488",
+                        "title": "Modern 3-bedroom apartment in Roosevelt Row",
+                        "propertyType": "APARTMENT",
+                        "price": "2975.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1207,
+                        "neighborhood": "Roosevelt Row",
+                        "availableOn": "2026-11-30",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000000058",
+                        "title": "Charming 3-bedroom apartment in Biltmore",
+                        "propertyType": "APARTMENT",
+                        "price": "2375.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.5",
+                        "sizeSqft": 1476,
+                        "neighborhood": "Biltmore",
+                        "availableOn": "2027-01-24",
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            },
+            "SALE": {
+                "total": 45,
+                "medianPrice": "480000.00",
+                "types": {
+                    "APARTMENT": 20,
+                    "CONDO": 11,
+                    "HOUSE": 8,
+                    "TOWNHOUSE": 5,
+                    "STUDIO": 1
+                },
+                "neighborhoods": {
+                    "Arcadia": 11,
+                    "Ahwatukee": 8,
+                    "Coronado": 7,
+                    "Encanto": 6,
+                    "Willo": 5,
+                    "Biltmore": 4,
+                    "Roosevelt Row": 4
+                },
+                "newest": [
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001161",
+                        "title": "Updated 1-bedroom apartment in Biltmore for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "305000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 832,
+                        "neighborhood": "Biltmore",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001012",
+                        "title": "Quiet 1-bedroom townhouse in Ahwatukee for sale",
+                        "propertyType": "TOWNHOUSE",
+                        "price": "405000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 855,
+                        "neighborhood": "Ahwatukee",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1449844908441-8829872d2607?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001019",
+                        "title": "Quiet 3-bedroom apartment in Arcadia for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "550000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1167,
+                        "neighborhood": "Arcadia",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001022",
+                        "title": "Cozy 1-bedroom condo in Coronado for sale",
+                        "propertyType": "CONDO",
+                        "price": "425000.0000",
+                        "bedrooms": 1,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 871,
+                        "neighborhood": "Coronado",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001111",
+                        "title": "Renovated 2-bedroom apartment in Ahwatukee for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "455000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.5",
+                        "sizeSqft": 1115,
+                        "neighborhood": "Ahwatukee",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1565182999561-18d7dc61c393?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001182",
+                        "title": "Quiet 3-bedroom condo in Coronado for sale",
+                        "propertyType": "CONDO",
+                        "price": "580000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1192,
+                        "neighborhood": "Coronado",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001265",
+                        "title": "Modern 3-bedroom apartment in Coronado for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "590000.0000",
+                        "bedrooms": 3,
+                        "bathrooms": "2.0",
+                        "sizeSqft": 1213,
+                        "neighborhood": "Coronado",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=1200&h=800&q=70&auto=format&fit=crop"
+                    },
+                    {
+                        "id": "019a0000-0000-7000-8000-000000001283",
+                        "title": "Renovated 2-bedroom apartment in Arcadia for sale",
+                        "propertyType": "APARTMENT",
+                        "price": "530000.0000",
+                        "bedrooms": 2,
+                        "bathrooms": "1.0",
+                        "sizeSqft": 1177,
+                        "neighborhood": "Arcadia",
+                        "availableOn": null,
+                        "coverPhotoUrl": "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&h=800&q=70&auto=format&fit=crop"
+                    }
+                ]
+            }
+        }
+    }
+}

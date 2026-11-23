@@ -1,0 +1,33 @@
+---
+import Cities from '@/components/sections/cities.astro';
+import DemoAccounts from '@/components/sections/demo-accounts.astro';
+import Faq from '@/components/sections/faq.astro';
+import FinalCta from '@/components/sections/final-cta.astro';
+import ForOwners from '@/components/sections/for-owners.astro';
+import Hero from '@/components/sections/hero.astro';
+import HowItWorks from '@/components/sections/how-it-works.astro';
+import ListingPage from '@/components/sections/listing-page.astro';
+import MobileDock from '@/components/sections/mobile-dock.astro';
+import RentOrBuy from '@/components/sections/rent-or-buy.astro';
+import SiteFooter from '@/components/sections/site-footer.astro';
+import SiteHeader from '@/components/sections/site-header.astro';
+import { INDEX_PATH } from '@/content/pages';
+import Base from '@/layouts/base.astro';
+---
+
+<Base path={INDEX_PATH}>
+    <SiteHeader />
+    <main id="main">
+        <Hero />
+        <Cities />
+        <RentOrBuy />
+        <ListingPage />
+        <HowItWorks />
+        <ForOwners />
+        <DemoAccounts />
+        <Faq />
+        <FinalCta />
+    </main>
+    <SiteFooter />
+    <MobileDock />
+</Base>

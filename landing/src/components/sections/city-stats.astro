@@ -1,0 +1,40 @@
+---
+import { type CityKind, type Kind, PROPERTY_TYPES } from '@/content/catalogue-schema';
+import { CITY_PAGE } from '@/content/city-page';
+import { HOME_WORDS } from '@/content/home-words';
+import { dollars, wholeNumber } from '@/lib/format';
+
+interface Props {
+    kind: Kind;
+    data: CityKind;
+}
+
+const { kind, data } = Astro.props;
+const copy = CITY_PAGE.kinds[kind];
+const types = PROPERTY_TYPES.flatMap((type) => {
+    const count = data.types[type];
+    return count ? [{ type, count }] : [];
+}).sort((a, b) => b.count - a.count);
+---
+
+<dl class="mt-8 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-3">
+    <div class="card p-4">
+        <dt class="text-sm text-muted">{copy.statHomes}</dt>
+        <dd class="mt-1 text-2xl font-semibold text-ink tabular-nums">{wholeNumber(data.total)}</dd>
+    </div>
+    <div class="card p-4">
+        <dt class="text-sm text-muted">{copy.statMedian}</dt>
+        <dd class="mt-1 text-2xl font-semibold text-ink tabular-nums">
+            {data.medianPrice ? dollars(data.medianPrice) : CITY_PAGE.noMedian}
+            {copy.perMonth && data.medianPrice && (
+                <span class="text-base font-medium text-muted">{HOME_WORDS.perMonth}</span>
+            )}
+        </dd>
+    </div>
+    <div class="card col-span-2 p-4 sm:col-span-1">
+        <dt class="text-sm text-muted">{CITY_PAGE.statTypes}</dt>
+        <dd class="mt-1 text-sm font-medium text-ink">
+            {types.map(({ type, count }) => `${HOME_WORDS.types[type]} ${count}`).join(' · ')}
+        </dd>
+    </div>
+</dl>

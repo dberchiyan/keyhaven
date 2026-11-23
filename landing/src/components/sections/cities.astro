@@ -1,0 +1,68 @@
+---
+import Container from '@/components/ui/container.astro';
+import Icon from '@/components/ui/icon.astro';
+import Photo from '@/components/ui/photo.astro';
+import SectionHeading from '@/components/ui/section-heading.astro';
+import { LANDING } from '@/content/landing';
+import { CITY_PHOTOS } from '@/content/showcase';
+import { CITIES } from '@/content/site';
+
+const { cities } = LANDING;
+const PHOTO = { width: 1200, height: 800, small: 480, large: 800 };
+---
+
+<section id="cities" aria-labelledby="cities-title" class="py-16 sm:py-20">
+    <Container>
+        <SectionHeading
+            id="cities-title"
+            eyebrow={cities.eyebrow}
+            title={cities.title}
+            lead={cities.lead}
+            layout="split"
+        />
+        <ul class="reveal-list snap-row -mx-4 mt-10 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 sm:mx-0 sm:mt-14 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3">
+            {CITIES.map((city) => (
+                <li class="w-[84%] shrink-0 snap-start sm:w-auto">
+                    <article class="card group relative flex h-full flex-col overflow-hidden">
+                        <div class="relative h-40 bg-surface-2" aria-hidden="true">
+                            {CITY_PHOTOS[city.slug] && (
+                                <Photo
+                                    src={CITY_PHOTOS[city.slug] ?? ''}
+                                    width={PHOTO.width}
+                                    height={PHOTO.height}
+                                    widths={[PHOTO.small, PHOTO.large]}
+                                    sizes="(min-width: 1024px) 24rem, (min-width: 640px) 50vw, 100vw"
+                                    class="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                />
+                            )}
+                            <span class="absolute inset-0 bg-gradient-to-t from-navy/60 via-navy/10 to-transparent" />
+                        </div>
+                        <div class="flex flex-1 flex-col gap-3 p-5">
+                            <div class="flex items-center gap-2">
+                                <Icon name="pin" class="size-4 text-brand" />
+                                <h3 class="type-h3 text-ink">
+                                    {city.name}, {city.state}
+                                </h3>
+                            </div>
+                            <p class="text-sm leading-relaxed text-muted">{cities.tagline[city.slug]}</p>
+                            <div class="mt-auto flex gap-2 pt-2">
+                                <a
+                                    href={`/rent/${city.slug}`}
+                                    class="chip min-h-11 bg-brand-soft font-semibold text-brand-strong hover:bg-brand hover:text-on-brand"
+                                >
+                                    {cities.rent}
+                                </a>
+                                <a
+                                    href={`/buy/${city.slug}`}
+                                    class="chip min-h-11 bg-surface-2 font-semibold ring-1 ring-line hover:bg-brand hover:text-on-brand"
+                                >
+                                    {cities.buy}
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </li>
+            ))}
+        </ul>
+    </Container>
+</section>

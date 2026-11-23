@@ -1,0 +1,37 @@
+---
+import Icon from '@/components/ui/icon.astro';
+import { LANDING } from '@/content/landing';
+
+/** A few concrete searches straight into the catalogue: real filters of the app, no counts the snapshot cannot back. */
+const { scenarios } = LANDING;
+---
+
+{scenarios.items.length > 0 && (
+    <nav aria-labelledby="scenarios-title" class="reveal-text mx-auto mt-14 flex max-w-5xl flex-col gap-4 sm:mt-16">
+        <h2 id="scenarios-title" class="type-eyebrow eyebrow-rule text-brand">
+            {scenarios.title}
+        </h2>
+        <ul class="grid gap-3 sm:grid-cols-2">
+            {scenarios.items.map((item) => (
+                <li class="flex">
+                    <a
+                        href={item.href}
+                        class="card group flex w-full items-start gap-3 p-4 transition-transform duration-200 active:scale-[0.98]"
+                    >
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                            <Icon name={item.icon} class="size-5" />
+                        </span>
+                        <span class="flex min-w-0 flex-1 flex-col gap-1">
+                            <span class="text-caption font-medium text-muted">{item.kind}</span>
+                            <span class="font-semibold text-ink group-hover:text-brand-strong">{item.label}</span>
+                        </span>
+                        <Icon
+                            name="arrowRight"
+                            class="mt-1 size-4 shrink-0 text-subtle transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand"
+                        />
+                    </a>
+                </li>
+            ))}
+        </ul>
+    </nav>
+)}

@@ -1,0 +1,27 @@
+---
+import Icon from '@/components/ui/icon.astro';
+import { CHROME } from '@/content/chrome';
+import { SITE } from '@/content/site';
+
+const { footer, newTab } = CHROME;
+const PROFILES = [
+    { href: SITE.links.github, label: footer.profiles.github, icon: 'github' },
+    { href: SITE.links.readme, label: footer.profiles.readme, icon: 'book' },
+] as const;
+---
+
+<ul aria-label={footer.profilesLabel} class="flex gap-2">
+    {PROFILES.map((profile) => (
+        <li>
+            <a
+                href={profile.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${profile.label} ${newTab}`}
+                class="footer-circle flex size-11 items-center justify-center rounded-full transition-colors active:scale-[0.98]"
+            >
+                <Icon name={profile.icon} class="size-5" />
+            </a>
+        </li>
+    ))}
+</ul>

@@ -1,0 +1,87 @@
+---
+import SearchDemo from '@/components/mock/search-demo/search-demo.astro';
+import Container from '@/components/ui/container.astro';
+import Icon from '@/components/ui/icon.astro';
+import { LANDING } from '@/content/landing';
+import { CITIES } from '@/content/site';
+
+import HeroSearch from './hero-search.astro';
+import ProofStrip from './proof-strip.astro';
+import Scenarios from './scenarios.astro';
+
+/**
+ * The first screen (LD-16): on desktop the claim, the search and the cities fill the viewport above a peek of the film,
+ * type and spacing shrinking with the height on short laptops; on phones a shorter lede lets the film's top show.
+ */
+const { hero } = LANDING;
+---
+
+<section aria-labelledby="hero-title" class="relative isolate -mt-16 overflow-hidden pt-16" data-dock-before>
+    <Container class="pb-4">
+        <div class="hero-intro mx-auto flex max-w-4xl flex-col items-center pt-6 text-center sm:pt-16">
+            <p class="enter text-caption inline-flex items-center gap-2 rounded-full bg-surface/70 px-3.5 py-1.5 font-medium text-ink-2 ring-glass backdrop-blur [--i:0]">
+                <Icon name="home" class="size-4 text-brand" />
+                {hero.eyebrow}
+            </p>
+            <h1 id="hero-title" class="hero-title type-display mt-4 sm:mt-6">
+                <span class="enter block [--i:1]">{hero.title.start}</span>
+                <span class="enter text-gradient block pb-1 [--i:2]">{hero.title.accent}</span>
+            </h1>
+            <p class="enter type-lead hero-gap mt-3 max-w-2xl text-muted [--i:3] sm:mt-6">
+                <span class="sm:hidden">{hero.leadShort}</span>
+                <span class="hidden sm:inline">{hero.lead}</span>
+            </p>
+            <HeroSearch />
+            <p class="enter mt-3 text-sm text-subtle [--i:5]">{hero.hint}</p>
+            <nav aria-label={hero.citiesLabel} class="enter hero-gap mt-4 w-full max-w-2xl [--i:5] sm:mt-6">
+                <ul class="grid w-full grid-cols-3 gap-2 md:grid-cols-6">
+                    {CITIES.map((city) => (
+                        <li class="flex">
+                            <a
+                                href={`/rent/${city.slug}`}
+                                class="chip min-h-11 w-full justify-center gap-1.5 bg-surface/70 px-2 whitespace-nowrap ring-glass backdrop-blur hover:bg-surface sm:px-3.5"
+                            >
+                                <Icon name="pin" class="size-4 text-brand" />
+                                {city.name}, {city.state}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+        </div>
+
+        <div class="enter hero-film tilt-stage relative mx-auto mt-8 max-w-5xl [--i:6] sm:mt-16">
+            <div class="tilt">
+                <SearchDemo />
+            </div>
+        </div>
+
+        <ProofStrip />
+        <Scenarios />
+    </Container>
+</section>
+
+<style>
+    @media (min-width: 64rem) {
+        .hero-intro {
+            --film-peek: clamp(6rem, 16svh, 11rem);
+
+            min-height: calc(100svh - 4rem - var(--film-peek));
+            justify-content: center;
+            padding-block: clamp(1rem, 4svh, 3rem) clamp(1.5rem, 5svh, 3.5rem);
+        }
+
+        .hero-title {
+            font-size: min(clamp(2.6rem, 1.6rem + 4.4vw, 4.75rem), 8.6svh);
+        }
+
+        .hero-gap {
+            margin-top: clamp(0.75rem, 3svh, 1.5rem);
+        }
+
+        .hero-film {
+            margin-top: 0;
+            max-width: min(64rem, 140svh);
+        }
+    }
+</style>

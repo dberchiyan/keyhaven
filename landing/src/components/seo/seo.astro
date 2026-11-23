@@ -1,0 +1,64 @@
+---
+import { CHROME } from '@/content/chrome';
+import { INDEX_PATH, type PageMeta, shareSlugOf } from '@/content/pages';
+import { SITE } from '@/content/site';
+import { toJsonLd } from '@/lib/json-ld';
+import { SHARE_HEIGHT, SHARE_WIDTH } from '@/lib/og-image';
+
+import { breadcrumbsOf } from './breadcrumbs';
+
+interface Props {
+    page: PageMeta;
+    site: URL;
+    isIndexed: boolean;
+}
+
+const { page, site, isIndexed } = Astro.props;
+const canonical = new URL(page.path, site).href;
+const shareImage = new URL(`/og/${shareSlugOf(page.path)}.png`, site).href;
+const organization = {
+    '@type': 'Organization',
+    '@id': `${site.href}#organization`,
+    name: SITE.name,
+    url: site.href,
+    logo: new URL('/apple-touch-icon.png', site).href,
+    sameAs: SITE.sameAs,
+};
+const website = {
+    '@type': 'WebSite',
+    '@id': `${site.href}#website`,
+    url: site.href,
+    name: SITE.name,
+    inLanguage: SITE.locale,
+    publisher: { '@id': `${site.href}#organization` },
+};
+const crumbs = breadcrumbsOf(page, site, CHROME.header.homeLabel);
+const graph = [organization, ...(page.path === INDEX_PATH ? [website] : []), ...(crumbs ? [crumbs] : [])];
+---
+
+<title>{page.title}</title>
+<meta name="description" content={page.description} />
+<link rel="canonical" href={canonical} />
+{!isIndexed && <meta name="robots" content="noindex" />}
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content={SITE.ogLocale} />
+<meta property="og:title" content={page.title} />
+<meta property="og:description" content={page.description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={shareImage} />
+<meta property="og:image:width" content={String(SHARE_WIDTH)} />
+<meta property="og:image:height" content={String(SHARE_HEIGHT)} />
+<meta property="og:image:alt" content={page.shareHeading} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={page.title} />
+<meta name="twitter:description" content={page.description} />
+<meta name="twitter:image" content={shareImage} />
+
+<script
+    type="application/ld+json"
+    is:inline
+    set:html={toJsonLd({ '@context': 'https://schema.org', '@graph': graph })}
+/>
+<slot />

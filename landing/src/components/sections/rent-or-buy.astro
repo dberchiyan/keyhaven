@@ -1,0 +1,145 @@
+---
+import ButtonLink from '@/components/ui/button-link.astro';
+import Container from '@/components/ui/container.astro';
+import Icon from '@/components/ui/icon.astro';
+import SectionHeading from '@/components/ui/section-heading.astro';
+import { staggerClass } from '@/components/ui/stagger';
+import { LANDING } from '@/content/landing';
+
+/**
+ * Renting and buying side by side from `md`; on phones a Rent | Buy switch shows one card at a time (LD-21) — real
+ * radios, so the keyboard and screen readers know it, and CSS alone (`:has()`) hides the other card. Where `:has()`
+ * is missing, or without CSS, the switch stays out of the way and both cards read in order.
+ */
+const { paths } = LANDING;
+---
+
+<section id="rent-or-buy" aria-labelledby="paths-title" class="border-y border-line bg-surface py-16 sm:py-20">
+    <Container>
+        <SectionHeading id="paths-title" eyebrow={paths.eyebrow} title={paths.title} lead={paths.lead} layout="split" />
+        <div class="paths mt-10 flex flex-col gap-4 sm:mt-14">
+            <div
+                role="radiogroup"
+                aria-label={paths.switchLabel}
+                class="paths-switch grid-cols-2 rounded-full bg-surface-2 p-1"
+            >
+                {paths.cards.map((card, index) => (
+                    <label class="paths-option">
+                        <input
+                            type="radio"
+                            name="path"
+                            value={card.title}
+                            checked={index === 0}
+                            class="sr-only"
+                            data-path-input={index}
+                        />
+                        <span>{card.title}</span>
+                    </label>
+                ))}
+            </div>
+            <div class="grid gap-6 md:grid-cols-2">
+                {paths.cards.map((card, index) => (
+                    <article
+                        data-path={index}
+                        class:list={[
+                            'reveal flex flex-col gap-6 rounded-panel bg-canvas p-6 ring-glass lg:p-8',
+                            staggerClass(index),
+                        ]}
+                    >
+                        <div class="flex items-center gap-3">
+                            <span class="flex size-11 items-center justify-center rounded-xl bg-brand text-on-brand">
+                                <Icon name={card.icon} class="size-5" />
+                            </span>
+                            <h3 class="text-2xl font-semibold tracking-heading text-ink">{card.title}</h3>
+                        </div>
+                        <p class="text-body leading-relaxed text-muted">{card.text}</p>
+                        <ul class="flex flex-col gap-4">
+                            {card.points.map((point) => (
+                                <li class="flex gap-3.5">
+                                    <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand">
+                                        <Icon name={point.icon} class="size-4.5" />
+                                    </span>
+                                    <div>
+                                        <h4 class="font-semibold text-ink">{point.title}</h4>
+                                        <p class="mt-0.5 text-sm leading-relaxed text-muted">{point.text}</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                        <div class="mt-auto pt-2">
+                            <ButtonLink href={card.cta.href} variant="outline">
+                                {card.cta.label}
+                                <Icon name="arrowRight" class="size-4" />
+                            </ButtonLink>
+                        </div>
+                    </article>
+                ))}
+            </div>
+        </div>
+    </Container>
+</section>
+
+<style>
+    .paths-switch {
+        display: none;
+    }
+
+    .paths-option {
+        display: flex;
+        cursor: pointer;
+    }
+
+    .paths-option span {
+        display: inline-flex;
+        flex: 1;
+        min-height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        font-size: var(--text-body);
+        font-weight: 600;
+        color: var(--c-muted);
+        transition:
+            background-color 200ms,
+            color 200ms,
+            box-shadow 200ms;
+    }
+
+    .paths-option:has(input:checked) span {
+        background: var(--c-surface);
+        color: var(--c-ink);
+        box-shadow: var(--shadow-card);
+    }
+
+    .paths-option:has(input:focus-visible) span {
+        outline: 2px solid var(--c-brand);
+        outline-offset: 2px;
+    }
+
+    .paths-option:active span {
+        transform: scale(0.98);
+    }
+
+    @supports selector(:has(*)) {
+        @media (width < 48rem) {
+            .paths-switch {
+                display: grid;
+            }
+
+            .paths:has([data-path-input='0']:checked) [data-path='1'],
+            .paths:has([data-path-input='1']:checked) [data-path='0'] {
+                display: none;
+            }
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .paths-option span {
+            transition: none;
+        }
+
+        .paths-option:active span {
+            transform: none;
+        }
+    }
+</style>

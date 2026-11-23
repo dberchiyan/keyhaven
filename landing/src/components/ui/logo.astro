@@ -1,0 +1,20 @@
+---
+import { SITE } from '@/content/site';
+
+interface Props {
+    tone?: 'ink' | 'light';
+}
+
+const { tone = 'ink' } = Astro.props;
+---
+
+<span class="inline-flex items-center gap-2.5">
+    <svg viewBox="0 0 48 48" class="size-8 shrink-0" aria-hidden="true" focusable="false">
+        <rect width="48" height="48" rx="12" class="fill-brand"></rect>
+        <path d="M24 9 9 22h4v14h9V26h4v10h9V22h4z" class="fill-on-brand"></path>
+        <circle cx="24" cy="20" r="2.4" class="fill-brand"></circle>
+    </svg>
+    <span class:list={['text-logo font-semibold tracking-heading', tone === 'light' ? 'text-footer-text' : 'text-ink']}>
+        {SITE.name}
+    </span>
+</span>

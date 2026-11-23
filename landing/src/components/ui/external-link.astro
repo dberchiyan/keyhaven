@@ -1,0 +1,20 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+import { CHROME } from '@/content/chrome';
+
+import Icon from './icon.astro';
+
+interface Props extends Omit<HTMLAttributes<'a'>, 'target' | 'rel'> {
+    href: string;
+}
+
+/** A link to another site opens a new tab and says so: an arrow and hidden text (LD-20), `noopener` (LD-44). */
+const { href, ...rest } = Astro.props;
+---
+
+<a href={href} target="_blank" rel="noopener noreferrer" {...rest}>
+    <slot />
+    <Icon name="arrowUpRight" class="size-3.5 shrink-0 opacity-70" />
+    <span class="sr-only">{CHROME.newTab}</span>
+</a>

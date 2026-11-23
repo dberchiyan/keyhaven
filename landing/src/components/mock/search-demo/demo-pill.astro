@@ -1,0 +1,27 @@
+---
+import type { DemoPill } from '@/content/search-demo';
+
+import DemoChevron from './demo-chevron.astro';
+
+interface Props {
+    pill: DemoPill;
+}
+
+const { pill } = Astro.props;
+
+const VISIBLE_FROM: Record<DemoPill['visibleFrom'], string> = {
+    md: 'hidden md:flex',
+    lg: 'hidden lg:flex',
+    xl: 'hidden xl:flex',
+};
+---
+
+<span
+    class:list={[
+        'd-pill text-caption h-9 items-center gap-1.5 rounded-full px-3.5 font-medium whitespace-nowrap ring-1 ring-line',
+        VISIBLE_FROM[pill.visibleFrom],
+    ]}
+>
+    {pill.label}
+    <DemoChevron />
+</span>

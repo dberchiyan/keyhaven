@@ -1,0 +1,47 @@
+---
+import Icon from '@/components/ui/icon.astro';
+import Photo from '@/components/ui/photo.astro';
+import StatusBadge from '@/components/ui/status-badge.astro';
+import { HOME_WORDS } from '@/content/home-words';
+import type { DashboardState } from '@/content/landing-types';
+import type { ShowcaseHome } from '@/content/showcase';
+
+interface Props {
+    home: ShowcaseHome;
+    state: DashboardState;
+    class?: string;
+}
+
+const { home, state, class: className } = Astro.props;
+const THUMB_PX = 88;
+---
+
+<div class:list={['flex items-center gap-3 py-3', className]}>
+    <Photo
+        src={home.photo}
+        width={THUMB_PX}
+        height={THUMB_PX}
+        widths={[THUMB_PX]}
+        sizes="2.75rem"
+        class="size-11 shrink-0 rounded-lg object-cover ring-glass"
+    />
+    <div class="flex min-w-0 flex-1 flex-col gap-1">
+        <p class="line-clamp-2 text-sm font-medium text-pretty text-ink">{home.title}</p>
+        <p class="text-micro flex flex-wrap items-center gap-x-3 gap-y-1 text-muted">
+            <span>
+                {home.cityName} · {`${home.price}${HOME_WORDS.perMonth}`}
+            </span>
+            <span class="inline-flex items-center gap-3 whitespace-nowrap tabular-nums">
+                <span class="inline-flex items-center gap-1">
+                    <Icon name="eye" class="size-3.5" />
+                    {state.views}
+                </span>
+                <span class="inline-flex items-center gap-1">
+                    <Icon name="heart" class="size-3.5" />
+                    {state.saves}
+                </span>
+            </span>
+        </p>
+    </div>
+    <StatusBadge tone={state.tone} label={state.word} />
+</div>

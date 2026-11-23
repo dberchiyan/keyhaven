@@ -1,0 +1,39 @@
+---
+import type { CityKind, Kind } from '@/content/catalogue-schema';
+import { CITY_PAGE } from '@/content/city-page';
+import type { City } from '@/content/site';
+import { SITE } from '@/content/site';
+import { dollars, fill, homeFacts } from '@/lib/format';
+import { toJsonLd } from '@/lib/json-ld';
+
+interface Props {
+    city: City;
+    kind: Kind;
+    data: CityKind;
+    path: string;
+    site: URL;
+}
+
+const { city, kind, data, path, site } = Astro.props;
+const copy = CITY_PAGE.kinds[kind];
+const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: fill(copy.title, { city: `${city.name}, ${city.state}` }),
+    url: new URL(path, site).href,
+    isPartOf: { '@type': 'WebSite', name: SITE.name, url: site.href },
+    mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: data.total,
+        itemListElement: data.newest.map((home, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            url: new URL(`/listings/${home.id}`, site).href,
+            name: home.title,
+            description: `${dollars(home.price)} · ${homeFacts(home)}`,
+        })),
+    },
+};
+---
+
+<script type="application/ld+json" is:inline set:html={toJsonLd(jsonLd)} />

@@ -1,0 +1,169 @@
+@media (prefers-reduced-motion: no-preference) {
+    .search-demo[data-visible] .d-popover-city {
+        animation-name: d-popover-city;
+        animation-timing-function: var(--ease-out);
+    }
+    @keyframes d-popover-city {
+        0%,
+        13.5%,
+        100% {
+            opacity: 0;
+            transform: translateY(-4px) scale(0.96);
+        }
+        15%,
+        23% {
+            opacity: 1;
+            transform: none;
+        }
+        24.5% {
+            opacity: 0;
+            transform: translateY(-4px) scale(0.96);
+        }
+    }
+    .search-demo[data-visible] .d-pick-city {
+        animation-name: d-pick;
+        animation-timing-function: steps(1, end);
+    }
+    .search-demo[data-visible] .d-pick-beds {
+        animation-name: d-pick-beds;
+        animation-timing-function: steps(1, end);
+    }
+    @keyframes d-pick {
+        0%,
+        100% {
+            background: var(--color-surface);
+            color: var(--color-ink-2);
+        }
+        21.5%,
+        24% {
+            background: var(--color-brand);
+            color: var(--color-on-brand);
+        }
+    }
+    .search-demo[data-visible] .d-city {
+        animation-name: d-fill-city;
+        animation-timing-function: steps(1, end);
+    }
+    @keyframes d-fill-city {
+        0%,
+        96%,
+        100% {
+            background: var(--color-surface);
+            color: var(--color-ink-2);
+            --tw-ring-color: var(--color-line);
+        }
+        24.5% {
+            background: var(--color-brand);
+            color: var(--color-on-brand);
+            --tw-ring-color: var(--color-brand);
+        }
+    }
+    .search-demo[data-visible] .d-city-off {
+        animation-name: d-off-city;
+        animation-timing-function: steps(1, end);
+    }
+    .search-demo[data-visible] .d-city-on {
+        animation-name: d-on-city;
+        animation-timing-function: steps(1, end);
+    }
+    @keyframes d-off-city {
+        0%,
+        96.5%,
+        100% {
+            opacity: 1;
+        }
+        24.5% {
+            opacity: 0;
+        }
+    }
+    @keyframes d-on-city {
+        0%,
+        96%,
+        100% {
+            opacity: 0;
+        }
+        24.5% {
+            opacity: 1;
+        }
+    }
+
+    .search-demo[data-visible] .d-popover-beds {
+        animation-name: d-popover-beds;
+        animation-timing-function: var(--ease-out);
+    }
+    @keyframes d-popover-beds {
+        0%,
+        38.5%,
+        100% {
+            opacity: 0;
+            transform: translateY(-4px) scale(0.96);
+        }
+        40%,
+        47.5% {
+            opacity: 1;
+            transform: none;
+        }
+        49% {
+            opacity: 0;
+            transform: translateY(-4px) scale(0.96);
+        }
+    }
+    @keyframes d-pick-beds {
+        0%,
+        100% {
+            background: var(--color-surface);
+            color: var(--color-ink-2);
+        }
+        46.5%,
+        48.5% {
+            background: var(--color-brand);
+            color: var(--color-on-brand);
+        }
+    }
+    .search-demo[data-visible] .d-beds {
+        animation-name: d-fill-beds;
+        animation-timing-function: steps(1, end);
+    }
+    @keyframes d-fill-beds {
+        0%,
+        96%,
+        100% {
+            background: var(--color-surface);
+            color: var(--color-ink-2);
+            --tw-ring-color: var(--color-line);
+        }
+        49% {
+            background: var(--color-brand);
+            color: var(--color-on-brand);
+            --tw-ring-color: var(--color-brand);
+        }
+    }
+    .search-demo[data-visible] .d-beds-off {
+        animation-name: d-off-beds;
+        animation-timing-function: steps(1, end);
+    }
+    .search-demo[data-visible] .d-beds-on {
+        animation-name: d-on-beds;
+        animation-timing-function: steps(1, end);
+    }
+    @keyframes d-off-beds {
+        0%,
+        96.5%,
+        100% {
+            opacity: 1;
+        }
+        49% {
+            opacity: 0;
+        }
+    }
+    @keyframes d-on-beds {
+        0%,
+        96%,
+        100% {
+            opacity: 0;
+        }
+        49% {
+            opacity: 1;
+        }
+    }
+}

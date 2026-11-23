@@ -1,0 +1,121 @@
+---
+import Container from '@/components/ui/container.astro';
+import ExternalLink from '@/components/ui/external-link.astro';
+import Icon from '@/components/ui/icon.astro';
+import LineHeading from '@/components/ui/line-heading.astro';
+import { staggerClass } from '@/components/ui/stagger';
+import { LANDING } from '@/content/landing';
+import { SITE } from '@/content/site';
+
+/**
+ * The closing (LD-18, LD-25): a dark ink panel, flat by user decision (no gradient), with one question and 2 choice
+ * cards into the catalogue, then the quieter links. It ends the phone dock's run (`data-dock-after`).
+ */
+const { cta } = LANDING;
+---
+
+<section aria-labelledby="cta-title" class="py-16 sm:py-20" data-dock-after>
+    <Container>
+        <div class="reveal panel-dark px-5 py-12 sm:px-12 sm:py-16 lg:px-16">
+            <div class="reveal-text mx-auto flex max-w-3xl flex-col items-center gap-5 text-center">
+                <LineHeading
+                    id="cta-title"
+                    title={cta.title}
+                    class="type-title text-dark-text"
+                    accentClass="text-sky"
+                />
+                <p class="type-lead max-w-xl text-balance">{cta.lead}</p>
+            </div>
+            <ul
+                aria-label={cta.choicesLabel}
+                class="mx-auto mt-10 grid max-w-3xl gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4"
+            >
+                {cta.choices.map((choice, index) => (
+                    <li class:list={['reveal flex', staggerClass(index + 1)]}>
+                        <a
+                            href={choice.href}
+                            class="choice group flex w-full items-center gap-4 rounded-card bg-dark-raised p-5 text-left ring-1 ring-dark-line sm:flex-col sm:items-start sm:p-6"
+                        >
+                            <span class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-sky text-dark">
+                                <Icon name={choice.icon} class="size-5" />
+                            </span>
+                            <span class="flex min-w-0 flex-1 flex-col gap-1">
+                                <span class="text-lg font-semibold tracking-heading text-dark-text">
+                                    {choice.title}
+                                </span>
+                                <span class="text-sm leading-relaxed">{choice.text}</span>
+                            </span>
+                            <Icon
+                                name="arrowRight"
+                                class="choice-arrow size-5 shrink-0 text-sky sm:absolute sm:top-6 sm:right-6"
+                            />
+                        </a>
+                    </li>
+                ))}
+            </ul>
+            <div class="mt-8 flex flex-col items-center justify-center gap-2 text-sm font-medium sm:mt-10 sm:flex-row sm:gap-8">
+                <a
+                    href={SITE.links.signUp}
+                    class="inline-flex min-h-11 items-center gap-2 text-dark-text underline-offset-4 hover:text-sky hover:underline"
+                >
+                    {cta.secondary}
+                    <Icon name="arrowRight" class="size-4" />
+                </a>
+                <ExternalLink
+                    href={SITE.links.github}
+                    class="inline-flex min-h-11 items-center gap-2 underline-offset-4 hover:text-sky hover:underline"
+                >
+                    <Icon name="github" class="size-4.5" />
+                    {cta.source}
+                </ExternalLink>
+            </div>
+        </div>
+    </Container>
+</section>
+
+<style>
+    .choice {
+        position: relative;
+        transition:
+            transform 250ms var(--ease-out),
+            box-shadow 250ms,
+            background-color 250ms;
+    }
+
+    .choice:hover {
+        background: color-mix(in oklch, var(--c-dark-raised) 80%, var(--c-sky));
+        box-shadow: 0 0 0 1px var(--c-sky);
+    }
+
+    .choice:active {
+        transform: scale(0.98);
+    }
+
+    .choice:focus-visible {
+        outline-color: var(--c-sky);
+    }
+
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+        .choice:hover {
+            transform: translateY(-2px);
+        }
+
+        .choice:hover .choice-arrow {
+            translate: 0.125rem 0;
+        }
+
+        .choice-arrow {
+            transition: translate 250ms var(--ease-out);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .choice {
+            transition: none;
+        }
+
+        .choice:active {
+            transform: none;
+        }
+    }
+</style>

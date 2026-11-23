@@ -1,0 +1,16 @@
+---
+import LegalDocument from '@/components/sections/legal-document.astro';
+import SiteFooter from '@/components/sections/site-footer.astro';
+import SiteHeader from '@/components/sections/site-header.astro';
+import { TERMS } from '@/content/legal';
+import { SITE } from '@/content/site';
+import Base from '@/layouts/base.astro';
+---
+
+<Base path={SITE.links.terms}>
+    <SiteHeader />
+    <main id="main">
+        <LegalDocument page={TERMS} />
+    </main>
+    <SiteFooter />
+</Base>

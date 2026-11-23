@@ -1,0 +1,34 @@
+---
+import ButtonLink from '@/components/ui/button-link.astro';
+import Icon from '@/components/ui/icon.astro';
+import { CHROME } from '@/content/chrome';
+import { SITE } from '@/content/site';
+
+const { header } = CHROME;
+---
+
+<nav
+    id="mobile-dock"
+    aria-label={header.dockLabel}
+    inert
+    class="mobile-dock fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-30 flex items-center gap-2 rounded-full bg-surface/85 p-1.5 shadow-float ring-glass backdrop-blur-xl sm:hidden"
+>
+    <button
+        type="button"
+        popovertarget="mobile-menu"
+        class="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-ink hover:bg-surface-2 active:scale-[0.98]"
+        aria-label={header.openMenu}
+    >
+        <Icon name="menu" class="size-6" />
+    </button>
+    <ButtonLink href={SITE.links.browse} variant="brand" class="flex-1">
+        {header.primary}
+        <Icon name="arrowRight" class="size-4.5" />
+    </ButtonLink>
+</nav>
+
+<script>
+    import { followDock } from './mobile-dock';
+
+    followDock();
+</script>

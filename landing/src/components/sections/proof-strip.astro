@@ -1,0 +1,53 @@
+---
+import Icon from '@/components/ui/icon.astro';
+import { staggerClass } from '@/components/ui/stagger';
+import { LANDING } from '@/content/landing';
+import { PROOF_FIGURES, PROOF_NOTE } from '@/content/proof';
+
+/**
+ * The catalogue in 4 figures right under the film (LD-16, LD-18): each a link to the page that shows it, counted from
+ * the snapshot (LD-7). The digits are in the markup; `count-up.ts` only replays them, and screen readers get the
+ * final figure alone.
+ */
+const { proof } = LANDING;
+---
+
+{PROOF_FIGURES.length > 0 && (
+    <nav aria-label={proof.label} class="mx-auto mt-10 flex max-w-5xl flex-col gap-3 sm:mt-14">
+        <ul class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {PROOF_FIGURES.map((figure, index) => (
+                <li class:list={['reveal flex', staggerClass(index)]}>
+                    <a
+                        href={figure.href}
+                        class="card group flex w-full flex-col gap-1 p-4 transition-transform duration-200 active:scale-[0.98] sm:p-5"
+                    >
+                        <span
+                            aria-hidden="true"
+                            class="grid text-[clamp(1.75rem,1.4rem+1.6vw,2.5rem)] leading-none font-semibold tracking-price text-ink tabular-nums"
+                        >
+                            <span class="invisible col-start-1 row-start-1">{figure.value}</span>
+                            <span class="col-start-1 row-start-1" data-count>
+                                {figure.value}
+                            </span>
+                        </span>
+                        <span class="sr-only">{figure.value}</span>
+                        <span class="mt-1 inline-flex items-center gap-1.5 text-sm text-muted group-hover:text-ink">
+                            {figure.caption}
+                            <Icon
+                                name="arrowRight"
+                                class="size-3.5 shrink-0 text-brand transition-transform duration-200 group-hover:translate-x-0.5"
+                            />
+                        </span>
+                    </a>
+                </li>
+            ))}
+        </ul>
+        <p class="text-caption text-center text-subtle">{PROOF_NOTE}</p>
+    </nav>
+)}
+
+<script>
+    import { countUp } from './count-up';
+
+    countUp();
+</script>

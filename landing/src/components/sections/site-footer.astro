@@ -1,0 +1,93 @@
+---
+import Container from '@/components/ui/container.astro';
+import ExternalLink from '@/components/ui/external-link.astro';
+import Logo from '@/components/ui/logo.astro';
+import { CHROME } from '@/content/chrome';
+import { CITIES, SITE } from '@/content/site';
+
+import FooterProfiles from './footer-profiles.astro';
+
+const { footer, header } = CHROME;
+const COLUMNS = [
+    { id: 'footer-browse', title: footer.browse, links: footer.browseLinks, hasTwoColumns: false },
+    {
+        id: 'footer-cities',
+        title: footer.cities,
+        links: [...CITIES]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((city) => ({ href: `/rent/${city.slug}`, label: city.name })),
+        hasTwoColumns: true,
+    },
+    {
+        id: 'footer-company',
+        title: footer.company,
+        links: [
+            { href: '/#how-it-works', label: footer.about },
+            { href: SITE.links.signUp, label: header.listHome },
+            { href: SITE.links.github, label: footer.github },
+        ],
+        hasTwoColumns: false,
+    },
+];
+const LINK_CLASS = 'footer-link text-body inline-flex min-h-11 items-center gap-1.5 font-medium transition-colors';
+const year = new Date().getUTCFullYear();
+---
+
+<footer class="mt-10 bg-footer text-footer-text">
+    <Container class="flex flex-col gap-12 pt-14 pb-8">
+        <div class="grid grid-cols-2 gap-10 md:grid-cols-[minmax(0,1fr)_auto_auto_auto] md:justify-between md:gap-x-16 md:gap-y-8">
+            <div class="col-span-2 flex max-w-sm flex-col gap-5 md:col-span-1">
+                <Logo tone="light" />
+                <p class="text-body leading-relaxed text-footer-muted">{footer.tagline}</p>
+                <FooterProfiles />
+            </div>
+            {COLUMNS.map((column) => (
+                <nav aria-labelledby={column.id} class="flex flex-col gap-3">
+                    <h2 id={column.id} class="type-eyebrow text-footer-muted">
+                        {column.title}
+                    </h2>
+                    <ul class:list={[column.hasTwoColumns ? 'grid grid-cols-2 gap-x-6' : 'flex flex-col']}>
+                        {column.links.map((item) => (
+                            <li>
+                                {item.href.startsWith('http') ? (
+                                    <ExternalLink href={item.href} class={LINK_CLASS}>
+                                        {item.label}
+                                    </ExternalLink>
+                                ) : (
+                                    <a href={item.href} class={LINK_CLASS}>
+                                        {item.label}
+                                    </a>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+            ))}
+        </div>
+        <div class="flex flex-col gap-2 border-t border-footer-line pt-6 text-sm text-footer-muted sm:flex-row sm:items-center sm:justify-between">
+            <p>
+                © {year} {SITE.name}. {footer.rights}
+            </p>
+            <nav aria-label={footer.legal} class="flex flex-wrap items-center gap-x-5">
+                <a
+                    href={SITE.links.privacy}
+                    class="footer-link inline-flex min-h-11 items-center underline-offset-4 hover:underline"
+                >
+                    {footer.privacy}
+                </a>
+                <a
+                    href={SITE.links.terms}
+                    class="footer-link inline-flex min-h-11 items-center underline-offset-4 hover:underline"
+                >
+                    {footer.terms}
+                </a>
+                <a
+                    href={SITE.links.signIn}
+                    class="footer-link inline-flex min-h-11 items-center font-medium underline-offset-4 hover:underline"
+                >
+                    {footer.signIn}
+                </a>
+            </nav>
+        </div>
+    </Container>
+</footer>

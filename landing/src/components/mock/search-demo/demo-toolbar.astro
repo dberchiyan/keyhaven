@@ -1,0 +1,28 @@
+---
+import { SEARCH_DEMO } from '@/content/search-demo';
+
+import DemoFilter from './demo-filter.astro';
+import DemoPill from './demo-pill.astro';
+
+const { city, beds, pillsBeforeBeds, pillsAfterBeds, more } = SEARCH_DEMO;
+---
+
+<div class="relative z-20 flex items-center gap-2 px-1">
+    <DemoFilter name="city" label={city.label} picked={city.picked} options={city.options} pickedOption={city.picked} />
+    {pillsBeforeBeds.map((pill) => (
+        <DemoPill pill={pill} />
+    ))}
+    <DemoFilter
+        name="beds"
+        label={beds.label}
+        picked={beds.picked}
+        options={beds.options}
+        pickedOption={beds.pickedOption}
+    />
+    {pillsAfterBeds.map((pill) => (
+        <DemoPill pill={pill} />
+    ))}
+    <span class="d-pill text-caption flex h-9 items-center rounded-full px-3.5 font-medium whitespace-nowrap ring-1 ring-line">
+        {more}
+    </span>
+</div>

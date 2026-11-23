@@ -1,0 +1,31 @@
+---
+import type { Heading } from '@/content/landing-types';
+
+interface Props {
+    id: string;
+    title: Heading;
+    class?: string;
+    accentClass?: string;
+}
+
+/**
+ * A two-part heading that rises line by line (LD-29): every word sits in its own clip mask, split here at build time;
+ * `line-reveal.ts` gives each word the index of the line it landed on, so the delay follows the real layout. Without
+ * JS or under reduced motion the words simply stand (LD-28).
+ */
+const { id, title, class: className, accentClass = 'text-brand' } = Astro.props;
+const words = [
+    ...title.start.split(' ').map((text) => ({ text, isAccent: false })),
+    ...title.accent.split(' ').map((text) => ({ text, isAccent: true })),
+];
+---
+
+<h2 id={id} class:list={['line-reveal', className]}>
+    {words.map((word) => (
+        <>
+            <span class="line-word">
+                <span class:list={['line-word-inner', word.isAccent && accentClass]}>{word.text}</span>
+            </span>{' '}
+        </>
+    ))}
+</h2>

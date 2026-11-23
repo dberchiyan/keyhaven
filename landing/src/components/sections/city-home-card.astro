@@ -1,0 +1,52 @@
+---
+import Photo from '@/components/ui/photo.astro';
+import type { SnapshotHome } from '@/content/catalogue-schema';
+import { HOME_WORDS } from '@/content/home-words';
+import type { City } from '@/content/site';
+import { dollars, fill, homeFacts, mediumDay } from '@/lib/format';
+
+interface Props {
+    home: SnapshotHome;
+    city: City;
+    isRent: boolean;
+}
+
+const { home, city, isRent } = Astro.props;
+const href = `/listings/${home.id}`;
+const PHOTO = { width: 1200, height: 800, small: 400, large: 800 };
+---
+
+<article class="card flex h-full flex-col overflow-hidden">
+    <a href={href} class="block aspect-[4/3] bg-surface-2" aria-hidden="true" tabindex="-1">
+        {home.coverPhotoUrl && (
+            <Photo
+                src={home.coverPhotoUrl}
+                width={PHOTO.width}
+                height={PHOTO.height}
+                widths={[PHOTO.small, PHOTO.large]}
+                sizes="(min-width: 1024px) 18rem, (min-width: 640px) 50vw, 100vw"
+                class="size-full object-cover"
+            />
+        )}
+    </a>
+    <div class="flex flex-1 flex-col gap-1 p-4">
+        <p class="text-lg font-semibold text-ink tabular-nums">
+            {dollars(home.price)}
+            {isRent && <span class="text-sm font-medium text-muted">{HOME_WORDS.perMonth}</span>}
+        </p>
+        <h3 class="text-sm font-medium text-ink-2">
+            <a href={href} class="hover:underline">
+                {home.title}
+            </a>
+        </h3>
+        <p class="text-caption text-muted">{homeFacts(home)}</p>
+        <p class="text-caption text-muted">
+            {[home.neighborhood, `${city.name}, ${city.state}`].filter(Boolean).join(' · ')}
+        </p>
+        {home.availableOn && (
+            <span class="text-micro mt-1.5 inline-flex w-fit items-center rounded-full bg-success-bg px-2 py-0.5 font-medium text-success-fg">
+                {fill(HOME_WORDS.available, { date: mediumDay(home.availableOn) })}
+            </span>
+        )}
+    </div>
+</article>

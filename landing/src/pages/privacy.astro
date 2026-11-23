@@ -1,0 +1,16 @@
+---
+import LegalDocument from '@/components/sections/legal-document.astro';
+import SiteFooter from '@/components/sections/site-footer.astro';
+import SiteHeader from '@/components/sections/site-header.astro';
+import { PRIVACY } from '@/content/legal';
+import { SITE } from '@/content/site';
+import Base from '@/layouts/base.astro';
+---
+
+<Base path={SITE.links.privacy}>
+    <SiteHeader />
+    <main id="main">
+        <LegalDocument page={PRIVACY} />
+    </main>
+    <SiteFooter />
+</Base>

@@ -1,0 +1,53 @@
+---
+import Container from '@/components/ui/container.astro';
+import Icon from '@/components/ui/icon.astro';
+import type { Kind, SnapshotHome } from '@/content/catalogue-schema';
+import { CITY_PAGE } from '@/content/city-page';
+import type { City } from '@/content/site';
+import { fill } from '@/lib/format';
+
+import CityHomeCard from './city-home-card.astro';
+
+interface Props {
+    city: City;
+    kind: Kind;
+    homes: readonly SnapshotHome[];
+    browseHref: string;
+}
+
+const { city, kind, homes, browseHref } = Astro.props;
+const copy = CITY_PAGE.kinds[kind];
+---
+
+{homes.length > 0 && (
+    <section aria-labelledby="newest-title" class="py-12 sm:py-16">
+        <Container>
+            <div class="flex items-end justify-between gap-4">
+                <h2 id="newest-title" class="text-2xl font-semibold tracking-heading text-ink">
+                    {fill(copy.newest, { city: city.name })}
+                </h2>
+                <a
+                    href={browseHref}
+                    class="hidden min-h-11 items-center gap-1.5 text-sm font-medium text-brand hover:underline sm:inline-flex"
+                >
+                    {CITY_PAGE.seeAll}
+                    <Icon name="arrowRight" class="size-4" />
+                </a>
+            </div>
+            <ul class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {homes.map((home) => (
+                    <li>
+                        <CityHomeCard home={home} city={city} isRent={copy.perMonth} />
+                    </li>
+                ))}
+            </ul>
+            <a
+                href={browseHref}
+                class="mt-6 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-brand hover:underline sm:hidden"
+            >
+                {CITY_PAGE.seeAll}
+                <Icon name="arrowRight" class="size-4" />
+            </a>
+        </Container>
+    </section>
+)}

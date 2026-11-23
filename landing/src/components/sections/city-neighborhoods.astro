@@ -1,0 +1,40 @@
+---
+import Container from '@/components/ui/container.astro';
+import Icon from '@/components/ui/icon.astro';
+import { CITY_PAGE } from '@/content/city-page';
+import type { City } from '@/content/site';
+import { fill } from '@/lib/format';
+
+interface Props {
+    city: City;
+    neighborhoods: Record<string, number>;
+    browseHref: string;
+}
+
+const { city, neighborhoods, browseHref } = Astro.props;
+const entries = Object.entries(neighborhoods);
+---
+
+{entries.length > 0 && (
+    <section aria-labelledby="neighborhoods-title" class="border-y border-line bg-surface py-12 sm:py-16">
+        <Container>
+            <h2 id="neighborhoods-title" class="text-2xl font-semibold tracking-heading text-ink">
+                {fill(CITY_PAGE.neighborhoods, { city: city.name })}
+            </h2>
+            <ul aria-label={fill(CITY_PAGE.neighborhoodsLabel, { city: city.name })} class="mt-6 flex flex-wrap gap-2">
+                {entries.map(([name, count]) => (
+                    <li>
+                        <a
+                            href={`${browseHref}&q=${encodeURIComponent(name)}`}
+                            class="chip min-h-11 bg-canvas ring-glass"
+                        >
+                            <Icon name="pin" class="size-4 text-brand" />
+                            {name}
+                            <span class="text-subtle tabular-nums">{count}</span>
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </Container>
+    </section>
+)}

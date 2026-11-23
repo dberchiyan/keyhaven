@@ -1,0 +1,57 @@
+---
+import Container from '@/components/ui/container.astro';
+import Icon from '@/components/ui/icon.astro';
+import SectionHeading from '@/components/ui/section-heading.astro';
+import { LANDING } from '@/content/landing';
+import { DEMO } from '@/content/site';
+import { fill } from '@/lib/format';
+
+import DemoAccountCard from './demo-account-card.astro';
+
+const { demo } = LANDING;
+---
+
+<section id="demo" aria-labelledby="demo-title" class="pt-10 pb-16 sm:pt-12 sm:pb-20">
+    <Container>
+        <SectionHeading id="demo-title" eyebrow={demo.eyebrow} title={demo.title} lead={demo.lead} />
+        <div class="reveal panel mx-auto mt-10 max-w-5xl bg-surface-2 p-3 sm:mt-14 sm:p-4">
+            <ul class="snap-row -mx-3 flex snap-x snap-mandatory scroll-px-3 gap-4 overflow-x-auto px-3 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0">
+                {DEMO.accounts.map((account) => (
+                    <li class="w-[86%] min-w-0 shrink-0 snap-start sm:w-[60%] md:w-auto">
+                        <DemoAccountCard account={account} />
+                    </li>
+                ))}
+            </ul>
+            <div class="flex justify-center px-3 pt-5 pb-3 sm:px-4">
+                <p class="flex flex-wrap items-center justify-center gap-2 text-sm text-muted">
+                    <Icon name="key" class="size-4.5 text-brand" />
+                    {demo.passwordLabel}
+                    <button
+                        type="button"
+                        class="copy text-caption inline-flex min-h-11 items-center gap-2 rounded-lg bg-surface-2 px-2.5 font-mono text-ink ring-1 ring-line hover:ring-line-strong active:scale-[0.98]"
+                        data-copy={DEMO.password}
+                        data-copy-status={fill(demo.copiedStatus, { value: DEMO.password })}
+                        aria-label={demo.copyPassword}
+                    >
+                        {DEMO.password}
+                        <span class="copy-label font-sans text-xs font-medium text-subtle">{demo.copy}</span>
+                    </button>
+                </p>
+            </div>
+        </div>
+        <p class="mx-auto mt-5 max-w-2xl text-center text-sm text-subtle">{demo.note}</p>
+        <p
+            class="sr-only"
+            aria-live="polite"
+            id="copy-status"
+            data-copy-label={demo.copy}
+            data-copied-label={demo.copied}
+        ></p>
+    </Container>
+</section>
+
+<script>
+    import { wireCopyButtons } from './copy-buttons';
+
+    wireCopyButtons();
+</script>

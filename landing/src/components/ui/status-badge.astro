@@ -1,0 +1,25 @@
+---
+import type { DashboardState } from '@/content/landing-types';
+
+interface Props {
+    tone: DashboardState['tone'];
+    label: string;
+}
+
+const { tone, label } = Astro.props;
+
+const TONES: Record<DashboardState['tone'], { badge: string; dot: string }> = {
+    success: { badge: 'bg-success-bg text-success-fg', dot: 'bg-success-dot' },
+    warning: { badge: 'bg-warning-bg text-warning-fg', dot: 'bg-warning-dot' },
+};
+---
+
+<span
+    class:list={[
+        'text-micro inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-medium whitespace-nowrap',
+        TONES[tone].badge,
+    ]}
+>
+    <span class:list={['size-1.5 rounded-full', TONES[tone].dot]}></span>
+    {label}
+</span>

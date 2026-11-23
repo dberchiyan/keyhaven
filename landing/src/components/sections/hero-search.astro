@@ -1,0 +1,87 @@
+---
+import Icon from '@/components/ui/icon.astro';
+import { LANDING } from '@/content/landing';
+import { SITE } from '@/content/site';
+
+const { search } = LANDING.hero;
+const QUERY_MAX_LENGTH = 100;
+---
+
+<form
+    method="get"
+    action={SITE.links.browse}
+    role="search"
+    class="enter mt-5 flex w-full max-w-2xl lg:mt-[clamp(1rem,4svh,2.25rem)] sm:mt-9 flex-col gap-3 rounded-panel bg-surface p-3 shadow-float ring-glass [--i:4] sm:flex-row sm:items-center sm:rounded-full sm:p-2 sm:pl-3"
+>
+    <fieldset class="grid shrink-0 grid-cols-2 rounded-full bg-surface-2 p-1 sm:flex">
+        <legend class="sr-only">{search.legend}</legend>
+        <label class="kind-option">
+            <input type="radio" name="kind" value="rent" checked class="sr-only" />
+            <span>{search.rent}</span>
+        </label>
+        <label class="kind-option">
+            <input type="radio" name="kind" value="sale" class="sr-only" />
+            <span>{search.buy}</span>
+        </label>
+    </fieldset>
+    <label class="flex min-h-11 flex-1 items-center gap-2 rounded-full px-3 text-ink">
+        <Icon name="search" class="size-5 shrink-0 text-muted" />
+        <span class="sr-only">{search.label}</span>
+        <input
+            type="search"
+            name="q"
+            placeholder={search.placeholder}
+            autocomplete="off"
+            maxlength={QUERY_MAX_LENGTH}
+            class="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-subtle"
+        />
+    </label>
+    <button type="submit" class="btn btn-brand px-6">
+        {search.submit}
+    </button>
+</form>
+
+<style>
+    .kind-option {
+        display: flex;
+        cursor: pointer;
+    }
+
+    .kind-option span {
+        display: inline-flex;
+        flex: 1;
+        min-height: 2.25rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding-inline: 1rem;
+        font-size: var(--text-body);
+        font-weight: 600;
+        color: var(--c-muted);
+        transition:
+            background-color 200ms,
+            color 200ms,
+            box-shadow 200ms;
+    }
+
+    .kind-option:hover span {
+        color: var(--c-ink);
+    }
+
+    .kind-option:has(input:checked) span {
+        background: var(--c-surface);
+        color: var(--c-ink);
+        box-shadow: var(--shadow-card);
+    }
+
+    .kind-option:has(input:focus-visible) span {
+        outline: 2px solid var(--c-brand);
+        outline-offset: 2px;
+    }
+
+    @media (pointer: coarse) {
+        .kind-option span {
+            min-height: 2.75rem;
+        }
+    }
+</style>

@@ -1,0 +1,43 @@
+---
+import Container from '@/components/ui/container.astro';
+import SectionHeading from '@/components/ui/section-heading.astro';
+import { staggerClass } from '@/components/ui/stagger';
+import { LANDING } from '@/content/landing';
+
+const { steps } = LANDING;
+---
+
+<section id="how-it-works" aria-labelledby="how-title" class="border-y border-line bg-surface py-16 sm:py-20">
+    <Container>
+        <SectionHeading id="how-title" eyebrow={steps.eyebrow} title={steps.title} />
+        <ol data-animate class="steps relative mt-10 grid gap-8 sm:mt-16 md:grid-cols-3">
+            <span
+                class="absolute top-6 bottom-0 left-6 w-px bg-gradient-to-b from-line-strong via-line to-transparent md:hidden"
+                aria-hidden="true"
+            ></span>
+            <span
+                class="absolute top-6 right-[16.6%] left-[16.6%] hidden h-px bg-gradient-to-r from-transparent via-line-strong to-transparent md:block"
+                aria-hidden="true"
+            ></span>
+            <span class="steps-track hidden md:block" aria-hidden="true">
+                <span class="steps-fill"></span>
+                <span class="steps-comet"></span>
+            </span>
+            {steps.items.map((step, index) => (
+                <li
+                    class:list={[
+                        'reveal relative grid grid-cols-[3rem_1fr] gap-x-4 md:flex md:flex-col md:items-center md:text-center',
+                        staggerClass(index),
+                    ]}
+                >
+                    <span class="step-dot relative row-span-2 flex size-12 items-center justify-center rounded-full bg-surface text-lg font-semibold text-brand-strong tabular-nums shadow-card ring-glass">
+                        <span class="relative">{index + 1}</span>
+                    </span>
+                    <h3 class="type-h3 self-center md:mt-6">{step.title}</h3>
+                    <p class="text-body col-start-2 mt-1 leading-relaxed text-muted md:mt-2 md:max-w-xs">{step.text}</p>
+                </li>
+            ))}
+        </ol>
+        <p class="mx-auto mt-10 max-w-2xl text-sm text-subtle sm:mt-12 md:text-center">{steps.note}</p>
+    </Container>
+</section>

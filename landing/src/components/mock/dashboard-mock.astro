@@ -1,0 +1,61 @@
+---
+import Icon from '@/components/ui/icon.astro';
+import { staggerClass } from '@/components/ui/stagger';
+import { LANDING } from '@/content/landing';
+import { DASHBOARD_HOMES } from '@/content/showcase';
+
+import DashboardInterest from './dashboard-interest.astro';
+import DashboardRow from './dashboard-row.astro';
+import MockFrame from './mock-frame.astro';
+
+interface Props {
+    class?: string;
+}
+
+const { class: className } = Astro.props;
+const { mock } = LANDING.owners;
+const ROWS = DASHBOARD_HOMES.flatMap((home, index) => {
+    const state = mock.states[index];
+    return state ? [{ home, state }] : [];
+});
+const FIRST_ROW_STEP = 3;
+const TABS_ON_PHONE = 3;
+---
+
+<MockFrame label={mock.label} class={className}>
+    <div class="flex flex-col gap-4 rounded-panel bg-surface p-4 shadow-window ring-glass sm:p-5">
+        <div class="flex items-center justify-between gap-4">
+            <p class="text-lg font-semibold tracking-heading text-ink">{mock.title}</p>
+            <span class="text-micro inline-flex items-center gap-1 rounded-full bg-brand px-3 py-1.5 font-semibold text-on-brand">
+                <Icon name="plus" class="size-3.5" />
+                {mock.newListing}
+            </span>
+        </div>
+        <div class="flex gap-1 overflow-hidden rounded-full bg-surface-2 p-1">
+            {mock.tabs.map((tab, index) => (
+                <span
+                    class:list={[
+                        'text-micro shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 font-medium',
+                        index === 0 ? 'bg-surface text-ink shadow-card' : 'text-muted',
+                        index >= TABS_ON_PHONE ? 'hidden sm:inline-flex' : 'inline-flex',
+                    ]}
+                >
+                    {tab.label}
+                    <span class="text-subtle tabular-nums">{tab.value}</span>
+                </span>
+            ))}
+        </div>
+        <div class:list={['anim-rise', staggerClass(1)]}>
+            <DashboardInterest interest={mock.interest} />
+        </div>
+        <div class="divide-y divide-line">
+            {ROWS.map(({ home, state }, index) => (
+                <DashboardRow
+                    home={home}
+                    state={state}
+                    class:list={['anim-rise', staggerClass(index + FIRST_ROW_STEP)]}
+                />
+            ))}
+        </div>
+    </div>
+</MockFrame>

@@ -1,0 +1,24 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+type Variant = 'brand' | 'outline' | 'ghost';
+
+interface Props extends Omit<HTMLAttributes<'a'>, 'class'> {
+    href: string;
+    variant: Variant;
+    isLarge?: boolean;
+    class?: string;
+}
+
+const { href, variant, isLarge = false, class: className, ...rest } = Astro.props;
+
+const VARIANTS: Record<Variant, string> = {
+    brand: 'btn-brand',
+    outline: 'btn-outline',
+    ghost: 'btn-ghost',
+};
+---
+
+<a href={href} class:list={['btn', VARIANTS[variant], isLarge && 'btn-lg', className]} {...rest}>
+    <slot />
+</a>
