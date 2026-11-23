@@ -1,0 +1,53 @@
+/// When a listing can be viewed (M2): the owner's weekly windows in the city's time zone, how
+/// long a viewing takes, how much notice a tenant must give and how far ahead they may book.
+/// One row per listing; without one the home cannot be booked. `windows` and `blocked_days`
+/// are documents validated by `ViewingScheduleSchema` on write and on read (DATA-22).
+model ViewingSchedule {
+  id          String   @id(map: "pk_viewing_schedules") @default(dbgenerated("uuidv7()")) @db.Uuid
+  listingId   String   @unique(map: "uq_viewing_schedules_listing_id") @map("listing_id") @db.Uuid
+  listing     Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "fk_viewing_schedules_listing_id")
+  slotMinutes Int      @map("slot_minutes") @db.SmallInt
+  noticeHours Int      @map("notice_hours") @db.SmallInt
+  horizonDays Int      @map("horizon_days") @db.SmallInt
+  windows     Json     @db.JsonB
+  blockedDays Json     @map("blocked_days") @db.JsonB
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy   String?  @map("created_by") @db.Uuid
+  updatedBy   String?  @map("updated_by") @db.Uuid
+  version     Int      @default(0)
+
+  @@map("viewing_schedules")
+}
+
+/// A tenant's viewing of a home: requested in one of the owner's slots, then confirmed or
+/// declined by the owner (landlord or the agency's agents), cancelled by either side, or expired
+/// unanswered. One active row (REQUESTED | CONFIRMED) per listing and slot — the partial unique
+/// index `uq_viewings_listing_id_starts_at` is what rules out a double booking — and one active
+/// row per tenant and listing (`uq_viewings_tenant_id_listing_id`).
+model Viewing {
+  id             String        @id(map: "pk_viewings") @default(dbgenerated("uuidv7()")) @db.Uuid
+  listingId      String        @map("listing_id") @db.Uuid
+  listing        Listing       @relation(fields: [listingId], references: [id], onDelete: Restrict, map: "fk_viewings_listing_id")
+  tenantId       String        @map("tenant_id") @db.Uuid
+  tenant         User          @relation(fields: [tenantId], references: [id], onDelete: Restrict, map: "fk_viewings_tenant_id")
+  startsAt       DateTime      @map("starts_at") @db.Timestamptz(3)
+  endsAt         DateTime      @map("ends_at") @db.Timestamptz(3)
+  status         String        @db.VarChar(16)
+  message        String?       @db.VarChar(500)
+  note           String?       @db.VarChar(300)
+  cancelledBy    String?       @map("cancelled_by") @db.VarChar(16)
+  decidedAt      DateTime?     @map("decided_at") @db.Timestamptz(3)
+  reminderSentAt DateTime?     @map("reminder_sent_at") @db.Timestamptz(3)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  createdBy      String?       @map("created_by") @db.Uuid
+  updatedBy      String?       @map("updated_by") @db.Uuid
+  version        Int           @default(0)
+  conversation   Conversation?
+
+  @@index([listingId, startsAt], map: "idx_viewings_listing_id_starts_at")
+  @@index([tenantId, startsAt], map: "idx_viewings_tenant_id_starts_at")
+  @@index([status, startsAt], map: "idx_viewings_status_starts_at")
+  @@map("viewings")
+}
