@@ -1,0 +1,104 @@
+import { Injectable } from '@nestjs/common';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import type { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+import { z } from 'zod';
+
+import type { Cursor } from '@/common/dto/cursor';
+import type { PrismaService } from '@/common/persistence/prisma.service';
+import { Prisma } from '@/generated/prisma/client';
+
+import { AuditAction, AuditTargetType } from '../service/audit-action';
+import { type SecurityEventRecord, securityEventSelect } from './record/audit-event.record';
+
+export interface NewAuditEventRow {
+    action: string;
+    actorUserId: string | null;
+    targetType: string;
+    targetId: string;
+    targetLabel: string;
+    subjectId: string | null;
+    changes: Prisma.InputJsonValue;
+    ipAddress: string | null;
+    userAgent: string | null;
+    traceId: string | null;
+}
+
+const idRowsSchema = z.array(z.object({ id: z.string() }));
+
+@Injectable()
+export class AuditEventRepository {
+    constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma<PrismaService>>) {}
+
+    /** Joins the caller's transaction: the event commits (or rolls back) with the change. */
+    async create(row: NewAuditEventRow): Promise<void> {
+        await this.txHost.tx.auditEvent.create({ data: row, select: { id: true } });
+    }
+
+    /** One statement for several events. */
+    async createMany(rows: NewAuditEventRow[]): Promise<void> {
+        if (rows.length > 0) {
+            await this.txHost.tx.auditEvent.createMany({ data: rows });
+        }
+    }
+
+    /** A user's security log (events about the account with one of `actions`), newest first by `(occurred_at, id)`, strictly after the cursor; one extra row tells whether more exist. */
+    findSecurityEvents(
+        userId: string,
+        actions: readonly string[],
+        after: Cursor | undefined,
+        size: number,
+    ): Promise<SecurityEventRecord[]> {
+        return this.txHost.tx.auditEvent.findMany({
+            where: {
+                targetType: AuditTargetType.USER,
+                targetId: userId,
+                action: { in: [...actions] },
+                ...(after
+                    ? {
+                          OR: [
+                              { occurredAt: { lt: after.occurredAt } },
+                              { occurredAt: after.occurredAt, id: { lt: after.id } },
+                          ],
+                      }
+                    : {}),
+            },
+            select: securityEventSelect,
+            orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
+            take: size + 1,
+        });
+    }
+
+    /** DATA-23: the newest `take` events about the account with one of `actions`, for the person's own export. */
+    findLatestSecurityEvents(userId: string, actions: readonly string[], take: number): Promise<SecurityEventRecord[]> {
+        return this.txHost.tx.auditEvent.findMany({
+            where: { targetType: AuditTargetType.USER, targetId: userId, action: { in: [...actions] } },
+            select: securityEventSelect,
+            orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
+            take,
+        });
+    }
+
+    /**
+     * Of these events, the sign-ins from a device the user had not signed in from before: no
+     * earlier sign-in with the same browser string, version numbers ignored (an update is not a
+     * new device). Raw SQL — Prisma cannot compare a column with a function of another row.
+     */
+    async findNewDeviceSignIns(userId: string, eventIds: readonly string[]): Promise<Set<string>> {
+        if (eventIds.length === 0) {
+            return new Set();
+        }
+        const rows = await this.txHost.tx.$queryRaw<unknown[]>`
+      SELECT e.id FROM audit_events e
+      WHERE e.id = ANY(${[...eventIds]}::uuid[])
+        AND e.target_type = ${AuditTargetType.USER} AND e.target_id = ${userId}::uuid
+        AND e.action = ${AuditAction.AUTH_SIGNED_IN} AND e.user_agent IS NOT NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM audit_events p
+          WHERE p.target_type = e.target_type AND p.target_id = e.target_id
+            AND p.action = e.action AND p.user_agent IS NOT NULL
+            AND (p.occurred_at, p.id) < (e.occurred_at, e.id)
+            AND regexp_replace(p.user_agent, '[0-9]+', '', 'g')
+              = regexp_replace(e.user_agent, '[0-9]+', '', 'g'))`;
+        return new Set(idRowsSchema.parse(rows).map((row) => row.id));
+    }
+}

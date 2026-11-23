@@ -1,0 +1,23 @@
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+
+import { EMAIL_MAX_LENGTH } from '@/common/dto/limits';
+import { NewPasswordSchema } from '@/common/dto/password';
+import { personName } from '@/common/dto/person-name';
+import { SIGNUP_ROLES } from '@/modules/user/service/user-role';
+
+export const SignupRoleSchema = z.enum(SIGNUP_ROLES, { error: 'validation.role.invalid' }).meta({ id: 'SignupRole' });
+
+export const RegisterRequestSchema = z.object({
+    firstName: personName('firstName'),
+    lastName: personName('lastName'),
+    email: z
+        .email({
+            error: (issue) => (issue.input === undefined ? 'validation.email.required' : 'validation.email.invalid'),
+        })
+        .max(EMAIL_MAX_LENGTH, 'validation.email.tooLong'),
+    password: NewPasswordSchema,
+    role: SignupRoleSchema,
+});
+
+export class RegisterRequest extends createZodDto(RegisterRequestSchema) {}
