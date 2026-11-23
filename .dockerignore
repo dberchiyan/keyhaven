@@ -1,0 +1,12 @@
+# The frontend image builds from the repository root (landing + frontend); nothing else goes in.
+backend/
+docs/
+.git/
+**/node_modules/
+**/dist/
+**/.astro/
+**/.vite/
+**/.env
+**/.env.*
+!**/.env.example
+*.log
