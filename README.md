@@ -1,0 +1,145 @@
+<div align="center">
+
+![Keyhaven — homes to rent and to buy: the landing page, the public catalogue with filters, a listing page, the landlord dashboard in dark mode and the catalogue on a phone](docs/banner.jpg)
+
+# Keyhaven
+
+**Homes to rent and to buy in six US cities.** Anyone browses; tenants save homes and searches;
+landlords and agents list and manage; admins keep the site clean.
+
+![Node.js](https://img.shields.io/badge/Node.js-26-5FA04E?logo=nodedotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-11-E0234E?logo=nestjs&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![MUI](https://img.shields.io/badge/MUI-9-007FFF?logo=mui&logoColor=white)
+
+[![Live demo](https://img.shields.io/badge/%E2%96%B6%20live%20demo-keyhaven.dberchiyan.com-1F6B57?style=for-the-badge)](https://keyhaven.dberchiyan.com)
+
+Sign in with any [demo account](#demo-accounts) · password `Keyhaven-Demo-2026!` · fictional people and homes only
+
+[Quick start](#quick-start) · [Demo accounts](#demo-accounts) · [What it does](#what-it-does) ·
+[Architecture](#architecture) · [Development](#development)
+
+</div>
+
+---
+
+## Quick start
+
+**Docker** (everything in containers):
+
+```bash
+cp .env.example .env            # set DATABASE_PASSWORD
+docker compose up --build -d
+docker compose run --rm migrate npm run db:seed
+```
+
+Open **http://localhost:8080** — the landing page for a visitor, the app once signed in.
+
+**Your own PostgreSQL 18** (Node.js 26, Docker only for the photo store):
+
+```bash
+psql -h localhost -d postgres -c "CREATE ROLE keyhaven LOGIN PASSWORD 'keyhaven';" \
+  -c "CREATE DATABASE keyhaven OWNER keyhaven;" -c "CREATE DATABASE keyhaven_shadow OWNER keyhaven;" \
+  -c "CREATE DATABASE keyhaven_test OWNER keyhaven;"
+make setup      # git hook, photo store (RustFS), npm ci, migrations, seed
+make dev        # backend :3000 · app :5180   (make landing → landing page :4321)
+```
+
+`backend/.env` holds `DATABASE_URL`. Emails (verification, reset, the daily digest) go to the
+backend log unless `EMAIL_TRANSPORT=smtp`.
+
+## Demo accounts
+
+Password for all: **`Keyhaven-Demo-2026!`**. Browsing needs no account.
+
+| Role | Account | Sees |
+|---|---|---|
+| Tenant | `maya.lopez@keyhaven.example` | Saved homes and searches, viewings, messages |
+| Landlord | `daniel.reyes@keyhaven.example` | Own listings, insights, viewing requests, messages |
+| Agent | `priya.nair@harborline.example` | The agency's listings, shared with its agents |
+| Admin | `alex.morgan@keyhaven.example` | Every listing, suspension, requests to Keyhaven |
+
+The landing page's demo cards open the sign-in form with the address filled in (`/login?email=…`); only the password
+is left to type.
+
+The seeded homes are **showcase listings**: read-only for every account, admins included. Add a
+listing of your own under any lister account to edit, publish and upload photos. The demo is
+wiped and seeded afresh every day at 00:00 Kyiv time. Sign-up works, but the verification link
+only reaches the backend log, so a new account cannot publish yet.
+
+## What it does
+
+- **Catalogue** — 1,000 homes for rent and 300 for sale across Austin, Denver, Seattle, Chicago,
+  Atlanta and Phoenix, with six months of seeded views and saves behind them. Filters: city, type, price, beds, baths, pets, furnished, parking, move-in
+  date; sort by newest or price; everything in the URL. Text search tolerates typos (`pg_trgm`).
+  Every card shows how many people have looked at the home.
+- **Listing page** — photos, price and price per sq ft, the price against the median of comparable
+  homes ("8% below typical for a house in Wallingford"), facts, amenities, location (the street
+  only after a confirmed viewing), who lists it, similar homes nearby. The catalogue remembers
+  what you opened.
+- **Tenants** — a heart on every home; a saved search emails new matches daily at 08:00 UTC;
+  **book a viewing** from the lister's hours (a week of local days, the free times, a note), see
+  it confirmed with the exact address, cancel it; reminders the day before. **Messages**: once a
+  viewing is confirmed, a conversation with the lister opens (questions before the visit, next
+  steps after it) — nobody can write to a stranger, so there is nothing to spam.
+- **Landlords and agents** — create and edit listings, upload and reorder up to 20 photos (straight
+  to object storage), publish / unpublish. Agents share their agency's listings. **Interest**:
+  views and saves per day over 7 / 30 / 90 days against the period before, the save rate, the
+  most viewed homes — for the whole dashboard and for each listing. **Viewing hours** per
+  listing (slot length, notice, horizon, weekly ranges in the home's time zone, days off) and
+  a **Viewings** dashboard: confirm or decline requests, cancel, see who comes when. No double
+  booking: a partial unique index on live viewings decides a race. A **Messages** inbox with
+  the unread count on the sidebar; one email per run of unread messages.
+- **Admins** — suspend a listing; the Interest block and the viewings dashboard cover the whole
+  site; answer members' requests in Messages ("Write to Keyhaven" from any inbox) and close them.
+- **Accounts** — sign-up, email verification, sign-in, password reset, sessions, a security log.
+  Server-side sessions, CSRF double-submit, rate limits, deny-by-default authorisation.
+
+Search on the full seed, measured over HTTP (`npm run bench:search`), p50 / p95:
+newest 7.5 / 15.6 ms · city + price 6.4 / 7.4 ms · typo text search 10.2 / 15.8 ms ·
+houses for sale by price 4.7 / 5.6 ms.
+
+## Architecture
+
+```
+landing/   Astro static site: the page at a signed-out / and prerendered city pages (/rent/austin,
+           /buy/seattle …) for search engines, built from a committed catalogue snapshot
+           (npm run snapshot)
+frontend/  React 19 · Vite · MUI 9 + Tailwind 4 · TanStack Query · React Router · RHF + Zod · i18next
+backend/   NestJS 11 · Prisma 7 · PostgreSQL 18 · Zod 4 · pino · argon2id
+e2e/       Playwright end-to-end tests — the only tests: API, UI and landing against a stack they build
+           and start themselves (a test database, fake SMTP and S3, the backend in normal and demo
+           mode, the app's and the landing's production builds)
+```
+
+- Modular monolith: `user`, `audit`, `email`, `event` (live updates over Server-Sent Events), `auth`, `storage`, `listing`, `saved-search`, `viewing`, `message`, `privacy` (a copy of one's data, account erasure);
+  controller → service → repository, explicit `select` everywhere.
+- Every handler is `@Public()` or `@Authorize(policy)`; the catalogue's policies are public-scoped
+  (a session only adds "saved"); foreign ids answer 403 or 404 — see `e2e/tests/api/access.spec.ts`.
+- `backend/openapi.json` is generated from the Zod DTOs; the frontend generates its types and
+  runtime response schemas from it.
+- Ports with one adapter each: `EmailSender` (log / SMTP), `ObjectStorage` (any S3 store: RustFS locally and on the
+  demo server, Cloudflare R2 works too). Emails and uploads happen outside database transactions.
+
+## Development
+
+```bash
+make install                       # root tooling and the pre-commit hook (make setup runs it)
+make check                         # every package's pipeline, then the whole e2e suite
+cd backend  && npm run start:dev   # :3000, Swagger at /docs (SWAGGER_ENABLED) · /health · /ready · /metrics
+cd frontend && npm run dev         # :5180 · npm run generate:api · npm run build (bundle budget)
+cd landing  && npm run dev         # :4321 · npm run build (astro check + build checks)
+cd e2e      && npm test            # every test: API, UI and landing, end to end (test:api / test:ui / test:landing)
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs every package's pipeline and the end-to-end suite on every push to
+`main` and on pull requests.
+
+A pre-commit hook (`simple-git-hooks` + `lint-staged`, root `package.json`) runs each package's Prettier and ESLint on
+its staged files. Code style: 4 spaces, 120 columns (`.editorconfig`).
+
+Backend env (`backend/.env.example`): `DATABASE_URL`, `SHADOW_DATABASE_URL`,
+`APP_URL`, `EMAIL_*`, `R2_*` (the photo store), `SESSION_*` / `COOKIE_*`, `DEMO_*`, `LOG_LEVEL`, `SWAGGER_ENABLED`,
+`HTTP_*` (server limits), `HSTS_ENABLED`.
